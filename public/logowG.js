@@ -10,6 +10,9 @@ window.handleCredentialResponse = function(response) {
 
   // Pokaż przycisk wylogowania
   document.getElementById("logout-btn").style.display = 'inline-block';
+
+  // Załaduj saldo użytkownika
+  loadUserBalance(data.sub);
 };
 
 function parseJwt(token) {
@@ -32,34 +35,45 @@ function showUser(data) {
   if (loginBtn) loginBtn.style.display = 'none';
 }
 
+async function loadUserBalance(userId) {
+  try {
+    const res = await fetch(`/api/waluta/balance?userId=${encodeURIComponent(userId)}`);
+    const data = await res.json();
+    const balanceDiv = document.getElementById('balance');
+    if (res.ok) {
+      balanceDiv.textContent = `Saldo: ${data.balance} zł`;
+    } else {
+      balanceDiv.textContent = 'Błąd ładowania salda';
+    }
+  } catch (e) {
+    document.getElementById('balance').textContent = 'Błąd sieci';
+  }
+}
+
 document.addEventListener("DOMContentLoaded", () => {
-  // Sprawdź przy załadowaniu strony, czy użytkownik jest zalogowany (localStorage)
   const savedUser = localStorage.getItem('loggedUser');
   if (savedUser) {
     const userData = JSON.parse(savedUser);
     showUser(userData);
+    loadUserBalance(userData.sub); // ← Załaduj saldo przy starcie
   }
 
-  // Obsługa wylogowania
   const logoutBtn = document.getElementById("logout-btn");
   if (logoutBtn) {
     logoutBtn.addEventListener("click", function () {
-      // Usuń dane z localStorage
       localStorage.removeItem('loggedUser');
 
-      // Ukryj dane użytkownika
       document.getElementById("user-info").style.display = 'none';
       document.getElementById("logout-btn").style.display = 'none';
-
-      // Ukryj obrazek i nazwę
       document.getElementById("profile-pic").src = '';
       document.getElementById("username").textContent = '';
 
-      // Pokaż przycisk logowania Google
       const loginBtn = document.querySelector('.g_id_signin');
       if (loginBtn) loginBtn.style.display = 'inline-block';
 
-      // Wymuś nowe logowanie
+      const balanceDiv = document.getElementById('balance');
+      balanceDiv.textContent = 'Saldo: 0 zł';
+
       if (google && google.accounts && google.accounts.id) {
         google.accounts.id.disableAutoSelect();
       }
