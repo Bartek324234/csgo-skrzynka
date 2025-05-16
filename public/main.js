@@ -1,4 +1,11 @@
 document.addEventListener('DOMContentLoaded', () => {
+  const user = JSON.parse(localStorage.getItem('loggedUser'));
+  if (!user || !user.sub) {
+    alert('Musisz być zalogowany');
+    return;
+  }
+  const userId = user.sub;
+
   const balanceDiv = document.getElementById('balance');
   const messagesDiv = document.getElementById('messages');
   const wynikP = document.getElementById('wynik');
@@ -6,8 +13,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const promoInput = document.getElementById('promoCode');
   const applyPromoBtn = document.getElementById('applyPromoBtn');
   const losujBtn = document.getElementById('losujBtn');
-
-  const userId = 'user123'; // Przykładowy identyfikator użytkownika
 
   let balance = 0;
 
@@ -18,12 +23,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const data = await res.json();
         balance = data.balance;
         updateBalanceUI();
-      } else {
-        balanceDiv.textContent = 'Błąd ładowania salda';
       }
     } catch (e) {
       console.error('Błąd pobierania salda:', e);
-      balanceDiv.textContent = 'Błąd sieci';
     }
   }
 
@@ -71,25 +73,32 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     try {
+      // POST z userId
       const res = await fetch('/api/waluta/losuj', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId })
       });
-      const data = await res.json();
-      if (res.ok) {
-        balance = data.balance;
-        updateBalanceUI();
-        wynikP.textContent = `Wylosowałeś: ${data.item.name} (${data.item.rarity})`;
-        itemImage.src = data.item.image;
-        itemImage.alt = data.item.name;
-        itemImage.style.display = 'block';
-        messagesDiv.style.color = 'green';
-        messagesDiv.textContent = `Koszt losowania 5 zł został pobrany. Do salda dodano wartość przedmiotu: ${data.item.value} zł.`;
-      } else {
+
+      if (!res.ok) {
+        const err = await res.json();
         messagesDiv.style.color = 'red';
-        messagesDiv.textContent = data.error || 'Błąd podczas losowania';
+        messagesDiv.textContent = err.error || 'Błąd podczas losowania';
+        return;
       }
+
+      const data = await res.json();
+      balance = data.balance;
+      updateBalanceUI();
+
+      const item = data.item;
+      wynikP.textContent = `Wylosowałeś: ${item.name} (${item.rarity})`;
+      itemImage.src = item.image;
+      itemImage.alt = item.name;
+      itemImage.style.display = 'block';
+
+      messagesDiv.style.color = 'green';
+      messagesDiv.textContent = `Koszt losowania 5 zł został pobrany. Do salda dodano wartość przedmiotu: ${item.value} zł.`;
     } catch (e) {
       messagesDiv.style.color = 'red';
       messagesDiv.textContent = 'Błąd sieci podczas losowania';
