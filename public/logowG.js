@@ -10,7 +10,7 @@ window.handleCredentialResponse = function(response) {
 
   // Pokaż przycisk wylogowania
   document.getElementById("logout-btn").style.display = 'inline-block';
-}
+};
 
 function parseJwt(token) {
   const base64Url = token.split('.')[1];
@@ -28,39 +28,41 @@ function showUser(data) {
   document.getElementById("user-info").style.display = 'block';
   document.getElementById("logout-btn").style.display = 'inline-block';
 
-  // Ukryj przycisk logowania Google, jeśli masz jakiś, np.
   const loginBtn = document.querySelector('.g_id_signin');
   if (loginBtn) loginBtn.style.display = 'none';
 }
 
-// Sprawdź przy załadowaniu strony, czy użytkownik jest zalogowany (localStorage)
-window.onload = () => {
+document.addEventListener("DOMContentLoaded", () => {
+  // Sprawdź przy załadowaniu strony, czy użytkownik jest zalogowany (localStorage)
   const savedUser = localStorage.getItem('loggedUser');
   if (savedUser) {
     const userData = JSON.parse(savedUser);
     showUser(userData);
   }
-};
 
-// Obsługa wylogowania
-document.getElementById("logout-btn").addEventListener("click", function () {
-  // Usuń dane z localStorage
-  localStorage.removeItem('loggedUser');
+  // Obsługa wylogowania
+  const logoutBtn = document.getElementById("logout-btn");
+  if (logoutBtn) {
+    logoutBtn.addEventListener("click", function () {
+      // Usuń dane z localStorage
+      localStorage.removeItem('loggedUser');
 
-  // Ukryj dane użytkownika
-  document.getElementById("user-info").style.display = 'none';
-  document.getElementById("logout-btn").style.display = 'none';
+      // Ukryj dane użytkownika
+      document.getElementById("user-info").style.display = 'none';
+      document.getElementById("logout-btn").style.display = 'none';
 
-  // Ukryj obrazek i nazwę
-  document.getElementById("profile-pic").src = '';
-  document.getElementById("username").textContent = '';
+      // Ukryj obrazek i nazwę
+      document.getElementById("profile-pic").src = '';
+      document.getElementById("username").textContent = '';
 
-  // Pokaż przycisk logowania Google
-  const loginBtn = document.querySelector('.g_id_signin');
-  if (loginBtn) loginBtn.style.display = 'inline-block';
+      // Pokaż przycisk logowania Google
+      const loginBtn = document.querySelector('.g_id_signin');
+      if (loginBtn) loginBtn.style.display = 'inline-block';
 
-  // Wymuś nowe logowanie
-  if (google && google.accounts && google.accounts.id) {
-    google.accounts.id.disableAutoSelect();
+      // Wymuś nowe logowanie
+      if (google && google.accounts && google.accounts.id) {
+        google.accounts.id.disableAutoSelect();
+      }
+    });
   }
 });
