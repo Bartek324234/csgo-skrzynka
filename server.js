@@ -8,6 +8,9 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
+const walutaRoutes = require('./routes/waluta');
+app.use('/api/waluta', walutaRoutes);
+
 // Serwowanie plików statycznych (HTML, CSS, JS)
 app.use(express.static(path.join(__dirname, 'public')));
 
