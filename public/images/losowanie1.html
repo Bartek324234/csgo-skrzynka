@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8" />
+  <title>CS:GO Skrzynka - Losowanie</title>
+  <link rel="stylesheet" href="css/logowG.css" />
+</head>
+<body>
+  <h1>Otwórz skrzynkę!</h1>
+
+  <button id="losujBtn">Losuj przedmiot</button>
+  <p id="wynik"></p>
+  <img id="itemImage" src="" alt="" style="display: none; max-width: 300px;" />
+
+  <br><br>
+  <a href="index.html">Wróć do strony głównej</a>
+  <script>
+  window.onload = () => {
+  const savedUser = localStorage.getItem('loggedUser');
+  if (!savedUser) {
+    window.location.href = 'index.html';
+  }
+};</script>
+
+  <script src="js/main.js"></script>
+</body>
+</html>
