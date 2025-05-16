@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   losujBtn.addEventListener('click', async () => {
     try {
-      const response = await fetch('/api/losuj');
+     const response = await fetch('/api/losowanie/losuj');
       const item = await response.json();
 
       document.getElementById('wynik').innerText = `Wylosowałeś: ${item.name} (${item.rarity})`;
