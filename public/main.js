@@ -1,5 +1,8 @@
 document.addEventListener('DOMContentLoaded', () => {
-  document.getElementById('losujBtn').addEventListener('click', async () => {
+  const losujBtn = document.getElementById('losujBtn');
+  if (!losujBtn) return; // nie rób nic, jeśli przycisku nie ma
+
+  losujBtn.addEventListener('click', async () => {
     try {
       const response = await fetch('/api/losuj');
       const item = await response.json();
