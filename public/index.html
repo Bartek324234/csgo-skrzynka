@@ -10,5 +10,45 @@
   <p id="wynik"></p>
 
   <script src="main.js"></script>
+
+<div id="g_id_onload"
+     data-client_id="925130065491-uatooio0iqa35natp6p96i86q67hu4n6.apps.googleusercontent.com"
+     data-callback="handleCredentialResponse">
+</div>
+
+<div class="g_id_signin" data-type="standard"></div>
+
+<!-- Miejsce na dane użytkownika -->
+<div id="user-info" style="display:none; margin-top:10px;">
+    <img id="profile-pic" style="width:50px; border-radius:50%;" />
+    <p id="username" style="margin:5px 0;"></p>
+</div>
+
+
+
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script>
+  function handleCredentialResponse(response) {
+    const jwt = response.credential;
+    const data = parseJwt(jwt);
+
+    // Pokaż dane użytkownika
+    document.getElementById("profile-pic").src = data.picture;
+    document.getElementById("username").textContent = data.name;
+    document.getElementById("user-info").style.display = 'block';
+  }
+
+  function parseJwt(token) {
+    const base64Url = token.split('.')[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const jsonPayload = decodeURIComponent(atob(base64).split('').map(c =>
+      '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
+    ).join(''));
+
+    return JSON.parse(jsonPayload);
+  }
+</script>
+
+
 </body>
 </html>
