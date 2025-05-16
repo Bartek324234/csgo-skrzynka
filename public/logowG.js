@@ -1,4 +1,4 @@
-function handleCredentialResponse(response) {
+window.handleCredentialResponse = function(response) {
   const jwt = response.credential;
   const data = parseJwt(jwt);
 
