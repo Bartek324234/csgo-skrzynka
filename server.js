@@ -18,10 +18,10 @@ app.get('/', (req, res) => {
 
 // 🎲 Endpoint do losowania
 const items = [
-  { name: "AK-47 | Redline", rarity: "Rare" },
-  { name: "AWP | Asiimov", rarity: "Epic" },
-  { name: "Desert Eagle | Blaze", rarity: "Legendary" },
-  { name: "P250 | Sand Dune", rarity: "Common" }
+  { name: "AK-47 | Ice Coaled", rarity: "Rare", image: "/images/AK-47ICECOALED.jpg" },
+  { name: "M4A4 | Asiimov", rarity: "Epic", image: "/images/M4A4ASIIMOV.jpg" },
+  { name: "UMP", rarity: "Common", image: "/images/ump.jpg" },
+  { name: "USP-S | Forest Leaves", rarity: "Legendary", image: "/images/USP-S_FOREST_LEAVES.jpg" }
 ];
 
 app.get('/api/losuj', (req, res) => {
