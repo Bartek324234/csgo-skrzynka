@@ -1,9 +1,8 @@
 const express = require('express');
 const router = express.Router();
 
-const userData = {}; // Przechowywanie danych użytkowników w pamięci
+const userData = {}; // Pamięć tymczasowa (RAM)
 
-// Lista przedmiotów z wartością nagrody
 const items = [
   { name: "AK-47 | Ice Coaled", rarity: "Rare", value: 2, image: "/images/AK-47ICECOALED.jpg" },
   { name: "M4A4 | Asiimov", rarity: "Epic", value: 5, image: "/images/M4A4ASIIMOV.jpg" },
@@ -11,21 +10,20 @@ const items = [
   { name: "USP-S | Forest Leaves", rarity: "Legendary", value: 10, image: "/images/USP-S_FOREST_LEAVES.jpg" }
 ];
 
-// 1. Pobranie balansu
+// 1. Pobranie salda
 router.get('/balance', (req, res) => {
   const { userId } = req.query;
-  if (!userId) return res.status(400).json({ error: 'Brakuje identyfikatora użytkownika.' });
+  if (!userId) return res.status(400).json({ error: 'Brakuje userId' });
 
-  const balance = userData[userId]?.balance || 0;
-  res.json({ balance });
+  const user = userData[userId] || { balance: 0, usedCodes: [] };
+  res.json({ balance: user.balance });
 });
 
-// 2. Losowanie (odejmuje 5 zł, dodaje wartość nagrody)
+// 2. Losowanie z opłatą
 router.post('/losuj', (req, res) => {
   const { userId } = req.body;
-  if (!userId) return res.status(400).json({ error: 'Brakuje identyfikatora użytkownika.' });
+  if (!userId) return res.status(400).json({ error: 'Brakuje userId' });
 
-  // Inicjalizacja konta
   if (!userData[userId]) {
     userData[userId] = { balance: 0, usedCodes: [] };
   }
@@ -33,13 +31,10 @@ router.post('/losuj', (req, res) => {
   const user = userData[userId];
 
   if (user.balance < 5) {
-    return res.status(400).json({ error: 'Za mało środków.' });
+    return res.status(400).json({ error: 'Za mało środków (potrzeba 5 zł)' });
   }
 
-  // Odejmuje koszt losowania
   user.balance -= 5;
-
-  // Losuj przedmiot
   const item = items[Math.floor(Math.random() * items.length)];
   user.balance += item.value;
 
@@ -52,27 +47,25 @@ router.post('/losuj', (req, res) => {
 // 3. Kod promocyjny
 router.post('/kod', (req, res) => {
   const { userId, code } = req.body;
-  if (!userId || !code) return res.status(400).json({ error: 'Brak danych.' });
+  if (!userId || !code) return res.status(400).json({ error: 'Brak danych' });
 
-  // Inicjalizacja konta
   if (!userData[userId]) {
     userData[userId] = { balance: 0, usedCodes: [] };
   }
 
   const user = userData[userId];
 
-  // Obsługa kodu 'new2025'
   if (code === 'new2025') {
     if (user.usedCodes.includes(code)) {
-      return res.status(400).json({ error: 'Kod już został użyty.' });
+      return res.status(400).json({ error: 'Kod już użyty' });
     }
 
     user.balance += 5;
     user.usedCodes.push(code);
-    return res.json({ balance: user.balance, message: 'Kod aktywowany.' });
-  } else {
-    return res.status(400).json({ error: 'Nieprawidłowy kod.' });
+    return res.json({ balance: user.balance, message: 'Kod aktywowany (5 zł dodane)' });
   }
+
+  return res.status(400).json({ error: 'Nieprawidłowy kod' });
 });
 
 module.exports = router;

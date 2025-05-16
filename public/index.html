@@ -1,12 +1,21 @@
 <!DOCTYPE html>
 <html lang="pl">
 <head>
+
   <meta charset="UTF-8" />
   <title>CS:GO Skrzynka</title>
   <link rel="stylesheet" href="logowG.css" />
 </head>
 <body>
-<h1>Witaj na CS:GO Skrzynka!</h1>
+ <header>
+    <h1>Witaj na CS:GO Skrzynka</h1>
+   
+  </header>
+<div id="balance">Saldo: 0 zł</div>
+
+<input type="text" id="promoCode" placeholder="Kod promocyjny">
+<button id="applyPromoBtn">Zastosuj kod</button>
+<p id="messages"></p>
 
   <!-- Sekcja logowania Google adasdasd-->
   <div id="loginSection">
@@ -27,6 +36,23 @@
   </div>
   <!-- Skrypty -->
  
+  <script>
+    async function loadBalance() {
+      try {
+        const res = await fetch('/api/waluta/balance');
+        if (res.ok) {
+          const data = await res.json();
+          document.getElementById('balance-display').textContent = `Saldo: ${data.balance} zł`;
+        } else {
+          document.getElementById('balance-display').textContent = 'Błąd ładowania salda';
+        }
+      } catch {
+        document.getElementById('balance-display').textContent = 'Błąd sieci';
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', loadBalance);
+  </script>
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   <script src="logowG.js"></script>
 </body>

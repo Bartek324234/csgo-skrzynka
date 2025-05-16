@@ -8,15 +8,12 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
+// 🔁 Trasy
 const walutaRoutes = require('./routes/waluta');
 app.use('/api/waluta', walutaRoutes);
 
-// Serwowanie plików statycznych (HTML, CSS, JS)
+// 📁 Pliki statyczne
 app.use(express.static(path.join(__dirname, 'public')));
-
-// ⬇️ IMPORT ROUTES
-const losowanieRoutes = require('./routes/losowanie');
-app.use('/api/losowanie', losowanieRoutes);
 
 // Domyślna strona główna
 app.get('/', (req, res) => {

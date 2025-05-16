@@ -4,13 +4,29 @@
   <meta charset="UTF-8" />
   <title>CS:GO Skrzynka - Losowanie</title>
   <link rel="stylesheet" href="logowG.css" />
+    <style>
+    #itemImage { max-width: 300px; display: none; margin-top: 10px; }
+    #messages { margin-top: 10px; color: red; }
+    #balance { font-weight: bold; margin-bottom: 15px; }
+  </style>
 </head>
 <body>
   <h1>Otwórz skrzynkę!</h1>
 
-  <button id="losujBtn">Losuj przedmiot</button>
+ <div id="balance">Saldo: 0 zł</div>
+
+  <label for="promoCode">Kod promocyjny:</label>
+  <input type="text" id="promoCode" />
+  <button id="applyPromoBtn">Aktywuj kod</button>
+
+  <br><br>
+
+<button id="losujBtn">Losuj przedmiot (5 zł)</button>
+
   <p id="wynik"></p>
-  <img id="itemImage" src="" alt="" style="display: none; max-width: 300px;" />
+  <img id="itemImage" src="" alt="" />
+
+  <div id="messages"></div>
 
   <br><br>
   <a href="index.html">Wróć do strony głównej</a>
