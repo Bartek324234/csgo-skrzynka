@@ -11,6 +11,15 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(cors());
 app.use(express.json());
 
+// Import i użycie tras
+app.use('/api/auth', require('./routes/auth'));
+app.use('/api/waluta', require('./routes/waluta'));
+app.use('/api/losowanie', require('./routes/losowanie'));
+
+const walutaRoutes = require('./routes/waluta');
+app.use('/api/waluta', walutaRoutes);
+
+
 // Endpoint na główną stronę
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public/index.html'));
