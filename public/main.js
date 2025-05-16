@@ -7,30 +7,9 @@ document.addEventListener('DOMContentLoaded', () => {
   const applyPromoBtn = document.getElementById('applyPromoBtn');
   const losujBtn = document.getElementById('losujBtn');
 
-  let userId = null;
+  const userId = 'user123'; // Przykładowy identyfikator użytkownika
+
   let balance = 0;
-
-  // Sprawdź localStorage
-  const saved = localStorage.getItem('loggedUser');
-  if (saved) {
-    try {
-      const parsed = JSON.parse(saved);
-      userId = parsed.sub;
-    } catch (e) {
-      console.warn('Nie można odczytać użytkownika.');
-    }
-  }
-
-  if (!userId) {
-    messagesDiv.textContent = 'Musisz być zalogowany, aby losować przedmioty.';
-    losujBtn.disabled = true;
-    applyPromoBtn.disabled = true;
-    return;
-  }
-
-  function updateBalanceUI() {
-    balanceDiv.textContent = `Saldo: ${balance} zł`;
-  }
 
   async function fetchBalance() {
     try {
@@ -39,16 +18,25 @@ document.addEventListener('DOMContentLoaded', () => {
         const data = await res.json();
         balance = data.balance;
         updateBalanceUI();
+      } else {
+        balanceDiv.textContent = 'Błąd ładowania salda';
       }
     } catch (e) {
-      console.error('Błąd ładowania salda:', e);
+      console.error('Błąd pobierania salda:', e);
+      balanceDiv.textContent = 'Błąd sieci';
     }
+  }
+
+  function updateBalanceUI() {
+    balanceDiv.textContent = `Saldo: ${balance} zł`;
   }
 
   applyPromoBtn.addEventListener('click', async () => {
     const code = promoInput.value.trim();
-    if (!code) return;
-
+    if (!code) {
+      messagesDiv.textContent = 'Wpisz kod promocyjny!';
+      return;
+    }
     try {
       const res = await fetch('/api/waluta/kod', {
         method: 'POST',
@@ -60,10 +48,10 @@ document.addEventListener('DOMContentLoaded', () => {
         balance = data.balance;
         updateBalanceUI();
         messagesDiv.style.color = 'green';
-        messagesDiv.textContent = data.message;
+        messagesDiv.textContent = `Kod aktywowany! Masz teraz ${balance} zł`;
       } else {
         messagesDiv.style.color = 'red';
-        messagesDiv.textContent = data.error || 'Błąd';
+        messagesDiv.textContent = data.error || 'Błąd aktywacji kodu';
       }
     } catch (e) {
       messagesDiv.style.color = 'red';
@@ -76,34 +64,36 @@ document.addEventListener('DOMContentLoaded', () => {
     wynikP.textContent = '';
     itemImage.style.display = 'none';
 
+    if (balance < 5) {
+      messagesDiv.style.color = 'red';
+      messagesDiv.textContent = 'Nie masz wystarczająco środków (koszt losowania: 5 zł)';
+      return;
+    }
+
     try {
       const res = await fetch('/api/waluta/losuj', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId })
       });
-
       const data = await res.json();
-
-      if (!res.ok) {
+      if (res.ok) {
+        balance = data.balance;
+        updateBalanceUI();
+        wynikP.textContent = `Wylosowałeś: ${data.item.name} (${data.item.rarity})`;
+        itemImage.src = data.item.image;
+        itemImage.alt = data.item.name;
+        itemImage.style.display = 'block';
+        messagesDiv.style.color = 'green';
+        messagesDiv.textContent = `Koszt losowania 5 zł został pobrany. Do salda dodano wartość przedmiotu: ${data.item.value} zł.`;
+      } else {
         messagesDiv.style.color = 'red';
-        messagesDiv.textContent = data.error || 'Błąd';
-        return;
+        messagesDiv.textContent = data.error || 'Błąd podczas losowania';
       }
-
-      balance = data.balance;
-      updateBalanceUI();
-
-      wynikP.textContent = `Wylosowałeś: ${data.item.name} (${data.item.rarity})`;
-      itemImage.src = data.item.image;
-      itemImage.alt = data.item.name;
-      itemImage.style.display = 'block';
-
-      messagesDiv.style.color = 'green';
-      messagesDiv.textContent = `Koszt: 5 zł. Przedmiot dodany: ${data.item.value} zł.`;
     } catch (e) {
+      messagesDiv.style.color = 'red';
+      messagesDiv.textContent = 'Błąd sieci podczas losowania';
       console.error(e);
-      messagesDiv.textContent = 'Błąd sieci';
     }
   });
 
