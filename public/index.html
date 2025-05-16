@@ -11,26 +11,28 @@
   <p id="wynik"></p>
   <img id="itemImage" src="" alt="" style="display: none; max-width: 300px;" />
 
-
+<!-- Sekcja logowania -->
   <script src="main.js"></script>
-
+<div id="loginSection">
 <div id="g_id_onload"
      data-client_id="925130065491-uatooio0iqa35natp6p96i86q67hu4n6.apps.googleusercontent.com"
      data-callback="handleCredentialResponse">
+ </div>
+  <div class="g_id_signin" data-type="standard"></div>
 </div>
 
-<div class="g_id_signin" data-type="standard"></div>
-
-<!-- Miejsce na dane użytkownika -->
-<div id="user-info" style="display:none; margin-top:10px;">
-    <img id="profile-pic" style="width:50px; border-radius:50%;" />
-    <p id="username" style="margin:5px 0;"></p>
+<!-- Sekcja użytkownika po zalogowaniu -->
+<div id="userSection" style="display:none;">
+  <p>Witaj, <span id="nick"></span></p>
+  <img id="avatar" src="" alt="Avatar" style="width: 100px; border-radius: 50%;" />
+  <button id="logoutBtn">Wyloguj się</button>
 </div>
-<button id="logout-btn" style="display:none; margin-top: 10px;">Wyloguj się</button>
 
-
-
+<!-- Załaduj Google Platform Library -->
 <script src="https://accounts.google.com/gsi/client" async defer></script>
+<!-- Załaduj Google Platform Library -->
+ <!-- odnocik do js
+ -->
 <script src="logowG.js"></script>
 
 </body>
