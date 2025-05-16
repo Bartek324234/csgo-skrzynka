@@ -8,7 +8,7 @@ const items = [
   { name: "USP-S | Forest Leaves", rarity: "Legendary", image: "/images/USP-S_FOREST_LEAVES.jpg" }
 ];
 
-router.get('/', (req, res) => {
+router.get('/losuj', (req, res) => {
   const randomItem = items[Math.floor(Math.random() * items.length)];
   res.json(randomItem);
 });

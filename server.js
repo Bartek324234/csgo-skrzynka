@@ -7,18 +7,19 @@ const PORT = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(express.json());
+
+// Serwowanie plików statycznych (HTML, CSS, JS)
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Import tras API
-app.use('/api/auth', require('./routes/auth'));
-app.use('/api/waluta', require('./routes/waluta'));
-app.use('/api/losowanie', require('./routes/losowanie'));
+// ⬇️ IMPORT ROUTES
+const losowanieRoutes = require('./routes/losowanie');
+app.use('/api/losowanie', losowanieRoutes);
 
-// Endpoint strony głównej
+// Domyślna strona główna
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public/index.html'));
 });
 
 app.listen(PORT, () => {
-  console.log(`✅ Serwer działa na http://localhost:${PORT}`);
+  console.log(`✅ Serwer działa na porcie ${PORT}`);
 });
