@@ -1,11 +1,18 @@
+import { createClient } from '@supabase/supabase-js';
+
+const supabaseUrl = 'https://jotdnbkfgqtznjwbfjno.supabase.co';
+const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpvdGRuYmtmZ3F0em5qd2Jmam5vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc1MTMwODAsImV4cCI6MjA2MzA4OTA4MH0.mQrwJS9exVIMoSl_XwRT2WhE8DMTbdUM996kJIVA4kM';
+
+const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
 document.addEventListener('DOMContentLoaded', () => {
   const user = JSON.parse(localStorage.getItem('loggedUser'));
   if (!user || !user.sub) {
     alert('Musisz być zalogowany');
     return;
   }
-  const userId = user.sub;
 
+  const userId = user.sub;
   const balanceDiv = document.getElementById('balance');
   const messagesDiv = document.getElementById('messages');
   const wynikP = document.getElementById('wynik');
@@ -16,16 +23,45 @@ document.addEventListener('DOMContentLoaded', () => {
 
   let balance = 0;
 
-  async function fetchBalance() {
-    try {
-      const res = await fetch(`/api/waluta/balance?userId=${userId}`);
-      if (res.ok) {
-        const data = await res.json();
-        balance = data.balance;
-        updateBalanceUI();
+  // Sprawdź i dodaj użytkownika do Supabase, jeśli nie istnieje
+  async function ensureUserExists() {
+    const { data, error } = await supabase
+      .from('users')
+      .select('id')
+      .eq('id', userId)
+      .single();
+
+    if (error) {
+      if (error.code === 'PGRST116') {
+        const { email } = user;
+        const username = email?.split('@')[0] || 'anon';
+        const { error: insertError } = await supabase
+          .from('users')
+          .insert([{ id: userId, email, username, balance: 0 }]);
+        if (insertError) {
+          console.error('Błąd dodawania użytkownika:', insertError.message);
+        } else {
+          console.log('Użytkownik dodany do Supabase');
+        }
+      } else {
+        console.error('Błąd sprawdzania użytkownika:', error.message);
       }
-    } catch (e) {
-      console.error('Błąd pobierania salda:', e);
+    }
+  }
+
+  // Pobierz saldo bezpośrednio z Supabase
+  async function fetchBalance() {
+    const { data, error } = await supabase
+      .from('users')
+      .select('balance')
+      .eq('id', userId)
+      .single();
+
+    if (error) {
+      console.error('Błąd pobierania salda:', error.message);
+    } else {
+      balance = data.balance;
+      updateBalanceUI();
     }
   }
 
@@ -39,6 +75,7 @@ document.addEventListener('DOMContentLoaded', () => {
       messagesDiv.textContent = 'Wpisz kod promocyjny!';
       return;
     }
+
     try {
       const res = await fetch('/api/waluta/kod', {
         method: 'POST',
@@ -73,7 +110,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     try {
-      // POST z userId
       const res = await fetch('/api/waluta/losuj', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -106,5 +142,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  fetchBalance();
+  // Start
+  ensureUserExists().then(fetchBalance);
 });
