@@ -12,98 +12,75 @@ const promoSection = document.getElementById('promoSection');
 const promoInput = document.getElementById('promoInput');
 const applyPromoBtn = document.getElementById('applyPromoBtn');
 const promoMsg = document.getElementById('promoMsg');
-const balanceSection = document.getElementById('balanceSection');
-const userBalanceSpan = document.getElementById('userBalance');
 
+// LOGOWANIE
 loginBtn.addEventListener('click', async () => {
   const { error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
-    options: {
-      redirectTo: window.location.origin
-    }
+    options: { redirectTo: window.location.href }
   });
   if (error) alert('Błąd logowania: ' + error.message);
 });
 
+// WYLOGOWANIE
 logoutBtn.addEventListener('click', async () => {
   await supabase.auth.signOut();
   updateUI(null);
-  promoMsg.textContent = '';
 });
 
-async function getBalance(userId) {
+// FUNKCJA: Tworzy nowy wpis w user_balances
+async function createBalanceRecord(userId) {
+  const { error } = await supabase
+    .from('user_balances')
+    .insert({ user_id: userId, balance: 0 });
+  if (error) console.error('Błąd tworzenia balansu:', error.message);
+}
+
+// FUNKCJA: Pobiera aktualny balans użytkownika
+async function getUserBalance(userId) {
   const { data, error } = await supabase
     .from('user_balances')
     .select('balance')
     .eq('user_id', userId)
     .single();
   if (error) {
-    console.error('Błąd pobierania balansu:', error);
-    return null;
+    if (error.code === 'PGRST116') {
+      await createBalanceRecord(userId);
+      return 0;
+    } else {
+      console.error('Błąd pobierania balansu:', error.message);
+      return null;
+    }
   }
-  return data?.balance ?? 0;
+  return data.balance;
 }
 
-async function createBalanceRecord(userId) {
-  const { error } = await supabase
-    .from('user_balances')
-    .insert([{ user_id: userId, balance: 0 }]);
-  if (error) {
-    console.error('Błąd tworzenia rekordu balansu:', error);
-  }
-}
-
-async function updateBalance(userId, newBalance) {
-  const { error } = await supabase
-    .from('user_balances')
-    .update({ balance: newBalance })
-    .eq('user_id', userId);
-  if (error) {
-    console.error('Błąd aktualizacji balansu:', error);
-  }
-}
-
+// FUNKCJA: Aktualizacja UI
 async function updateUI(user) {
-  if (!user) {
+  if (user) {
+    const balance = await getUserBalance(user.id);
+    loginBtn.style.display = 'none';
+    logoutBtn.style.display = 'inline-block';
+    promoSection.style.display = 'block';
+    userInfoDiv.innerHTML = `
+      <p>Witaj, ${user.user_metadata.full_name}</p>
+      <img src="${user.user_metadata.avatar_url}" width="80" />
+      <p><strong>Twój balans:</strong> ${balance.toFixed(2)} zł</p>
+    `;
+  } else {
     loginBtn.style.display = 'inline-block';
     logoutBtn.style.display = 'none';
-    userInfoDiv.innerHTML = '';
     promoSection.style.display = 'none';
-    balanceSection.style.display = 'none';
-    return;
+    userInfoDiv.innerHTML = '';
   }
-
-  loginBtn.style.display = 'none';
-  logoutBtn.style.display = 'inline-block';
-  promoSection.style.display = 'block';
-  balanceSection.style.display = 'block';
-
-  userInfoDiv.innerHTML = `
-    <p>Witaj, ${user.user_metadata.full_name}</p>
-    <img src="${user.user_metadata.avatar_url}" width="80" />
-  `;
-
-  let balance = await getBalance(user.id);
-  if (balance === null) {
-    await createBalanceRecord(user.id);
-    balance = 0;
-  }
-  userBalanceSpan.textContent = balance.toFixed(2);
 }
 
+// FUNKCJA: Obsługa kodów promocyjnych
 applyPromoBtn.addEventListener('click', async () => {
-  promoMsg.textContent = '';
   const code = promoInput.value.trim();
-  if (!code) {
-    promoMsg.textContent = 'Proszę wpisać kod promocyjny.';
-    return;
-  }
-
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) {
-    promoMsg.textContent = 'Musisz być zalogowany, aby użyć kodu.';
-    return;
-  }
+  const { data: sessionData } = await supabase.auth.getSession();
+  const user = sessionData?.session?.user;
+  if (!user || !code) return;
 
   const { data: promo, error: promoErr } = await supabase
     .from('promo_codes')
@@ -121,46 +98,37 @@ applyPromoBtn.addEventListener('click', async () => {
     .select('*')
     .eq('user_id', user.id)
     .eq('code', code)
-    .single();
+    .maybeSingle();
 
   if (used) {
     promoMsg.textContent = 'Już użyłeś tego kodu.';
     return;
   }
 
-  let balance = await getBalance(user.id);
-  if (balance === null) {
-    await createBalanceRecord(user.id);
-    balance = 0;
-  }
+  const { error: updateErr } = await supabase
+    .from('user_balances')
+    .update({ balance: promo.value })
+    .eq('user_id', user.id);
 
-  const newBalance = balance + promo.value;
-
-  await updateBalance(user.id, newBalance);
-
-  const { error: insertErr } = await supabase
-    .from('used_codes')
-    .insert([{ user_id: user.id, code: code }]);
-
-  if (insertErr) {
-    promoMsg.textContent = 'Błąd zapisywania użycia kodu.';
-    console.error(insertErr);
+  if (updateErr) {
+    promoMsg.textContent = 'Błąd dodawania środków.';
     return;
   }
 
-  userBalanceSpan.textContent = newBalance.toFixed(2);
-  promoMsg.textContent = `Kod "${code}" zastosowany! Dodano ${promo.value} zł.`;
-  promoInput.value = '';
+  await supabase
+    .from('used_codes')
+    .insert({ user_id: user.id, code });
+
+  promoMsg.textContent = 'Kod został zastosowany!';
+  updateUI(user);
 });
 
+// INICJALIZACJA
 async function init() {
   const { data: { session } } = await supabase.auth.getSession();
   updateUI(session?.user ?? null);
-
   supabase.auth.onAuthStateChange((_event, session) => {
     updateUI(session?.user ?? null);
-    promoMsg.textContent = '';
-    promoInput.value = '';
   });
 }
 
