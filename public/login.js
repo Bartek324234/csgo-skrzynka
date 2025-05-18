@@ -31,33 +31,33 @@ logoutBtn.addEventListener('click', async () => {
   promoMsg.textContent = '';
 });
 
-async function getProfileBalance(userId) {
+async function getBalance(userId) {
   const { data, error } = await supabase
-    .from('profiles')
+    .from('user_balances')
     .select('balance')
-    .eq('id', userId)
+    .eq('user_id', userId)
     .single();
   if (error) {
-    console.error('Błąd pobierania profilu:', error);
+    console.error('Błąd pobierania balansu:', error);
     return null;
   }
   return data?.balance ?? 0;
 }
 
-async function createProfile(userId) {
+async function createBalanceRecord(userId) {
   const { error } = await supabase
-    .from('profiles')
-    .insert([{ id: userId, balance: 0 }]);
+    .from('user_balances')
+    .insert([{ user_id: userId, balance: 0 }]);
   if (error) {
-    console.error('Błąd tworzenia profilu:', error);
+    console.error('Błąd tworzenia rekordu balansu:', error);
   }
 }
 
 async function updateBalance(userId, newBalance) {
   const { error } = await supabase
-    .from('profiles')
+    .from('user_balances')
     .update({ balance: newBalance })
-    .eq('id', userId);
+    .eq('user_id', userId);
   if (error) {
     console.error('Błąd aktualizacji balansu:', error);
   }
@@ -83,9 +83,9 @@ async function updateUI(user) {
     <img src="${user.user_metadata.avatar_url}" width="80" />
   `;
 
-  let balance = await getProfileBalance(user.id);
+  let balance = await getBalance(user.id);
   if (balance === null) {
-    await createProfile(user.id);
+    await createBalanceRecord(user.id);
     balance = 0;
   }
   userBalanceSpan.textContent = balance.toFixed(2);
@@ -105,7 +105,6 @@ applyPromoBtn.addEventListener('click', async () => {
     return;
   }
 
-  // Sprawdź czy kod istnieje
   const { data: promo, error: promoErr } = await supabase
     .from('promo_codes')
     .select('value')
@@ -117,8 +116,7 @@ applyPromoBtn.addEventListener('click', async () => {
     return;
   }
 
-  // Sprawdź czy kod był już użyty przez tego użytkownika
-  const { data: used, error: usedErr } = await supabase
+  const { data: used } = await supabase
     .from('used_codes')
     .select('*')
     .eq('user_id', user.id)
@@ -130,19 +128,16 @@ applyPromoBtn.addEventListener('click', async () => {
     return;
   }
 
-  // Pobierz aktualny balans
-  let balance = await getProfileBalance(user.id);
+  let balance = await getBalance(user.id);
   if (balance === null) {
-    await createProfile(user.id);
+    await createBalanceRecord(user.id);
     balance = 0;
   }
 
   const newBalance = balance + promo.value;
 
-  // Aktualizuj balans
   await updateBalance(user.id, newBalance);
 
-  // Dodaj do used_codes
   const { error: insertErr } = await supabase
     .from('used_codes')
     .insert([{ user_id: user.id, code: code }]);
