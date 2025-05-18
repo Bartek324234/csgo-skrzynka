@@ -66,7 +66,7 @@ applyPromoBtn.addEventListener('click', async () => {
   promoMsg.textContent = `Kod "${code}" zastosowany!`;
 });
 
-// Inicjalizacja - pobierz sesję i reaguj na zmiany statusu
+// Inicjalizacja - pobierz sesfghję i reaguj na zmiany statusu
 async function init() {
   const { data: { session }, error } = await supabase.auth.getSession();
   if (error) console.error('Błąd pobierania sesji:', error);
