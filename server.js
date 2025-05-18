@@ -1,16 +1,16 @@
 const express = require('express');
+const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middleware do obsługi JSON (opcjonalnie)
-app.use(express.json());
+// Serwowanie plików statycznych z folderu "public"
+app.use(express.static(path.join(__dirname, 'public')));
 
-// Prosta strona testowa
+// Domyślna strona — index.html
 app.get('/', (req, res) => {
-  res.send('Serwer działa! 🎉');
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// Uruchomienie serwera
 app.listen(PORT, () => {
   console.log(`✅ Serwer działa na porcie ${PORT}`);
 });
