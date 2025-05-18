@@ -1,25 +1,14 @@
 <!DOCTYPE html>
-<html>
+<html lang="pl">
 <head>
-  <title>Logowanie Supabase</title>
+  <meta charset="UTF-8" />
+  <title>Test Logowania Supabase</title>
 </head>
 <body>
-<!-- Przycisk logowania i wylogowania -->
-<button id="loginBtn">Zaloguj przez Google</button>
-<button id="logoutBtn" style="display:none;">Wyloguj</button>
+  <button id="loginBtn">Zaloguj przez Google</button>
+  <button id="logoutBtn" style="display:none;">Wyloguj</button>
+  <div id="userInfo"></div>
 
-<!-- Informacje o użytkowniku -->
-<div id="userInfo"></div>
-
-<!-- Sekcja z promokodemdf -->
-<div id="promoSection" style="display:none;">
-  <input id="promoInput" type="text" placeholder="Wpisz kod promocyjny" />
-  <button id="applyPromoBtn">Zastosuj kod</button>
-  <div id="promoMsg"></div>
-</div>
-
-
-<!-- Załaduj JS jako modułfgh -->
-<script type="module" src="login.js"></script>
+  <script type="module" src="login.js"></script>
 </body>
 </html>
