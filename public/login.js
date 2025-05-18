@@ -2,7 +2,8 @@
 const supabaseUrl = 'https://jotdnbkfgqtznjwbfjno.supabase.co'; // Twój URL Supabase
 const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpvdGRuYmtmZ3F0em5qd2Jmam5vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc1MTMwODAsImV4cCI6MjA2MzA4OTA4MH0.mQrwJS9exVIMoSl_XwRT2WhE8DMTbdUM996kJIVA4kM'; // Twój publiczny anon key z Supabase → Settings → API
 
-const supabase = supabase.createClient(supabaseUrl, supabaseAnonKey);
+const supabase = Supabase.createClient(supabaseUrl, supabaseAnonKey);
+
 
 const loginBtn = document.getElementById('loginBtn');
 const logoutBtn = document.getElementById('logoutBtn');
