@@ -80,11 +80,14 @@ applyPromoBtn.addEventListener('click', async () => {
 
   const { data: session } = await supabase.auth.getSession();
   const user = session?.session?.user;
-  if (!user) return;
+  if (!user) {
+    promoMsg.textContent = 'Musisz się zalogować, aby użyć kodu.';
+    return;
+  }
 
   const userId = user.id;
 
-  // Sprawdź kod
+  // Sprawdź, czy kod promocyjny istnieje
   const { data: promo, error: promoErr } = await supabase
     .from('promo_codes')
     .select('value')
@@ -96,23 +99,45 @@ applyPromoBtn.addEventListener('click', async () => {
     return;
   }
 
-  // Sprawdź, czy już użyty
-const { data: used, error: usedError } = await supabase
-  .from('used_codes')
-  .select('*', { head: false })
-  .eq('user_id', userId)
-  .eq('code', code)
-  .maybeSingle();
+  // Sprawdź, czy użytkownik już użył tego kodu
+  const { data: used, error: usedError } = await supabase
+    .from('used_codes')
+    .select('*')
+    .eq('user_id', userId)
+    .eq('code', code)
+    .single();
 
-if (usedError && usedError.code !== 'PGRST116') {
-  console.error('Błąd przy sprawdzaniu użycia kodu:', usedError.message);
-}
-  // Pobierz aktualny balans
-  const { data: balanceData } = await supabase
+  if (used) {
+    promoMsg.textContent = 'Już użyłeś tego kodu.';
+    return;
+  } else if (usedError && usedError.code !== 'PGRST116') {
+    // Inny błąd niż "record not found"
+    console.error('Błąd przy sprawdzaniu użycia kodu:', usedError.message);
+    promoMsg.textContent = 'Błąd serwera, spróbuj później.';
+    return;
+  }
+
+  // Dodaj wpis do used_codes (zapamiętaj użycie kodu)
+  const { error: insertErr } = await supabase
+    .from('used_codes')
+    .insert([{ user_id: userId, code }]);
+
+  if (insertErr) {
+    promoMsg.textContent = 'Błąd zapisu użycia kodu.';
+    return;
+  }
+
+  // Pobierz aktualny balans użytkownika
+  const { data: balanceData, error: balanceErr } = await supabase
     .from('user_balances')
     .select('balance')
     .eq('user_id', userId)
     .single();
+
+  if (balanceErr) {
+    promoMsg.textContent = 'Błąd pobierania balansu.';
+    return;
+  }
 
   const currentBalance = balanceData?.balance ?? 0;
   const newBalance = currentBalance + promo.value;
@@ -124,17 +149,13 @@ if (usedError && usedError.code !== 'PGRST116') {
     .eq('user_id', userId);
 
   if (updateErr) {
-    promoMsg.textContent = 'Błąd dodawania środków.';
+    promoMsg.textContent = 'Błąd aktualizacji balansu.';
     return;
   }
 
-  // Zapisz użycie kodu
-  await supabase.from('used_codes').insert({ user_id: userId, code });
-
   promoMsg.textContent = `Kod zastosowany! Dodano ${promo.value} zł.`;
-
-  // Zaktualizuj widok
   document.getElementById('balance').textContent = `${newBalance.toFixed(2)} zł`;
+  promoInput.value = '';
 });
 
 // Inicjalizacja
