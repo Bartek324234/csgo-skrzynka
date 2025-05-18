@@ -1,7 +1,7 @@
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
 const supabaseUrl = 'https://jotdnbkfgqtznjwbfjno.supabase.co';
-const supabaseAnonKey = 'TWÓJ_ANON_KEY_TUTAJ'; // wklej swój klucz anon
+const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpvdGRuYmtmZ3F0em5qd2Jmam5vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc1MTMwODAsImV4cCI6MjA2MzA4OTA4MH0.mQrwJS9exVIMoSl_XwRT2WhE8DMTbdUM996kJIVA4kM';
 
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
@@ -11,23 +11,31 @@ const userInfoDiv = document.getElementById('userInfo');
 
 loginBtn.addEventListener('click', async () => {
   const { error } = await supabase.auth.signInWithOAuth({ provider: 'google' });
-  if (error) alert('Błąd logowania: ' + error.message);
+  if (error) {
+    alert('Błąd logowania: ' + error.message);
+  }
 });
 
 logoutBtn.addEventListener('click', async () => {
   const { error } = await supabase.auth.signOut();
-  if (error) alert('Błąd wylogowania: ' + error.message);
+  if (error) {
+    alert('Błąd wylogowania: ' + error.message);
+  }
   showUser(null);
 });
 
 async function showUser(user) {
   if (user) {
-    // pobierz balans z profilu
+    // Pobieranie profilu i balansu
     const { data, error } = await supabase
       .from('profiles')
       .select('balance')
       .eq('id', user.id)
       .single();
+
+    if (error) {
+      console.error('Błąd pobierania profilu:', error);
+    }
 
     const balance = data?.balance ?? 0;
 
@@ -45,17 +53,16 @@ async function showUser(user) {
   }
 }
 
-// Na start pobierz sesję i pokaż usera jeśli jest
 async function init() {
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-  showUser(session?.user || null);
+  const { data: { session }, error } = await supabase.auth.getSession();
+  if (error) {
+    console.error('Błąd pobierania sesji:', error);
+  }
+  showUser(session?.user ?? null);
+
+  supabase.auth.onAuthStateChange((_event, session) => {
+    showUser(session?.user ?? null);
+  });
 }
 
 init();
-
-// Obsługa zmiany sesji
-supabase.auth.onAuthStateChange((_event, session) => {
-  showUser(session?.user || null);
-});
