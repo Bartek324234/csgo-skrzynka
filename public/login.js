@@ -12,6 +12,8 @@ const promoSection = document.getElementById('promoSection');
 const promoInput = document.getElementById('promoInput');
 const applyPromoBtn = document.getElementById('applyPromoBtn');
 const promoMsg = document.getElementById('promoMsg');
+const balanceSection = document.getElementById('balanceSection');
+const userBalanceSpan = document.getElementById('userBalance');
 
 loginBtn.addEventListener('click', async () => {
   const { error } = await supabase.auth.signInWithOAuth({
@@ -28,28 +30,34 @@ logoutBtn.addEventListener('click', async () => {
 
 async function updateUI(user) {
   if (user) {
-    // Pobierz balans z tabeli "profiles"
+    loginBtn.style.display = 'none';
+    logoutBtn.style.display = 'inline-block';
+    userInfoDiv.innerHTML = `
+      <p>Witaj, ${user.user_metadata.full_name}</p>
+      <img src="${user.user_metadata.avatar_url}" width="80" />
+    `;
+    promoSection.style.display = 'block';
+    balanceSection.style.display = 'block';
+
+    // Pobierz balans
     const { data: profile, error: profileErr } = await supabase
       .from('profiles')
       .select('balance')
       .eq('id', user.id)
       .single();
 
-    const balance = profile?.balance ?? 0;
+    if (!profileErr && profile) {
+      userBalanceSpan.textContent = profile.balance.toFixed(2);
+    } else {
+      userBalanceSpan.textContent = '0.00';
+    }
 
-    userInfoDiv.innerHTML = `
-      <p>Witaj, ${user.user_metadata.full_name}</p>
-      <img src="${user.user_metadata.avatar_url}" width="80" />
-      <p>Twój balans: ${balance.toFixed(2)} zł</p>
-    `;
-    loginBtn.style.display = 'none';
-    logoutBtn.style.display = 'inline-block';
-    promoSection.style.display = 'block';
   } else {
-    userInfoDiv.innerHTML = '';
     loginBtn.style.display = 'inline-block';
     logoutBtn.style.display = 'none';
+    userInfoDiv.innerHTML = '';
     promoSection.style.display = 'none';
+    balanceSection.style.display = 'none';
   }
 }
 
@@ -60,7 +68,7 @@ applyPromoBtn.addEventListener('click', async () => {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return;
 
-  // Sprawdź kod promocyjny
+  // Sprawdź czy kod istnieje
   const { data: promo, error: promoErr } = await supabase
     .from('promo_codes')
     .select('value')
@@ -72,27 +80,28 @@ applyPromoBtn.addEventListener('click', async () => {
     return;
   }
 
-  // Czy kod już był użyty?
-  const { data: used } = await supabase
+  // Sprawdź czy już użyty
+  const { data: used, error: usedErr } = await supabase
     .from('used_codes')
     .select('*')
     .eq('user_id', user.id)
     .eq('code', code)
-    .maybeSingle();
+    .single();
 
   if (used) {
-    promoMsg.textContent = 'Już użyto tego kodu.';
+    promoMsg.textContent = 'Już użyłeś tego kodu.';
     return;
   }
 
-  // Zwiększ balans
-  const { data: currentProfile } = await supabase
+  // Aktualizuj balans
+  const { data: profile, error: balanceErr } = await supabase
     .from('profiles')
     .select('balance')
     .eq('id', user.id)
     .single();
 
-  const newBalance = (currentProfile?.balance || 0) + promo.value;
+  const currentBalance = profile?.balance ?? 0;
+  const newBalance = currentBalance + promo.value;
 
   const { error: updateErr } = await supabase
     .from('profiles')
@@ -100,18 +109,17 @@ applyPromoBtn.addEventListener('click', async () => {
     .eq('id', user.id);
 
   if (updateErr) {
-    promoMsg.textContent = 'Błąd aktualizacji salda.';
+    promoMsg.textContent = 'Błąd dodawania środków.';
     return;
   }
 
-  // Zapisz użycie kodu
+  // Zapisz, że użyto kod
   await supabase
     .from('used_codes')
     .insert({ user_id: user.id, code });
 
-  promoMsg.textContent = `Kod zastosowany! Dodano ${promo.value} zł`;
-  promoInput.value = '';
-  updateUI(user);
+  promoMsg.textContent = `Kod został zastosowany! Dodano ${promo.value.toFixed(2)} zł.`;
+  userBalanceSpan.textContent = newBalance.toFixed(2);
 });
 
 async function init() {
