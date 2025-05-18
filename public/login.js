@@ -9,6 +9,33 @@ const loginBtn = document.getElementById('loginBtn');
 const logoutBtn = document.getElementById('logoutBtn');
 const userInfoDiv = document.getElementById('userInfo');
 
+// Funkcja pokazująca użytkownika
+async function updateUI(user) {
+  if (user) {
+    // Pobierz balans
+    const { data: profile, error } = await supabase
+      .from('profiles')
+      .select('balance')
+      .eq('id', user.id)
+      .single();
+
+    const balance = profile?.balance ?? 0;
+
+    loginBtn.style.display = 'none';
+    logoutBtn.style.display = 'inline-block';
+    userInfoDiv.innerHTML = `
+      <p>Witaj, ${user.user_metadata.full_name}</p>
+      <img src="${user.user_metadata.avatar_url}" width="80" />
+      <p>Twój balans: ${balance.toFixed(2)} zł</p>
+    `;
+  } else {
+    loginBtn.style.display = 'inline-block';
+    logoutBtn.style.display = 'none';
+    userInfoDiv.innerHTML = '';
+  }
+}
+
+// Logowanie
 loginBtn.addEventListener('click', async () => {
   const { error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
@@ -19,29 +46,20 @@ loginBtn.addEventListener('click', async () => {
   if (error) alert('Błąd logowania: ' + error.message);
 });
 
+// Wylogowanie
 logoutBtn.addEventListener('click', async () => {
   await supabase.auth.signOut();
   updateUI(null);
 });
 
-function updateUI(user) {
-  if (user) {
-    loginBtn.style.display = 'none';
-    logoutBtn.style.display = 'inline-block';
-    userInfoDiv.innerHTML = `
-      <p>Witaj, ${user.user_metadata.full_name}</p>
-      <img src="${user.user_metadata.avatar_url}" width="80" />
-    `;
-  } else {
-    loginBtn.style.display = 'inline-block';
-    logoutBtn.style.display = 'none';
-    userInfoDiv.innerHTML = '';
-  }
-}
-
+// Inicjalizacja na starcie
 async function init() {
-  const { data: { session } } = await supabase.auth.getSession();
-  updateUI(session?.user ?? null);
+  const { data: { session }, error } = await supabase.auth.getSession();
+  if (error) {
+    console.error('Błąd sesji:', error);
+  }
+
+  await updateUI(session?.user ?? null);
 
   supabase.auth.onAuthStateChange((_event, session) => {
     updateUI(session?.user ?? null);
