@@ -97,18 +97,16 @@ applyPromoBtn.addEventListener('click', async () => {
   }
 
   // Sprawdź, czy już użyty
-  const { data: used } = await supabase
-    .from('used_codes')
-    .select('*')
-    .eq('user_id', userId)
-    .eq('code', code)
-    .single();
+const { data: used, error: usedError } = await supabase
+  .from('used_codes')
+  .select('*', { head: false })
+  .eq('user_id', userId)
+  .eq('code', code)
+  .maybeSingle();
 
-  if (used) {
-    promoMsg.textContent = 'Już użyłeś tego kodu.';
-    return;
-  }
-
+if (usedError && usedError.code !== 'PGRST116') {
+  console.error('Błąd przy sprawdzaniu użycia kodu:', usedError.message);
+}
   // Pobierz aktualny balans
   const { data: balanceData } = await supabase
     .from('user_balances')
