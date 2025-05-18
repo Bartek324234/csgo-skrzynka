@@ -1,8 +1,7 @@
-// login.js
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
 const supabaseUrl = 'https://jotdnbkfgqtznjwbfjno.supabase.co';
-const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'; // skrócone dla czytelności
+const supabaseAnonKey = 'TWÓJ_ANON_KEY_TUTAJ'; // wklej swój klucz anon
 
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
@@ -23,6 +22,7 @@ logoutBtn.addEventListener('click', async () => {
 
 async function showUser(user) {
   if (user) {
+    // pobierz balans z profilu
     const { data, error } = await supabase
       .from('profiles')
       .select('balance')
@@ -37,49 +37,7 @@ async function showUser(user) {
       <p>Imię: ${user.user_metadata?.full_name || 'brak'}</p>
       <img src="${user.user_metadata?.avatar_url || ''}" alt="avatar" width="80" />
       <p>Twój balans: ${balance.toFixed(2)} zł</p>
-      <input type="text" id="promoInput" placeholder="Wpisz kod promocyjny" />
-      <button id="redeemBtn">Użyj kod</button>
-      <p id="promoMsg"></p>
     `;
-
-    document.getElementById('redeemBtn').addEventListener('click', async () => {
-      const code = document.getElementById('promoInput').value.trim();
-      const msg = document.getElementById('promoMsg');
-
-      const { data: promo, error: promoError } = await supabase
-        .from('promo_codes')
-        .select('*')
-        .eq('code', code)
-        .single();
-
-      if (!promo || promoError) {
-        msg.textContent = 'Nieprawidłowy kod!';
-        return;
-      }
-
-      if (promo.used_by.includes(user.id)) {
-        msg.textContent = 'Ten kod został już przez Ciebie użyty!';
-        return;
-      }
-
-      if (promo.used_by.length >= promo.max_uses) {
-        msg.textContent = 'Limit użyć tego kodu został wyczerpany!';
-        return;
-      }
-
-      // Dodaj saldo
-      const newBalance = balance + promo.amount;
-      await supabase.from('profiles').update({ balance: newBalance }).eq('id', user.id);
-
-      // Zaktualizuj użycie kodu
-      await supabase
-        .from('promo_codes')
-        .update({ used_by: [...promo.used_by, user.id] })
-        .eq('code', code);
-
-      msg.textContent = `Kod wykorzystany! Otrzymałeś ${promo.amount} zł`;
-      showUser(user); // Odśwież dane
-    });
   } else {
     loginBtn.style.display = 'inline-block';
     logoutBtn.style.display = 'none';
@@ -87,10 +45,17 @@ async function showUser(user) {
   }
 }
 
-supabase.auth.getSession().then(({ data: { session } }) => {
+// Na start pobierz sesję i pokaż usera jeśli jest
+async function init() {
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
   showUser(session?.user || null);
-});
+}
 
+init();
+
+// Obsługa zmiany sesji
 supabase.auth.onAuthStateChange((_event, session) => {
   showUser(session?.user || null);
 });

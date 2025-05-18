@@ -7,27 +7,18 @@
 </head>
 <body>
 
-  <div id="promoSection" style="display: none; margin-top: 20px;">
-  <input type="text" id="promoInput" placeholder="Wpisz kod promocyjny" />
-  <button id="redeemBtn">Użyj kod</button>
-  <p id="promoMsg"></p>
-</div>
-
   <h1>Logowanie przez Google</h1>
 
- <button id="loginBtn">
-  <img src="https://developers.google.com/identity/images/g-logo.png" style="width:20px; vertical-align:middle; margin-right:8px;" />
-  Zaloguj się przez Google
-</button>
+  <button id="loginBtn">
+    <img src="https://developers.google.com/identity/images/g-logo.png" style="width:20px; vertical-align:middle; margin-right:8px;" />
+    Zaloguj się przez Google
+  </button>
 
   <button id="logoutBtn" style="display:none;">Wyloguj się</button>
 
   <div id="userInfo" style="margin-top: 20px;"></div>
 
-  <!-- Supabase JS SDK -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@1.35.7/dist/supabase.min.js"></script>
   <script type="module" src="login.js"></script>
-
 
 </body>
 </html>
