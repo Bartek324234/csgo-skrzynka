@@ -26,15 +26,29 @@ logoutBtn.addEventListener('click', async () => {
 
 async function showUser(user) {
   if (user) {
-    // Pobieranie profilu i balansu
-    const { data, error } = await supabase
+    // Spróbuj pobrać profil
+    let { data, error } = await supabase
       .from('profiles')
       .select('balance')
       .eq('id', user.id)
       .single();
+    // Jeśli nie istnieje – stwórz nowy profil z balansem = 0
+    if (error && error.code === 'PGRST116') {
+      const { error: insertErr } = await supabase
+        .from('profiles')
+        .insert({ id: user.id, balance: 0 });
 
-    if (error) {
-      console.error('Błąd pobierania profilu:', error);
+      if (insertErr) {
+        console.error('Błąd tworzenia profilu:', insertErr);
+        return;
+      }
+
+      // Po utworzeniu, pobierz ponownie
+      ({ data, error } = await supabase
+        .from('profiles')
+        .select('balance')
+        .eq('id', user.id)
+        .single());
     }
 
     const balance = data?.balance ?? 0;
@@ -51,24 +65,10 @@ async function showUser(user) {
     logoutBtn.style.display = 'none';
     userInfoDiv.innerHTML = '';
   }
-}
+ }
 
-async function init() {
-  const { data: { session }, error } = await supabase.auth.getSession();
-  if (error) {
-    console.error('Błąd pobierania sesji:', error);
-  }
-  showUser(session?.user ?? null);
-
-  supabase.auth.onAuthStateChange((_event, session) => {
-    showUser(session?.user ?? null);
-  });
-}
-
-init();
-
-
-
+ 
+ 
 
 
 
@@ -137,7 +137,7 @@ applyPromoBtn.addEventListener('click', async () => {
 
 
 
-  
+
  // Zapisz użycie kodu
   await supabase.from('used_codes').insert({
     user_id: user.id,
