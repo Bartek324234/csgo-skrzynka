@@ -66,3 +66,84 @@ async function init() {
 }
 
 init();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ const promoSection = document.getElementById('promoSection');
+ const promoInput = document.getElementById('promoInput');
+ const applyPromoBtn = document.getElementById('applyPromoBtn');
+ const promoMsg = document.getElementById('promoMsg');
+
+applyPromoBtn.addEventListener('click', async () => {
+  const code = promoInput.value.trim();
+  if (!code) return;
+
+  const user = (await supabase.auth.getUser()).data.user;
+  if (!user) return;
+
+  // Sprawdź czy kod istnieje
+  const { data: promo, error: promoErr } = await supabase
+    .from('promo_codes')
+    .select('value')
+    .eq('code', code)
+    .single();
+
+  if (promoErr || !promo) {
+    promoMsg.textContent = 'Nieprawidłowy kod.';
+    return;
+  }
+
+  // Sprawdź czy już użyty
+  const { data: used, error: usedErr } = await supabase
+    .from('used_codes')
+    .select('*')
+    .eq('user_id', user.id)
+    .eq('code', code)
+    .single();
+
+  if (used) {
+    promoMsg.textContent = 'Już użyłeś tego kodu.';
+    return;
+  }
+
+  // Dodaj balans
+  const { error: updateErr } = await supabase
+    .from('profiles')
+    .update({ balance: supabase.rpc('increment_balance', { user_id: user.id, amount: promo.value }) })
+    .eq('id', user.id);
+
+  if (updateErr) {
+    promoMsg.textContent = 'Błąd dodawania środków.';
+    return;
+  }
+
+
+
+
+  
+ // Zapisz użycie kodu
+  await supabase.from('used_codes').insert({
+    user_id: user.id,
+    code: code
+  });
+
+  promoMsg.textContent = `Dodano ${promo.value.toFixed(2)} zł do salda!`;
+  showUser(user); // odśwież balans
+});
