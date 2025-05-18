@@ -1,32 +1,13 @@
 <!DOCTYPE html>
-<html lang="pl">
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Logowanie Google przez Supabase</title>
+  <title>Logowanie Supabase</title>
 </head>
 <body>
+  <button id="loginBtn">Zaloguj się przez Google</button>
+  <button id="logoutBtn" style="display: none;">Wyloguj</button>
+  <div id="userInfo"></div>
 
-<div id="promoSection" style="margin-top: 20px; display: none;">
-  <h2>Wpisz kod promocyjny</h2>
-  <input type="text" id="promoInput" placeholder="np. BONUS25" />
-  <button id="applyPromoBtn">Użyj</button>
-  <p id="promoMsg" style="margin-top:10px;"></p>
-</div>
-
-  <h1>Logowanie przez Google</h1>
-
-  <button id="loginBtn">
-    <img src="https://developers.google.com/identity/images/g-logo.png" style="width:20px; vertical-align:middle; margin-right:8px;" />
-    Zaloguj się przez Google
-  </button>
-
-
-  <button id="logoutBtn" style="display:none;">Wyloguj się</button>
-
-  <div id="userInfo" style="margin-top: 20px;"></div>
-
-  <script type="module" src="login.js"></script>
-
+  <script type="module" src="/login.js"></script>
 </body>
 </html>
