@@ -2,118 +2,21 @@
 <html lang="pl">
 <head>
   <meta charset="UTF-8" />
-  <title>CS:GO Skrzynka</title>
-  <link rel="stylesheet" href="logowG.css" />
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Logowanie Google przez Supabase</title>
 </head>
 <body>
-  <header>
-    <h1>Witaj na CS:GO Skrzynka</h1>
-  </header>
 
-  <!-- SALDO - ukryte do czasu zalogowania -->
-  <div id="balance-display" style="display:none;">Saldo: 0 zł</div>
+  <h1>Logowanie przez Google</h1>
 
-  <input type="text" id="promoCode" placeholder="Kod promocyjny" style="display:none;">
-  <button id="applyPromoBtn" style="display:none;">Zastosuj kod</button>
-  <p id="messages"></p>
+  <button id="loginBtn">Zaloguj się przez Google</button>
+  <button id="logoutBtn" style="display:none;">Wyloguj się</button>
 
-  <!-- Sekcja logowania Google -->
-  <div id="loginSection">
-    <div id="g_id_onload"
-         data-client_id="925130065491-uatooio0iqa35natp6p96i86q67hu4n6.apps.googleusercontent.com"
-         data-callback="handleCredentialResponse">
-    </div>
-    <div class="g_id_signin" data-type="standard"></div>
-  </div>
+  <div id="userInfo" style="margin-top: 20px;"></div>
 
-  <!-- Sekcja użytkownika po zalogowaniu -->
-  <div id="user-info" style="display:none;">
-    <p>Witaj, <span id="username"></span></p>
-    <img id="profile-pic" src="" alt="Avatar" style="width: 100px; border-radius: 50%;" />
-    <button id="logout-btn">Wyloguj się</button>
-    <br><br>
-    <a href="losowanie1.html">Przejdź do losowania</a>
-  </div>
+  <!-- Supabase JS SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="login.js"></script>
 
-  <!-- Skrypty -->
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      const balanceDisplay = document.getElementById('balance-display');
-      const promoInput = document.getElementById('promoCode');
-      const applyPromoBtn = document.getElementById('applyPromoBtn');
-      const messages = document.getElementById('messages');
-
-      // Sprawdź czy jest zalogowany user (przyjmujemy, że w localStorage masz obiekt JSON z danymi)
-      const loggedUserJSON = localStorage.getItem('loggedUser');
-      if (!loggedUserJSON) {
-        // Nie zalogowany - ukryj saldo i promo
-        balanceDisplay.style.display = 'none';
-        promoInput.style.display = 'none';
-        applyPromoBtn.style.display = 'none';
-        return;
-      }
-
-      const loggedUser = JSON.parse(loggedUserJSON);
-      const userId = loggedUser.sub; // lub jak tam masz klucz userId w obiekcie
-
-      // Pokaż saldo i promo
-      balanceDisplay.style.display = 'block';
-      promoInput.style.display = 'inline-block';
-      applyPromoBtn.style.display = 'inline-block';
-
-      // Funkcja ładowania salda
-      async function loadBalance() {
-        try {
-          const res = await fetch(`/api/waluta/balance?userId=${encodeURIComponent(userId)}`);
-          if (res.ok) {
-            const data = await res.json();
-            balanceDisplay.textContent = `Saldo: ${data.balance} zł`;
-          } else {
-            balanceDisplay.textContent = 'Błąd ładowania salda';
-          }
-        } catch {
-          balanceDisplay.textContent = 'Błąd sieci';
-        }
-      }
-
-      loadBalance();
-
-      // Obsługa kodu promocyjnego (przykład)
-      applyPromoBtn.addEventListener('click', async () => {
-        const code = promoInput.value.trim();
-        messages.textContent = '';
-        if (!code) {
-          messages.style.color = 'red';
-          messages.textContent = 'Wpisz kod promocyjny!';
-          return;
-        }
-        try {
-          const res = await fetch('/api/waluta/kod', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ userId, code })
-          });
-          const data = await res.json();
-          if (res.ok) {
-            messages.style.color = 'green';
-            messages.textContent = `Kod aktywowany! Masz teraz ${data.balance} zł`;
-            balanceDisplay.textContent = `Saldo: ${data.balance} zł`;
-          } else {
-            messages.style.color = 'red';
-            messages.textContent = data.error || 'Błąd aktywacji kodu';
-          }
-        } catch {
-          messages.style.color = 'red';
-          messages.textContent = 'Błąd sieci';
-        }
-      });
-    });
-  </script>
-
-  <script src="https://accounts.google.com/gsi/client" async defer></script>
-  <script src="logowG.js"></script>
-  <script src="index.js"></script>
 </body>
 </html>

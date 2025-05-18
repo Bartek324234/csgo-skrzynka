@@ -1,75 +1,55 @@
-document.addEventListener('DOMContentLoaded', () => {
-  const balanceDisplay = document.getElementById('balance-display');
-  const promoInput = document.getElementById('promoCode');
-  const applyPromoBtn = document.getElementById('applyPromoBtn');
-  const messagesDiv = document.getElementById('messages');
+// Podstawowa inicjalizacja Supabase - wstaw swoje wartości!
+const supabaseUrl = 'https://jotdnbkfgqtznjwbfjno.supabase.co'; // Twój URL Supabase
+const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpvdGRuYmtmZ3F0em5qd2Jmam5vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc1MTMwODAsImV4cCI6MjA2MzA4OTA4MH0.mQrwJS9exVIMoSl_XwRT2WhE8DMTbdUM996kJIVA4kM'; // Twój publiczny anon key z Supabase → Settings → API
 
-  const loggedUserJSON = localStorage.getItem('loggedUser');
-  if (!loggedUserJSON) {
-    // Jeśli nie jesteśmy zalogowani, ukryj saldo i kod
-    if (balanceDisplay) balanceDisplay.style.display = 'none';
-    if (promoInput) promoInput.style.display = 'none';
-    if (applyPromoBtn) applyPromoBtn.style.display = 'none';
-    return;
+const supabase = supabase.createClient(supabaseUrl, supabaseAnonKey);
+
+const loginBtn = document.getElementById('loginBtn');
+const logoutBtn = document.getElementById('logoutBtn');
+const userInfoDiv = document.getElementById('userInfo');
+
+// Logowanie przez Google (OAuth)
+loginBtn.addEventListener('click', async () => {
+  const { error } = await supabase.auth.signInWithOAuth({ provider: 'google' });
+  if (error) {
+    alert('Błąd logowania: ' + error.message);
   }
+});
 
-  const loggedUser = JSON.parse(loggedUserJSON);
-  const userId = loggedUser.sub;
-
-  // Funkcja do aktualizacji UI
-  function updateBalanceUI(balance) {
-    if (balanceDisplay) {
-      balanceDisplay.textContent = `Saldo: ${balance} zł`;
-      balanceDisplay.style.display = 'block';
-    }
+// Wylogowanie
+logoutBtn.addEventListener('click', async () => {
+  const { error } = await supabase.auth.signOut();
+  if (error) {
+    alert('Błąd wylogowania: ' + error.message);
   }
+  showUser(null);
+});
 
-  // Funkcja pobierająca saldo
-  async function fetchBalance() {
-    try {
-      const res = await fetch(`/api/waluta/balance?userId=${encodeURIComponent(userId)}`);
-      const data = await res.json();
-      if (res.ok) {
-        updateBalanceUI(data.balance);
-      } else {
-        messagesDiv.textContent = data.error || 'Błąd ładowania salda';
-      }
-    } catch (err) {
-      messagesDiv.textContent = 'Błąd sieci przy pobieraniu salda';
-    }
+// Funkcja pokazująca informacje o zalogowanym użytkowniku
+function showUser(user) {
+  if (user) {
+    loginBtn.style.display = 'none';
+    logoutBtn.style.display = 'inline-block';
+    userInfoDiv.innerHTML = `
+      <p>Zalogowany użytkownik:</p>
+      <p>Id: ${user.id}</p>
+      <p>Email: ${user.email}</p>
+      <p>Imię: ${user.user_metadata?.full_name || 'brak'}</p>
+      <img src="${user.user_metadata?.avatar_url || ''}" alt="avatar" width="80" />
+    `;
+  } else {
+    loginBtn.style.display = 'inline-block';
+    logoutBtn.style.display = 'none';
+    userInfoDiv.innerHTML = '';
   }
+}
 
-  // Obsługa przycisku promocyjnego
-  applyPromoBtn.addEventListener('click', async () => {
-    const code = promoInput.value.trim();
-    if (!code) {
-      messagesDiv.style.color = 'red';
-      messagesDiv.textContent = 'Wpisz kod promocyjny!';
-      return;
-    }
+// Sprawdzamy, czy użytkownik jest zalogowany podczas ładowania strony
+supabase.auth.getSession().then(({ data: { session } }) => {
+  showUser(session?.user || null);
+});
 
-    try {
-      const res = await fetch('/api/waluta/kod', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId, code })
-      });
-
-      const data = await res.json();
-      if (res.ok) {
-        updateBalanceUI(data.balance);
-        messagesDiv.style.color = 'green';
-        messagesDiv.textContent = `Kod aktywowany! Nowe saldo: ${data.balance} zł`;
-      } else {
-        messagesDiv.style.color = 'red';
-        messagesDiv.textContent = data.error || 'Nieprawidłowy kod';
-      }
-    } catch (err) {
-      messagesDiv.style.color = 'red';
-      messagesDiv.textContent = 'Błąd sieci';
-    }
-  });
-
-  // Startowo pobierz saldo
-  fetchBalance();
+// Nasłuchujemy zmian w sesji (np. po powrocie z Google OAuth)
+supabase.auth.onAuthStateChange((_event, session) => {
+  showUser(session?.user || null);
 });
