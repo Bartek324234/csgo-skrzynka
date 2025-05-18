@@ -4,10 +4,21 @@
   <title>Logowanie Supabase</title>
 </head>
 <body>
-  <button id="loginBtn">Zaloguj się przez Google</button>
-  <button id="logoutBtn" style="display: none;">Wyloguj</button>
-  <div id="userInfo"></div>
+<!-- Przycisk logowania i wylogowania -->
+<button id="loginBtn">Zaloguj przez Google</button>
+<button id="logoutBtn" style="display:none;">Wyloguj</button>
 
-  <script type="module" src="/login.js"></script>
+<!-- Informacje o użytkowniku -->
+<div id="userInfo"></div>
+
+<!-- Sekcja z promokodem -->
+<div id="promoSection">
+  <input id="promoInput" placeholder="Wpisz kod promocyjny" />
+  <button id="applyPromoBtn">Zastosuj kod</button>
+  <p id="promoMsg"></p>
+</div>
+
+<!-- Załaduj JS jako moduł -->
+<script type="module" src="/main.js"></script>
 </body>
 </html>
