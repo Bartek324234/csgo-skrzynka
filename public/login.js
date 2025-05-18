@@ -30,9 +30,7 @@ function showUser(user) {
     loginBtn.style.display = 'none';
     logoutBtn.style.display = 'inline-block';
     userInfoDiv.innerHTML = `
-      <p>Zalogowany użytkownik:</p>
-      <p>Id: ${user.id}</p>
-      <p>Email: ${user.email}</p>
+      
       <p>Imię: ${user.user_metadata?.full_name || 'brak'}</p>
       <img src="${user.user_metadata?.avatar_url || ''}" alt="avatar" width="80" />
     `;
