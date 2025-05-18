@@ -100,11 +100,13 @@ applyPromoBtn.addEventListener('click', async () => {
   }
 
   // Sprawdź, czy użytkownik już użył tego kodu
-  const { data: used, error: usedError } = await supabase
+ const { data: used, error: usedError } = await supabase
   .from('used_codes')
-  .select()
-  .match({ user_id: userId, code: code })
+  .select('*')
+  .eq('user_id', userId)
+  .eq('code', code)
   .maybeSingle();
+
 
   if (used) {
     promoMsg.textContent = 'Już użyłeś tego kodu.';
