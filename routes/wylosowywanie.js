@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 
 const SUPABASE_URL = 'https://jotdnbkfgqtznjwbfjno.supabase.co';
-const SUPABASE_KEY = 'ey...'; // Twój service_role key z Supabase
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpvdGRuYmtmZ3F0em5qd2Jmam5vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc0NzUxMzA4MCwiZXhwIjoyMDYzMDg5MDgwfQ.9rguruM_HtjfZuwlFW7ZcA_ePOikprKiU3VCUdaxhAQ'; // Twój service_role key z Supabase
 
 const headers = {
   'apikey': SUPABASE_KEY,
