@@ -71,6 +71,12 @@ async function updateUI(user) {
 
 
 
+// Zapisz dane użytkownika do tabeli `users`
+await supabase.from('users').upsert({
+  id: user.id,
+  name: user.user_metadata.full_name,
+  avatar: user.user_metadata.avatar_url
+});
 
 
 
