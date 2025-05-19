@@ -43,11 +43,11 @@ router.post('/', async (req, res) => {
 
     // Wyniki losowania z prawdopodobieństwami (suma chance powinna wynosić 1)
     const outcomes = [
-      { item: "Nic 😢", value: 0, chance: 0.8 },     // 50%
-      { item: "5 zł", value: 5, chance: 0.1 },       // 30%
+      { item: "Nic 😢", value: 0, chance: 0.2 },     // 50%
+      { item: "5 zł", value: 5, chance: 0.4 },       // 30%
       { item: "10 zł", value: 10, chance: 0.05 },    // 15%
-      { item: "50 zł", value: 50, chance: 0.02 },    // 4%
-      { item: "Strata 😬", value: -10, chance: 0.03 } // 1%
+      { item: "50 zł", value: 50, chance: 0.3 },    // 4%
+      { item: "Strata 😬", value: -10, chance: 0.05 } // 1%
     ];
 
     // Wylosuj wynik z wagami
