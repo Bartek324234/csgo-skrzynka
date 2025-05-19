@@ -1,8 +1,6 @@
 const express = require('express');
 const router = express.Router();
 
-// Jeśli masz Node 18+ możesz użyć globalnego fetch,
-// jeśli nie, odkomentuj poniższą linię i zainstaluj 'node-fetch':
 // const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
 
 const SUPABASE_URL = 'https://jotdnbkfgqtznjwbfjno.supabase.co';
@@ -14,7 +12,7 @@ const headers = {
   'Content-Type': 'application/json',
 };
 
-// Funkcja do losowania z wagami (procentami)
+// Funkcja do losowania z wagami
 function weightedRandom(items) {
   const r = Math.random();
   let sum = 0;
@@ -22,7 +20,6 @@ function weightedRandom(items) {
     sum += item.chance;
     if (r <= sum) return item;
   }
-  // Na wypadek gdyby suma chance < 1, zwróć ostatni element
   return items[items.length - 1];
 }
 
@@ -30,33 +27,29 @@ router.post('/', async (req, res) => {
   const { user_id } = req.body;
   if (!user_id) return res.status(400).json({ message: 'Brak ID użytkownika' });
 
+  const drawCost = 3.5; // 💰 Zmienna kosztu losowania
+
   try {
-    // Pobierz aktualny balans użytkownika z Supabase
     const balanceRes = await fetch(`${SUPABASE_URL}/rest/v1/user_balances?user_id=eq.${user_id}&select=balance`, { headers });
     if (!balanceRes.ok) throw new Error(`Błąd pobierania balansu: ${balanceRes.statusText}`);
     const balanceData = await balanceRes.json();
     const balance = balanceData?.[0]?.balance ?? 0;
 
-    if (balance < 10) {
+    if (balance < drawCost) {
       return res.json({ message: "Za mało środków na losowanie.", newBalance: balance });
     }
 
-    // Wyniki losowania z prawdopodobieństwami (suma chance powinna wynosić 1)
-   const outcomes = [
-  { item: "Nic 😢", value: 10, chance: 0.5, image: "/images/deserteagleblue.jpg" },
-  { item: "5 zł", value: 5.5, chance: 0.3, image: "/images/glock18moda.jpg" },
-  { item: "10 zł", value: 10, chance: 0.15, image: "/images/mac10bronz.jpg" },
-  { item: "50 zł", value: 50, chance: 0.04, image: "/images/p18dzielnia.jpg" },
-  { item: "Strata 😬", value: -10, chance: 0.01, image: "/images/p2000oceaniczny.jpg" }
-];
+    const outcomes = [
+      { item: "2zł", value: 2, chance: 0.7, image: "/images/deserteagleblue.jpg" },
+      { item: "20 zł", value: 20, chance: 0.1, image: "/images/glock18moda.jpg" },
+      { item: "2.2 zł", value: 2.2, chance: 0.15, image: "/images/mac10bronz.jpg" },
+      { item: "2.4 zł", value: 2.4, chance: 0.04, image: "/images/p18dzielnia.jpg" },
+      { item: "2.1zł", value: 2.1, chance: 0.01, image: "/images/p2000oceaniczny.jpg" }
+    ];
 
-    // Wylosuj wynik z wagami
     const result = weightedRandom(outcomes);
+    const newBalance = balance - drawCost + result.value;
 
-    // Oblicz nowy balans
-    const newBalance = balance - 10 + result.value;
-
-    // Aktualizuj balans w Supabase
     const updateRes = await fetch(`${SUPABASE_URL}/rest/v1/user_balances?user_id=eq.${user_id}`, {
       method: 'PATCH',
       headers,
@@ -65,12 +58,11 @@ router.post('/', async (req, res) => {
 
     if (!updateRes.ok) throw new Error(`Błąd aktualizacji balansu: ${updateRes.statusText}`);
 
-    // Odpowiedź do frontendu
-   res.json({
-  message: `Wylosowano: ${result.item}`,
-  image: result.image,
-  newBalance,
-});
+    res.json({
+      message: `Wylosowano: ${result.item}`,
+      image: result.image,
+      newBalance,
+    });
   } catch (err) {
     console.error('❌ Błąd w losowaniu:', err);
     res.status(500).json({ message: 'Wewnętrzny błąd serwera' });
