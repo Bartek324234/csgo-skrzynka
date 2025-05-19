@@ -3,10 +3,17 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Serwowanie plików statycznych z folderu "public"
+// Middleware
+app.use(express.json());
+
+// Serwowanie plików statycznych
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Domyślna strona — index.html
+// ROUTES
+const wylosowywanieRouter = require('./routes/wylosowywanie');
+app.use('/api/losuj', wylosowywanieRouter); // wszystko pod /api/losuj
+
+// Domyślna strona
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
