@@ -10,15 +10,17 @@ app.use(express.json());
 // Statyczne pliki z folderu public
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Trasa losowania (wylosowywanie.js)
+// 🔹 Trasa losowania (wylosowywanie.js)
 const wylosowywanieRouter = require('./routes/wylosowywanie');
 app.use('/api/losuj', wylosowywanieRouter);
 
-
-// 🔥 NOWOŚĆ: Trasa z danymi użytkownika (user-info.js)
+// 🔹 Trasa z danymi użytkownika (user-info.js)
 const userInfoRouter = require('./routes/user-info');
 app.use('/api/user-info', userInfoRouter);
 
+// 🔹 🔥 NOWOŚĆ: Trasa do balansu użytkownika (balance.js)
+const balanceRouter = require('./routes/balance');
+app.use('/api/balance', balanceRouter);
 
 // Domyślna strona
 app.get('/', (req, res) => {
@@ -28,18 +30,3 @@ app.get('/', (req, res) => {
 app.listen(PORT, () => {
   console.log(`✅ Serwer działa na porcie ${PORT}`);
 });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
