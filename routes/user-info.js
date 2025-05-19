@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 
 const SUPABASE_URL = 'https://jotdnbkfgqtznjwbfjno.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpvdGRuYmtmZ3F0em5qd2Jmam5vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc0NzUxMzA4MCwiZXhwIjoyMDYzMDg5MDgwfQ.9rguruM_HtjfZuwlFW7ZcA_ePOikprKiU3VCUdaxhAQ'; // Twój klucz API
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpvdGRuYmtmZ3F0em5qd2Jmam5vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc0NzUxMzA4MCwiZXhwIjoyMDYzMDg5MDgwfQ.9rguruM_HtjfZuwlFW7ZcA_ePOikprKiU3VCUdaxhAQ'; // Twoje poprawne API KEY z roli service_role
 
 const headers = {
   apikey: SUPABASE_KEY,
@@ -10,7 +10,6 @@ const headers = {
   'Content-Type': 'application/json',
 };
 
-// GET /api/user-info/:user_id
 router.get('/:user_id', async (req, res) => {
   const { user_id } = req.params;
 
@@ -33,3 +32,5 @@ router.get('/:user_id', async (req, res) => {
     res.status(500).json({ message: 'Błąd serwera' });
   }
 });
+
+module.exports = router; // ⬅⬅⬅ TO MUSI BYĆ NA KOŃCU
