@@ -30,9 +30,16 @@ logoutBtn.addEventListener('click', async () => {
   updateUI(null);
 });
 
+
+
+
+
 // Główna funkcja interfejsu
 async function updateUI(user) {
   if (user) {
+    // ⬇⬇⬇ ZAPISZ user_id DO localStorage
+    localStorage.setItem('user_id', user.id);
+
     await ensureUserBalance(user.id);
 
     const { data, error } = await supabase
@@ -52,12 +59,24 @@ async function updateUI(user) {
       <p>Twój balans: <strong id="balance">${balance.toFixed(2)} zł</strong></p>
     `;
   } else {
+    // ⬇⬇⬇ Wyczyść user_id po wylogowaniu
+    localStorage.removeItem('user_id');
+
     loginBtn.style.display = 'inline-block';
     logoutBtn.style.display = 'none';
     promoSection.style.display = 'none';
     userInfoDiv.innerHTML = '';
   }
 }
+
+
+
+
+
+
+
+
+
 
 // Upewnij się, że użytkownik ma wpis w `user_balances`
 async function ensureUserBalance(userId) {
