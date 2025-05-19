@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 
 const SUPABASE_URL = 'https://jotdnbkfgqtznjwbfjno.supabase.co';
-const SUPABASE_KEY = 'ey...'; // Twój service_role key
+const SUPABASE_KEY = 'ey...'; // Twój service_role key z Supabase
 
 const headers = {
   'apikey': SUPABASE_KEY,
@@ -15,6 +15,7 @@ router.post('/', async (req, res) => {
   if (!user_id) return res.status(400).json({ message: 'Brak ID użytkownika' });
 
   try {
+    // Pobierz aktualny balans użytkownika z Supabase
     const balanceRes = await fetch(`${SUPABASE_URL}/rest/v1/user_balances?user_id=eq.${user_id}&select=balance`, { headers });
     const balanceData = await balanceRes.json();
     const balance = balanceData?.[0]?.balance ?? 0;
@@ -23,6 +24,7 @@ router.post('/', async (req, res) => {
       return res.json({ message: "Za mało środków na losowanie.", newBalance: balance });
     }
 
+    // Losowanie wyników
     const outcomes = [
       { item: "Nic 😢", value: 0 },
       { item: "5 zł", value: 5 },
@@ -34,12 +36,14 @@ router.post('/', async (req, res) => {
     const result = outcomes[Math.floor(Math.random() * outcomes.length)];
     const newBalance = balance - 10 + result.value;
 
+    // Aktualizuj balans w Supabase
     await fetch(`${SUPABASE_URL}/rest/v1/user_balances?user_id=eq.${user_id}`, {
       method: 'PATCH',
       headers,
       body: JSON.stringify({ balance: newBalance })
     });
 
+    // Odpowiedź do frontendu
     res.json({
       message: `Wylosowano: ${result.item}`,
       newBalance

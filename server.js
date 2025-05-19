@@ -1,17 +1,18 @@
 const express = require('express');
 const path = require('path');
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middleware
+// Middleware do parsowania JSON w ciele requestów
 app.use(express.json());
 
-// Serwowanie plików statycznych
+// Statyczne pliki z folderu public
 app.use(express.static(path.join(__dirname, 'public')));
 
-// ROUTES
+// Podłącz trasę losowania (wylosowywanie.js)
 const wylosowywanieRouter = require('./routes/wylosowywanie');
-app.use('/api/losuj', wylosowywanieRouter); // wszystko pod /api/losuj
+app.use('/wylosowywanie', wylosowywanieRouter);
 
 // Domyślna strona
 app.get('/', (req, res) => {

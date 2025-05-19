@@ -1,6 +1,9 @@
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-const supabase = createClient("https://jotdnbkfgqtznjwbfjno.supabase.co", "ey..."); // ← podaj swój anon key
+const supabase = createClient(
+  "https://jotdnbkfgqtznjwbfjno.supabase.co", 
+  "ey..." // ← Twój anon key
+);
 
 async function loadBalance(userId) {
   const { data, error } = await supabase
@@ -8,6 +11,11 @@ async function loadBalance(userId) {
     .select('balance')
     .eq('user_id', userId)
     .single();
+
+  if (error) {
+    console.error('Błąd ładowania salda:', error);
+    return 0;
+  }
 
   return data?.balance ?? 0;
 }
@@ -18,24 +26,45 @@ async function updateUI() {
 
   if (!user) {
     alert("Musisz się zalogować.");
-    window.location.href = "/index.html";
+    window.location.href = "/index.html"; // zmień jeśli inna strona główna
     return;
   }
 
   const balance = await loadBalance(user.id);
-  document.getElementById('balance').textContent = `${balance.toFixed(2)} zł`;
+  const balanceEl = document.getElementById('balance');
+  const resultEl = document.getElementById('result');
+  const drawBtn = document.getElementById('drawBtn');
 
-  document.getElementById('drawBtn').addEventListener('click', async () => {
-    const response = await fetch('/api/losuj', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ user_id: user.id })
+  if (balanceEl) balanceEl.textContent = `${balance.toFixed(2)} zł`;
+  if (resultEl) resultEl.textContent = '';
+
+  if (drawBtn) {
+    drawBtn.addEventListener('click', async () => {
+      try {
+        drawBtn.disabled = true; // blokada wielokrotnego kliku
+        const response = await fetch('/api/losuj', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ user_id: user.id })
+        });
+
+        const result = await response.json();
+
+        if (result.message) {
+          if (resultEl) resultEl.textContent = result.message;
+        }
+
+        if (typeof result.newBalance === 'number') {
+          if (balanceEl) balanceEl.textContent = `${result.newBalance.toFixed(2)} zł`;
+        }
+      } catch (error) {
+        console.error('Błąd losowania:', error);
+        if (resultEl) resultEl.textContent = 'Coś poszło nie tak podczas losowania.';
+      } finally {
+        drawBtn.disabled = false;
+      }
     });
-
-    const result = await response.json();
-    document.getElementById('result').textContent = result.message;
-    document.getElementById('balance').textContent = `${result.newBalance.toFixed(2)} zł`;
-  });
+  }
 }
 
 updateUI();
