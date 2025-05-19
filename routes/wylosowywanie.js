@@ -1,6 +1,5 @@
 const express = require('express');
 const router = express.Router();
-const fetch = require('node-fetch');
 
 const SUPABASE_URL = 'https://jotdnbkfgqtznjwbfjno.supabase.co';
 const SUPABASE_KEY = 'ey...'; // Twój service_role key
