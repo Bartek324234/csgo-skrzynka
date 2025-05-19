@@ -42,13 +42,13 @@ router.post('/', async (req, res) => {
     }
 
     // Wyniki losowania z prawdopodobieństwami (suma chance powinna wynosić 1)
-    const outcomes = [
-      { item: "Nic 😢", value: 0, chance: 0.2 },     // 50%
-      { item: "5 zł", value: 5, chance: 0.4 },       // 30%
-      { item: "10 zł", value: 10, chance: 0.05 },    // 15%
-      { item: "50 zł", value: 50, chance: 0.3 },    // 4%
-      { item: "Strata 😬", value: -10, chance: 0.05 } // 1%
-    ];
+   const outcomes = [
+  { item: "Nic 😢", value: 10, chance: 0.5, image: "/images/nothing.png" },
+  { item: "5 zł", value: 5.5, chance: 0.3, image: "/images/5zl.png" },
+  { item: "10 zł", value: 10, chance: 0.15, image: "/images/10zl.png" },
+  { item: "50 zł", value: 50, chance: 0.04, image: "/images/50zl.png" },
+  { item: "Strata 😬", value: -10, chance: 0.01, image: "/images/loss.png" }
+];
 
     // Wylosuj wynik z wagami
     const result = weightedRandom(outcomes);
@@ -66,10 +66,11 @@ router.post('/', async (req, res) => {
     if (!updateRes.ok) throw new Error(`Błąd aktualizacji balansu: ${updateRes.statusText}`);
 
     // Odpowiedź do frontendu
-    res.json({
-      message: `Wylosowano: ${result.item}`,
-      newBalance,
-    });
+   res.json({
+  message: `Wylosowano: ${result.item}`,
+  image: result.image,
+  newBalance,
+});
   } catch (err) {
     console.error('❌ Błąd w losowaniu:', err);
     res.status(500).json({ message: 'Wewnętrzny błąd serwera' });
