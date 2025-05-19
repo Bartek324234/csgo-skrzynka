@@ -34,11 +34,27 @@ logoutBtn.addEventListener('click', async () => {
 
 
 
+
+
+
 // Główna funkcja interfejsu
 async function updateUI(user) {
   if (user) {
     // ⬇⬇⬇ ZAPISZ user_id DO localStorage
     localStorage.setItem('user_id', user.id);
+
+    // 🔥 NOWOŚĆ: zapisanie danych użytkownika do własnej tabeli "users"
+    const { error: userSaveError } = await supabase
+      .from('users')
+      .upsert({
+        id: user.id,
+        name: user.user_metadata.full_name,
+        avatar: user.user_metadata.avatar_url
+      });
+
+    if (userSaveError) {
+      console.error('Błąd zapisu użytkownika do tabeli "users":', userSaveError.message);
+    }
 
     await ensureUserBalance(user.id);
 
@@ -68,15 +84,14 @@ async function updateUI(user) {
     userInfoDiv.innerHTML = '';
   }
 }
+              
 
 
 
-// Zapisz dane użytkownika do tabeli `users`
-await supabase.from('users').upsert({
-  id: user.id,
-  name: user.user_metadata.full_name,
-  avatar: user.user_metadata.avatar_url
-});
+
+
+
+
 
 
 

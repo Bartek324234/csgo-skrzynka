@@ -43,7 +43,24 @@
   </div>
 
   <script>
-    const userId = localStorage.getItem('user_id'); // Zakładamy, że zapisano wcześniej ID użytkownika
+
+
+
+
+    const userId = localStorage.getItem('user_id');
+
+if (!userId) {
+  document.body.innerHTML = "<h2>Musisz być zalogowany, aby zobaczyć konto.</h2>";
+  setTimeout(() => window.location.href = '/', 2000);
+} else {
+  // reszta kodu: fetch user info, balans, itd.
+}
+
+
+
+if (!userId) {
+  window.location.href = '/'; // Przekieruj na stronę główną jeśli nie ma usera
+}
 
     if (!userId) {
       document.body.innerHTML = "<h2>Musisz być zalogowany, aby zobaczyć konto.</h2>";

@@ -15,7 +15,7 @@ router.get('/:user_id', async (req, res) => {
   const { user_id } = req.params;
 
   try {
-    const response = await fetch(`${SUPABASE_URL}/rest/v1/users?id=eq.${user_id}&select=name,avatar_url`, {
+    const response = await fetch(`${SUPABASE_URL}/rest/v1/users?id=eq.${user_id}&select=name,avatar`, {
       headers,
     });
 
@@ -26,12 +26,10 @@ router.get('/:user_id', async (req, res) => {
 
     res.json({
       name: data[0].name,
-      avatar: data[0].avatar_url
+      avatar: data[0].avatar
     });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Błąd serwera' });
   }
 });
-
-module.exports = router;
