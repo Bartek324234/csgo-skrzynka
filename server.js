@@ -10,9 +10,9 @@ app.use(express.json());
 // Statyczne pliki z folderu public
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Podłącz trasę losowania (wylosowywanie.js)
+// Podłącz trasę losowania (wylosowywanie.js) pod /api/losuj
 const wylosowywanieRouter = require('./routes/wylosowywanie');
-app.use('/wylosowywanie', wylosowywanieRouter);
+app.use('/api/losuj', wylosowywanieRouter);
 
 // Domyślna strona
 app.get('/', (req, res) => {

@@ -4,6 +4,7 @@ const supabase = createClient(
   "https://jotdnbkfgqtznjwbfjno.supabase.co",
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpvdGRuYmtmZ3F0em5qd2Jmam5vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc1MTMwODAsImV4cCI6MjA2MzA4OTA4MH0.mQrwJS9exVIMoSl_XwRT2WhE8DMTbdUM996kJIVA4kM"
 );
+
 async function loadBalance(userId) {
   const { data, error } = await supabase
     .from('user_balances')
@@ -41,11 +42,19 @@ async function updateUI() {
     drawBtn.addEventListener('click', async () => {
       try {
         drawBtn.disabled = true; // blokada wielokrotnego kliku
+
         const response = await fetch('/api/losuj', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ user_id: user.id })
         });
+
+        if (!response.ok) {
+          const text = await response.text();
+          console.error('Błąd serwera:', text);
+          if (resultEl) resultEl.textContent = 'Błąd serwera podczas losowania.';
+          return;
+        }
 
         const result = await response.json();
 
