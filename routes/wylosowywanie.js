@@ -14,6 +14,18 @@ const headers = {
   'Content-Type': 'application/json',
 };
 
+// Funkcja do losowania z wagami (procentami)
+function weightedRandom(items) {
+  const r = Math.random();
+  let sum = 0;
+  for (const item of items) {
+    sum += item.chance;
+    if (r <= sum) return item;
+  }
+  // Na wypadek gdyby suma chance < 1, zwróć ostatni element
+  return items[items.length - 1];
+}
+
 router.post('/', async (req, res) => {
   const { user_id } = req.body;
   if (!user_id) return res.status(400).json({ message: 'Brak ID użytkownika' });
@@ -29,16 +41,19 @@ router.post('/', async (req, res) => {
       return res.json({ message: "Za mało środków na losowanie.", newBalance: balance });
     }
 
-    // Losowanie wyników
+    // Wyniki losowania z prawdopodobieństwami (suma chance powinna wynosić 1)
     const outcomes = [
-      { item: "Nic 😢", value: 0 },
-      { item: "5 zł", value: 5 },
-      { item: "10 zł", value: 10 },
-      { item: "50 zł", value: 50 },
-      { item: "Strata 😬", value: -10 },
+      { item: "Nic 😢", value: 0, chance: 0.8 },     // 50%
+      { item: "5 zł", value: 5, chance: 0.1 },       // 30%
+      { item: "10 zł", value: 10, chance: 0.05 },    // 15%
+      { item: "50 zł", value: 50, chance: 0.02 },    // 4%
+      { item: "Strata 😬", value: -10, chance: 0.03 } // 1%
     ];
 
-    const result = outcomes[Math.floor(Math.random() * outcomes.length)];
+    // Wylosuj wynik z wagami
+    const result = weightedRandom(outcomes);
+
+    // Oblicz nowy balans
     const newBalance = balance - 10 + result.value;
 
     // Aktualizuj balans w Supabase
