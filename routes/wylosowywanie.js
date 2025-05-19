@@ -43,11 +43,11 @@ router.post('/', async (req, res) => {
 
     // Wyniki losowania z prawdopodobieństwami (suma chance powinna wynosić 1)
    const outcomes = [
-  { item: "Nic 😢", value: 10, chance: 0.5, image: "/images/nothing.png" },
-  { item: "5 zł", value: 5.5, chance: 0.3, image: "/images/5zl.png" },
-  { item: "10 zł", value: 10, chance: 0.15, image: "/images/10zl.png" },
-  { item: "50 zł", value: 50, chance: 0.04, image: "/images/50zl.png" },
-  { item: "Strata 😬", value: -10, chance: 0.01, image: "/images/loss.png" }
+  { item: "Nic 😢", value: 10, chance: 0.5, image: "/images/deserteagleblue.jpg" },
+  { item: "5 zł", value: 5.5, chance: 0.3, image: "/images/glock18moda.jpg" },
+  { item: "10 zł", value: 10, chance: 0.15, image: "/images/mac10bronz.jpg" },
+  { item: "50 zł", value: 50, chance: 0.04, image: "/images/p18dzielnia.jpg" },
+  { item: "Strata 😬", value: -10, chance: 0.01, image: "/images/p2000oceaniczny.jpg" }
 ];
 
     // Wylosuj wynik z wagami
