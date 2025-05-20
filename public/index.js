@@ -52,14 +52,14 @@ function showToast(message) {
 
 
 
- window.addEventListener('load', () => {
+ document.addEventListener("DOMContentLoaded", function () {
       const loader = document.getElementById('loader');
       const content = document.getElementById('main-content');
 
-      if (loader && content) {
-        loader.style.display = 'none';
-        content.classList.add('visible');
-      } else {
-        console.error("Nie znaleziono loadera lub contentu");
-      }
+      setTimeout(() => {
+        if (loader && content) {
+          loader.style.display = 'none';
+          content.classList.add('visible');
+        }
+      }, 1000); // 1 sekunda "ładowania"
     });
