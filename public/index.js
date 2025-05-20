@@ -52,14 +52,14 @@ function showToast(message) {
 
 
 
- // Gwarantuje, że strona i wszystkie zasoby się załadują
-    window.onload = function () {
-      const loader = document.getElementById('loader');
-      const content = document.getElementById('main-content');
+  // Po animacji scrolla, zatrzymaj na nożu
+    setTimeout(() => {
+      const knife = document.getElementById('knife');
+      knife.classList.add('zoom');
 
-      // Odczekaj 1 sekundę zanim zniknie loader
+      // Po chwili ukryj loader i pokaż stronę
       setTimeout(() => {
-        loader.style.display = 'none';
-        content.classList.add('visible');
+        document.getElementById('loader').style.display = 'none';
+        document.getElementById('main-content').style.display = 'block';
       }, 1000);
-    };
+    }, 3000);
