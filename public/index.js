@@ -53,6 +53,13 @@ function showToast(message) {
 
 
  window.addEventListener('load', () => {
-      document.getElementById('loader').style.display = 'none';
-      document.getElementById('main-content').style.display = 'block';
+      const loader = document.getElementById('loader');
+      const content = document.getElementById('main-content');
+
+      if (loader && content) {
+        loader.style.display = 'none';
+        content.classList.add('visible');
+      } else {
+        console.error("Nie znaleziono loadera lub contentu");
+      }
     });
