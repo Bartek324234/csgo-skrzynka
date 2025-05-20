@@ -52,14 +52,14 @@ function showToast(message) {
 
 
 
- document.addEventListener("DOMContentLoaded", function () {
+ // Gwarantuje, że strona i wszystkie zasoby się załadują
+    window.onload = function () {
       const loader = document.getElementById('loader');
       const content = document.getElementById('main-content');
 
+      // Odczekaj 1 sekundę zanim zniknie loader
       setTimeout(() => {
-        if (loader && content) {
-          loader.style.display = 'none';
-          content.classList.add('visible');
-        }
-      }, 1000); // 1 sekunda "ładowania"
-    });
+        loader.style.display = 'none';
+        content.classList.add('visible');
+      }, 1000);
+    };
