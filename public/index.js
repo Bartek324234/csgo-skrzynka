@@ -51,15 +51,19 @@ function showToast(message) {
 
 
 
+document.addEventListener("DOMContentLoaded", () => {
+  const loader = document.getElementById("loader");
+  const knife = document.getElementById("knife");
+  const main = document.getElementById("main-content");
 
-  // Po animacji scrolla, zatrzymaj na nożu
+  // Po zakończeniu animacji – powiększ nóż i przejdź dalej
+  setTimeout(() => {
+    knife.classList.add("zoom");
+
+    // Poczekaj chwilę i przejdź do strony
     setTimeout(() => {
-      const knife = document.getElementById('knife');
-      knife.classList.add('zoom');
-
-      // Po chwili ukryj loader i pokaż stronę
-      setTimeout(() => {
-        document.getElementById('loader').style.display = 'none';
-        document.getElementById('main-content').style.display = 'block';
-      }, 1000);
-    }, 3000);
+      loader.style.display = "none";
+      main.style.display = "block";
+    }, 1000);
+  }, 3000);
+});
