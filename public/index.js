@@ -38,3 +38,21 @@ function showToast(message) {
     toast.classList.add("hidden");
   }, 3000);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ window.addEventListener('load', () => {
+      document.getElementById('loader').style.display = 'none';
+      document.getElementById('main-content').style.display = 'block';
+    });
