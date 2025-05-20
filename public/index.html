@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="pl">
 <head>
+  <link rel="stylesheet" href="index.css" />
   <meta charset="UTF-8" />
   <title>Logowanie Supabase z Balans i Kodem Promocyjnym</title>
   <style>
@@ -26,10 +27,12 @@
     <p id="promoMsg" style="color: green;"></p>
   </div>
 
+<button id="kontoBtn">Moje konto</button>
 <button id="losowanieBtn">Przejdź do losowania</button>
 
+<!-- Kontener na ładny komunikat -->
+<div id="toast" class="toast hidden"></div>
 
-<button id="kontoBtn">Moje konto</button>
 
 <script src="index.js"></script>
 
