@@ -14,6 +14,12 @@ app.use(express.static(path.join(__dirname, 'public')));
 const wylosowywanieRouter = require('./routes/wylosowywanie');
 app.use('/api/losuj', wylosowywanieRouter);
 
+const inventoryRoute = require('./routes/inventory');
+app.use('/api/inventory', inventoryRoute);
+
+const sellItemRouter = require('./routes/sell-item');
+app.use('/api/sell-item', sellItemRouter);
+
 // 🔹 Trasa z danymi użytkownika (user-info.js)
 const userInfoRouter = require('./routes/user-info');
 app.use('/api/user-info', userInfoRouter);

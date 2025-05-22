@@ -1,38 +1,11 @@
 <!DOCTYPE html>
 <html lang="pl">
 <head>
+   <link rel="stylesheet" href="index.css" />
   <meta charset="UTF-8" />
   <title>Konto użytkownika</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      padding: 2rem;
-      background: #f5f5f5;
-    }
-    .card {
-      background: white;
-      padding: 2rem;
-      border-radius: 10px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-      max-width: 400px;
-      margin: auto;
-      text-align: center;
-    }
-    .avatar {
-      border-radius: 50%;
-      width: 100px;
-      height: 100px;
-      object-fit: cover;
-    }
-    .name {
-      font-size: 1.5rem;
-      margin-top: 1rem;
-    }
-    .balance {
-      margin-top: 1rem;
-      font-size: 1.2rem;
-      color: green;
-    }
+
   </style>
 </head>
 <body>
@@ -44,30 +17,20 @@
     <div id="balance" class="balance">Ładowanie balansu...</div>
   </div>
 
+
+
+  <h2>Twój ekwipunek</h2>
+<div id="inventory"></div>
+
+
   <script>
-
-
-
-
     const userId = localStorage.getItem('user_id');
-
-if (!userId) {
-  document.body.innerHTML = "<h2>Musisz być zalogowany, aby zobaczyć konto.</h2>";
-  setTimeout(() => window.location.href = '/', 2000);
-} else {
-  // reszta kodu: fetch user info, balans, itd.
-}
-
-
-
-if (!userId) {
-  window.location.href = '/'; // Przekieruj na stronę główną jeśli nie ma usera
-}
 
     if (!userId) {
       document.body.innerHTML = "<h2>Musisz być zalogowany, aby zobaczyć konto.</h2>";
+      setTimeout(() => window.location.href = '/', 2000);
     } else {
-      // Pobierz imię i avatar z API
+      // Załaduj dane użytkownika
       fetch(`/api/user-info/${userId}`)
         .then(res => res.json())
         .then(data => {
@@ -75,7 +38,7 @@ if (!userId) {
           document.getElementById('avatar').src = data.avatar || '/images/default-avatar.png';
         });
 
-  // Pobierz balans użytkownika
+      // Załaduj balans
       fetch(`/api/balance/${userId}`)
         .then(res => res.json())
         .then(data => {
@@ -88,8 +51,41 @@ if (!userId) {
           console.error("Błąd ładowania balansu:", err);
           document.getElementById('balance').textContent = "Błąd ładowania balansu.";
         });
-    }
 
+      // Załaduj ekwipunek
+      fetch(`/api/inventory/${userId}`)
+        .then(res => res.json())
+        .then(items => {
+          const container = document.getElementById('inventory');
+          container.innerHTML = '';
+
+          if (items.length === 0) {
+            container.textContent = "Brak przedmiotów w ekwipunku.";
+            return;
+          }
+
+          items.forEach(item => {
+            const card = document.createElement('div');
+            card.className = 'item-card';
+
+            const img = document.createElement('img');
+            img.src = item.image_url;
+            img.alt = item.item_name;
+
+            const name = document.createElement('div');
+            name.className = 'item-name';
+            name.textContent = item.item_name;
+
+            card.appendChild(img);
+            card.appendChild(name);
+            container.appendChild(card);
+          });
+        })
+        .catch(err => {
+          console.error("Błąd ładowania ekwipunku:", err);
+          document.getElementById('inventory').textContent = "Błąd ładowania ekwipunku.";
+        });
+    }
   </script>
 </body>
 </html>

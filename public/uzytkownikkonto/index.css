@@ -1,0 +1,61 @@
+ .card {
+      background: white;
+      padding: 2rem;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      max-width: 400px;
+      margin: auto;
+      text-align: center;
+    }
+
+    .avatar {
+      border-radius: 50%;
+      width: 100px;
+      height: 100px;
+      object-fit: cover;
+    }
+
+    .name {
+      font-size: 1.5rem;
+      margin-top: 1rem;
+    }
+
+    .balance {
+      margin-top: 1rem;
+      font-size: 1.2rem;
+      color: green;
+    }
+
+    h2 {
+      text-align: center;
+      margin-top: 2rem;
+    }
+
+    #inventory {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 1rem;
+      padding: 1rem;
+    }
+
+    .item-card {
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+      padding: 1rem;
+      width: 150px;
+      text-align: center;
+    }
+
+    .item-card img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 5px;
+    }
+
+    .item-name {
+      margin-top: 0.5rem;
+      font-weight: bold;
+      font-size: 0.95rem;
+    }
