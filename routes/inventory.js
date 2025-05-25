@@ -13,7 +13,7 @@ router.get('/:userId', async (req, res) => {
   try {
     const { data, error } = await supabase
       .from('user_inventory')
-      .select('item_name, image_url')
+      .select('id, item_name, image_url, value')
       .eq('user_id', userId);
 
     if (error) throw error;
@@ -24,5 +24,3 @@ router.get('/:userId', async (req, res) => {
     res.status(500).json({ error: 'Błąd serwera' });
   }
 });
-
-module.exports = router;

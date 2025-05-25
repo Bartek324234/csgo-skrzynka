@@ -5,7 +5,26 @@
   <meta charset="UTF-8" />
   <title>Konto użytkownika</title>
   <style>
-
+    .item-card {
+      border: 1px solid #ccc;
+      padding: 10px;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .item-name {
+      font-weight: bold;
+    }
+    .item-value {
+      color: green;
+      margin-left: auto;
+      margin-right: 10px;
+    }
+    button.sell-btn {
+      padding: 5px 10px;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
@@ -17,11 +36,8 @@
     <div id="balance" class="balance">Ładowanie balansu...</div>
   </div>
 
-
-
   <h2>Twój ekwipunek</h2>
-<div id="inventory"></div>
-
+  <div id="inventory"></div>
 
   <script>
     const userId = localStorage.getItem('user_id');
@@ -39,52 +55,100 @@
         });
 
       // Załaduj balans
-      fetch(`/api/balance/${userId}`)
-        .then(res => res.json())
-        .then(data => {
-          const balanceText = data.balance !== undefined
-            ? `Twój balans: ${parseFloat(data.balance).toFixed(2)} zł`
-            : "Nie udało się załadować balansu";
-          document.getElementById('balance').textContent = balanceText;
-        })
-        .catch(err => {
-          console.error("Błąd ładowania balansu:", err);
-          document.getElementById('balance').textContent = "Błąd ładowania balansu.";
-        });
+      function loadBalance() {
+        fetch(`/api/balance/${userId}`)
+          .then(res => res.json())
+          .then(data => {
+            const balanceText = data.balance !== undefined
+              ? `Twój balans: ${parseFloat(data.balance).toFixed(2)} zł`
+              : "Nie udało się załadować balansu";
+            document.getElementById('balance').textContent = balanceText;
+          })
+          .catch(err => {
+            console.error("Błąd ładowania balansu:", err);
+            document.getElementById('balance').textContent = "Błąd ładowania balansu.";
+          });
+      }
+
+      loadBalance();
 
       // Załaduj ekwipunek
-      fetch(`/api/inventory/${userId}`)
-        .then(res => res.json())
-        .then(items => {
-          const container = document.getElementById('inventory');
-          container.innerHTML = '';
+      function loadInventory() {
+        fetch(`/api/inventory/${userId}`)
+          .then(res => res.json())
+          .then(items => {
+            const container = document.getElementById('inventory');
+            container.innerHTML = '';
 
-          if (items.length === 0) {
-            container.textContent = "Brak przedmiotów w ekwipunku.";
-            return;
-          }
+            if (items.length === 0) {
+              container.textContent = "Brak przedmiotów w ekwipunku.";
+              return;
+            }
 
-          items.forEach(item => {
-            const card = document.createElement('div');
-            card.className = 'item-card';
+            items.forEach(item => {
+              const card = document.createElement('div');
+              card.className = 'item-card';
 
-            const img = document.createElement('img');
-            img.src = item.image_url;
-            img.alt = item.item_name;
+              const img = document.createElement('img');
+              img.src = item.image_url;
+              img.alt = item.item_name;
+              img.style.width = '60px';
+              img.style.height = '60px';
 
-            const name = document.createElement('div');
-            name.className = 'item-name';
-            name.textContent = item.item_name;
+              const name = document.createElement('div');
+              name.className = 'item-name';
+              name.textContent = item.item_name;
 
-            card.appendChild(img);
-            card.appendChild(name);
-            container.appendChild(card);
+              const value = document.createElement('div');
+              value.className = 'item-value';
+              value.textContent = `${parseFloat(item.value).toFixed(2)} zł`;
+
+              const sellBtn = document.createElement('button');
+              sellBtn.textContent = 'Sprzedaj';
+              sellBtn.className = 'sell-btn';
+              sellBtn.onclick = () => {
+                if (confirm(`Czy na pewno chcesz sprzedać "${item.item_name}" za ${parseFloat(item.value).toFixed(2)} zł?`)) {
+                  sellItem(item.id, item.value);
+                }
+              };
+
+              card.appendChild(img);
+              card.appendChild(name);
+              card.appendChild(value);
+              card.appendChild(sellBtn);
+
+              container.appendChild(card);
+            });
+          })
+          .catch(err => {
+            console.error("Błąd ładowania ekwipunku:", err);
+            document.getElementById('inventory').textContent = "Błąd ładowania ekwipunku.";
           });
-        })
-        .catch(err => {
-          console.error("Błąd ładowania ekwipunku:", err);
-          document.getElementById('inventory').textContent = "Błąd ładowania ekwipunku.";
-        });
+      }
+
+      async function sellItem(itemId, value) {
+        try {
+          const res = await fetch('/api/sell-item', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ user_id: userId, item_id: itemId, value })
+          });
+          const data = await res.json();
+
+          if (data.success) {
+            alert(`Przedmiot sprzedany! Nowy balans: ${data.newBalance.toFixed(2)} zł`);
+            loadBalance();
+            loadInventory();
+          } else {
+            alert('Błąd podczas sprzedaży: ' + (data.error || 'Nieznany błąd'));
+          }
+        } catch (e) {
+          alert('Błąd podczas komunikacji z serwerem.');
+          console.error(e);
+        }
+      }
+
+      loadInventory();
     }
   </script>
 </body>

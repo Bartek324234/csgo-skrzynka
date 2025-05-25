@@ -4,18 +4,27 @@ const { createClient } = require('@supabase/supabase-js');
 
 const supabase = createClient(
   'https://jotdnbkfgqtznjwbfjno.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpvdGRuYmtmZ3F0em5qd2Jmam5vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc0NzUxMzA4MCwiZXhwIjoyMDYzMDg5MDgwfQ.9rguruM_HtjfZuwlFW7ZcA_ePOikprKiU3VCUdaxhAQ'
+  'twój_anon_key'
 );
 
 router.post('/', async (req, res) => {
-  const { user_id, value } = req.body;
+  const { user_id, item_id, value } = req.body;
 
-  if (!user_id || value === undefined) {
+  if (!user_id || !item_id || value === undefined) {
     return res.status(400).json({ error: 'Brak danych do sprzedaży' });
   }
 
   try {
-    // Pobieramy obecny balans
+    // Usuń przedmiot z ekwipunku
+    const { error: errDelete } = await supabase
+      .from('user_inventory')
+      .delete()
+      .eq('id', item_id)
+      .eq('user_id', user_id);
+
+    if (errDelete) throw errDelete;
+
+    // Pobierz saldo
     const { data: current, error: errGet } = await supabase
       .from('user_balances')
       .select('balance')
@@ -27,7 +36,7 @@ router.post('/', async (req, res) => {
     const balance = current?.balance || 0;
     const newBalance = balance + parseFloat(value);
 
-    // Aktualizujemy saldo
+    // Zaktualizuj saldo
     const { error: errUpdate } = await supabase
       .from('user_balances')
       .update({ balance: newBalance })
