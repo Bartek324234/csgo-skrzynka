@@ -2,10 +2,9 @@ import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 
 const supabase = createClient(
   "https://jotdnbkfgqtznjwbfjno.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpvdGRuYmtmZ3F0em5qd2Jmam5vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc1MTMwODAsImV4cCI6MjA2MzA4OTA4MH0.mQrwJS9exVIMoSl_XwRT2WhE8DMTbdUM996kJIVA4kM"
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpvdGRuYmtmZ3F0em5qd2Jmam5vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc1MTMwODAsImV4cCI6MjA2MzA4OTA4MH0.mQrwJS9exVIMoSl_XwRT2WhE8DMTbdUM996kJIVA4k"
 );
 
-// Pobierz saldo użytkownika
 async function loadBalance(userId) {
   const { data, error } = await supabase
     .from('user_balances')
@@ -40,7 +39,7 @@ async function updateUI() {
   const keepBtn = document.getElementById('keepBtn');
 
   // Załaduj i pokaż saldo
-  const balance = await loadBalance(user.id);
+  let balance = await loadBalance(user.id);
   if (balanceEl) balanceEl.textContent = `${balance.toFixed(2)} zł`;
 
   if (resultEl) resultEl.textContent = '';
@@ -75,6 +74,12 @@ async function updateUI() {
         imageEl.style.display = 'block';
         actionButtons.style.display = 'block';
 
+        // Zaktualizuj balans natychmiast po odjęciu kosztu losowania
+        if (typeof result.newBalance === 'number' && balanceEl) {
+          balance = result.newBalance;
+          balanceEl.textContent = `${balance.toFixed(2)} zł`;
+        }
+
         // Reset kliknięć
         sellBtn.onclick = null;
         keepBtn.onclick = null;
@@ -94,7 +99,8 @@ async function updateUI() {
             const sellData = await sellResponse.json();
 
             if (sellData.newBalance !== undefined && balanceEl) {
-              balanceEl.textContent = `${sellData.newBalance.toFixed(2)} zł`;
+              balance = sellData.newBalance;
+              balanceEl.textContent = `${balance.toFixed(2)} zł`;
             }
 
             resultEl.textContent = 'Przedmiot sprzedany!';
