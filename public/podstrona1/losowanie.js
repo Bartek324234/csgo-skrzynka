@@ -92,6 +92,7 @@ async function updateUI() {
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
                 user_id: user.id,
+                item_id: result.item_id,  // <--- kluczowa zmiana: przekazujemy id itemu!
                 value: result.value
               })
             });
@@ -112,16 +113,12 @@ async function updateUI() {
           }
         };
 
-        // Obsługa dodania do ekwipunku
+        // Obsługa dodania do ekwipunku (na wszelki wypadek, jeśli chcesz)
         keepBtn.onclick = async () => {
           try {
-            await supabase.from('user_inventory').insert([{
-              user_id: user.id,
-              item_name: result.message,
-              image_url: result.image
-            }]);
-
-            resultEl.textContent = 'Dodano do ekwipunku!';
+            // Tu już item jest dodany na backendzie przy losowaniu, ale jak chcesz można dopisać np. dodatkowe info
+            // Jeśli chcesz można usunąć ten blok albo go zostawić jako potwierdzenie
+            resultEl.textContent = 'Przedmiot jest już w ekwipunku.';
             actionButtons.style.display = 'none';
           } catch (err) {
             console.error("Błąd dodania do ekwipunku:", err);

@@ -56,12 +56,13 @@ router.post('/', async (req, res) => {
 
     // Definicja możliwych wyników losowania
     const outcomes = [
-      { item: "2zł", value: 2, chance: 0.7, image: "/images/deserteagleblue.jpg" },
-      { item: "20 zł", value: 20, chance: 0.1, image: "/images/glock18moda.jpg" },
-      { item: "2.2 zł", value: 2.2, chance: 0.15, image: "/images/mac10bronz.jpg" },
-      { item: "2.4 zł", value: 2.4, chance: 0.04, image: "/images/p18dzielnia.jpg" },
-      { item: "2.1zł", value: 2.1, chance: 0.01, image: "/images/p2000oceaniczny.jpg" }
-    ];
+  { id: 1, item: "2zł", value: 2, chance: 0.7, image: "/images/deserteagleblue.jpg" },
+  { id: 2, item: "20 zł", value: 20, chance: 0.1, image: "/images/glock18moda.jpg" },
+  { id: 3, item: "2.2 zł", value: 2.2, chance: 0.15, image: "/images/mac10bronz.jpg" },
+  { id: 4, item: "2.4 zł", value: 2.4, chance: 0.04, image: "/images/p18dzielnia.jpg" },
+  { id: 5, item: "2.1zł", value: 2.1, chance: 0.01, image: "/images/p2000oceaniczny.jpg" }
+];
+
 
     const result = weightedRandom(outcomes);
 
