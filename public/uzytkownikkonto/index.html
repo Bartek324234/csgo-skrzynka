@@ -115,7 +115,11 @@
               card.appendChild(img);
               card.appendChild(name);
               card.appendChild(value);
-              card.appendChild(sellBtn);
+              
+              const btnWrapper = document.createElement('div');
+btnWrapper.className = 'btn-wrapper';
+btnWrapper.appendChild(sellBtn);
+card.appendChild(btnWrapper);
 
               container.appendChild(card);
             });
