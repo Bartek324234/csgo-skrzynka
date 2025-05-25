@@ -85,17 +85,16 @@ async function updateUI() {
         keepBtn.onclick = null;
 
         // Obsługa sprzedaży
-        sellBtn.onclick = async () => {
-          try {
-            const sellResponse = await fetch('/api/sell-item', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                user_id: user.id,
-                item_id: result.item_id,  // <--- kluczowa zmiana: przekazujemy id itemu!
-                value: result.value
-              })
-            });
+       sellBtn.onclick = async () => {
+  try {
+    const sellResponse = await fetch('/api/sell-item', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        user_id: user.id,
+        value: result.value
+      })
+    });
 
             const sellData = await sellResponse.json();
 
