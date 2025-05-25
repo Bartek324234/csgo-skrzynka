@@ -38,7 +38,6 @@ async function updateUI() {
   const sellBtn = document.getElementById('sellBtn');
   const keepBtn = document.getElementById('keepBtn');
 
-  // Załaduj i pokaż saldo
   let balance = await loadBalance(user.id);
   if (balanceEl) balanceEl.textContent = `${balance.toFixed(2)} zł`;
 
@@ -63,38 +62,33 @@ async function updateUI() {
         const result = await response.json();
 
         if (result.error) {
-          // Błąd (np. za mało środków)
           resultEl.textContent = result.error;
           return;
         }
 
-        // Pokazujemy wynik
         resultEl.textContent = result.message;
         imageEl.src = result.image;
         imageEl.style.display = 'block';
         actionButtons.style.display = 'block';
 
-        // Zaktualizuj balans natychmiast po odjęciu kosztu losowania
         if (typeof result.newBalance === 'number' && balanceEl) {
           balance = result.newBalance;
           balanceEl.textContent = `${balance.toFixed(2)} zł`;
         }
 
-        // Reset kliknięć
-        sellBtn.onclick = null;
-        keepBtn.onclick = null;
+        const itemId = result.item_id; // zapisujemy id przedmiotu
 
-        // Obsługa sprzedaży
-       sellBtn.onclick = async () => {
-  try {
-    const sellResponse = await fetch('/api/sell-item', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        user_id: user.id,
-        value: result.value
-      })
-    });
+        sellBtn.onclick = async () => {
+          try {
+            const sellResponse = await fetch('/api/sell-item', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                user_id: user.id,
+                item_id: itemId,  // wysyłamy id przedmiotu
+                value: result.value
+              })
+            });
 
             const sellData = await sellResponse.json();
 
@@ -112,11 +106,8 @@ async function updateUI() {
           }
         };
 
-        // Obsługa dodania do ekwipunku (na wszelki wypadek, jeśli chcesz)
         keepBtn.onclick = async () => {
           try {
-            // Tu już item jest dodany na backendzie przy losowaniu, ale jak chcesz można dopisać np. dodatkowe info
-            // Jeśli chcesz można usunąć ten blok albo go zostawić jako potwierdzenie
             resultEl.textContent = 'Przedmiot jest już w ekwipunku.';
             actionButtons.style.display = 'none';
           } catch (err) {

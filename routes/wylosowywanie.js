@@ -7,7 +7,6 @@ const supabase = createClient(
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpvdGRuYmtmZ3F0em5qd2Jmam5vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc0NzUxMzA4MCwiZXhwIjoyMDYzMDg5MDgwfQ.9rguruM_HtjfZuwlFW7ZcA_ePOikprKiU3VCUdaxhAQ'
 );
 
-// Funkcja losowania z wagami
 function weightedRandom(items) {
   const r = Math.random();
   let sum = 0;
@@ -28,7 +27,6 @@ router.post('/', async (req, res) => {
   const drawCost = 3.5;
 
   try {
-    // Pobieramy aktualny balans
     const { data: current, error: errGet } = await supabase
       .from('user_balances')
       .select('balance')
@@ -43,10 +41,8 @@ router.post('/', async (req, res) => {
       return res.json({ error: 'Za mało środków na losowanie.', currentBalance: balance });
     }
 
-    // Odliczamy koszt losowania
     const newBalance = balance - drawCost;
 
-    // Aktualizujemy saldo w bazie
     const { error: errUpdate } = await supabase
       .from('user_balances')
       .update({ balance: newBalance })
@@ -54,39 +50,39 @@ router.post('/', async (req, res) => {
 
     if (errUpdate) throw errUpdate;
 
-    // Definicja możliwych wyników losowania
     const outcomes = [
-  { id: 1, item: "2zł", value: 2, chance: 0.7, image: "/images/deserteagleblue.jpg" },
-  { id: 2, item: "20 zł", value: 20, chance: 0.1, image: "/images/glock18moda.jpg" },
-  { id: 3, item: "2.2 zł", value: 2.2, chance: 0.15, image: "/images/mac10bronz.jpg" },
-  { id: 4, item: "2.4 zł", value: 2.4, chance: 0.04, image: "/images/p18dzielnia.jpg" },
-  { id: 5, item: "2.1zł", value: 2.1, chance: 0.01, image: "/images/p2000oceaniczny.jpg" }
-];
-
+      { id: 1, item: "2zł", value: 2, chance: 0.7, image: "/images/deserteagleblue.jpg" },
+      { id: 2, item: "20 zł", value: 20, chance: 0.1, image: "/images/glock18moda.jpg" },
+      { id: 3, item: "2.2 zł", value: 2.2, chance: 0.15, image: "/images/mac10bronz.jpg" },
+      { id: 4, item: "2.4 zł", value: 2.4, chance: 0.04, image: "/images/p18dzielnia.jpg" },
+      { id: 5, item: "2.1zł", value: 2.1, chance: 0.01, image: "/images/p2000oceaniczny.jpg" }
+    ];
 
     const result = weightedRandom(outcomes);
 
-    // Dodaj wylosowany przedmiot do ekwipunku w bazie
-    const { error: errInsert } = await supabase
+    // Dodaj do ekwipunku i pobierz ID nowego rekordu
+    const { data: insertedItem, error: errInsert } = await supabase
       .from('user_inventory')
       .insert({
         user_id: user_id,
         item_name: result.item,
         image_url: result.image,
         value: result.value
-      });
+      })
+      .select('id')
+      .single();
 
     if (errInsert) {
       console.error('Błąd dodawania przedmiotu do ekwipunku:', errInsert);
       return res.status(500).json({ error: 'Błąd dodawania przedmiotu do ekwipunku' });
     }
 
-    // Zwracamy wynik losowania wraz z nowym saldem (po odjęciu kosztu losowania)
     res.json({
       message: `Wylosowano: ${result.item}`,
       image: result.image,
-      value: result.value,      // wartość przedmiotu — do użycia przy sprzedaży
-      newBalance
+      value: result.value,
+      newBalance,
+      item_id: insertedItem.id // <-- ważne, id przedmiotu!
     });
   } catch (err) {
     console.error('Błąd w losowaniu:', err);

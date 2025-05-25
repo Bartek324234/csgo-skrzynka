@@ -15,7 +15,7 @@ router.post('/', async (req, res) => {
   }
 
   try {
-    // Usuń przedmiot z ekwipunku
+    // Usuń przedmiot z ekwipunku użytkownika
     const { error: errDelete } = await supabase
       .from('user_inventory')
       .delete()
@@ -24,7 +24,7 @@ router.post('/', async (req, res) => {
 
     if (errDelete) throw errDelete;
 
-    // Pobierz saldo
+    // Pobierz aktualne saldo użytkownika
     const { data: current, error: errGet } = await supabase
       .from('user_balances')
       .select('balance')
@@ -36,7 +36,7 @@ router.post('/', async (req, res) => {
     const balance = current?.balance || 0;
     const newBalance = balance + parseFloat(value);
 
-    // Zaktualizuj saldo
+    // Aktualizuj saldo po dodaniu wartości sprzedanego przedmiotu
     const { error: errUpdate } = await supabase
       .from('user_balances')
       .update({ balance: newBalance })
