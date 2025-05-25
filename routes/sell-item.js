@@ -2,7 +2,6 @@ const express = require('express');
 const router = express.Router();
 const { createClient } = require('@supabase/supabase-js');
 
-
 const supabase = createClient(
   'https://jotdnbkfgqtznjwbfjno.supabase.co',
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpvdGRuYmtmZ3F0em5qd2Jmam5vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc0NzUxMzA4MCwiZXhwIjoyMDYzMDg5MDgwfQ.9rguruM_HtjfZuwlFW7ZcA_ePOikprKiU3VCUdaxhAQ'
@@ -11,26 +10,36 @@ const supabase = createClient(
 router.post('/', async (req, res) => {
   const { user_id, value } = req.body;
 
+  if (!user_id || value === undefined) {
+    return res.status(400).json({ error: 'Brak danych do sprzedaży' });
+  }
+
   try {
-    const { data: current } = await supabase
+    // Pobieramy obecny balans
+    const { data: current, error: errGet } = await supabase
       .from('user_balances')
       .select('balance')
       .eq('user_id', user_id)
       .single();
 
-    const newBalance = (current?.balance || 0) + value;
+    if (errGet) throw errGet;
 
-    await supabase
+    const balance = current?.balance || 0;
+    const newBalance = balance + parseFloat(value);
+
+    // Aktualizujemy saldo
+    const { error: errUpdate } = await supabase
       .from('user_balances')
       .update({ balance: newBalance })
       .eq('user_id', user_id);
 
+    if (errUpdate) throw errUpdate;
+
     res.json({ success: true, newBalance });
   } catch (err) {
-    console.error(err);
-    res.status(500).send('Błąd aktualizacji balansu');
+    console.error('Błąd podczas sprzedaży:', err);
+    res.status(500).json({ error: 'Wewnętrzny błąd serwera podczas sprzedaży' });
   }
 });
-
 
 module.exports = router;
