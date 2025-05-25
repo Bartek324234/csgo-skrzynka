@@ -24,3 +24,5 @@ router.get('/:userId', async (req, res) => {
     res.status(500).json({ error: 'Błąd serwera' });
   }
 });
+
+module.exports = router;
