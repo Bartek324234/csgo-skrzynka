@@ -4,7 +4,7 @@ const { createClient } = require('@supabase/supabase-js');
 
 const supabase = createClient(
   'https://jotdnbkfgqtznjwbfjno.supabase.co',
-  'YOUR_SERVICE_ROLE_KEY'
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpvdGRuYmtmZ3F0em5qd2Jmam5vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc0NzUxMzA4MCwiZXhwIjoyMDYzMDg5MDgwfQ.9rguruM_HtjfZuwlFW7ZcA_ePOikprKiU3VCUdaxhAQ'
 );
 
 router.get('/:userId', async (req, res) => {

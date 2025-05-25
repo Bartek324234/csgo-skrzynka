@@ -1,10 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const { createClient } = require('@supabase/supabase-js');
-
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
 const SUPABASE_URL = 'https://jotdnbkfgqtznjwbfjno.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpvdGRuYmtmZ3F0em5qd2Jmam5vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc0NzUxMzA4MCwiZXhwIjoyMDYzMDg5MDgwfQ.9rguruM_HtjfZuwlFW7ZcA_ePOikprKiU3VCUdaxhAQ'; // Twoje poprawne API KEY z roli service_role
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpvdGRuYmtmZ3F0em5qd2Jmam5vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc0NzUxMzA4MCwiZXhwIjoyMDYzMDg5MDgwfQ.9rguruM_HtjfZuwlFW7ZcA_ePOikprKiU3VCUdaxhAQ'; // Twój prawdziwy klucz (przenieś go potem do .env)
 
 const headers = {
   apikey: SUPABASE_KEY,
@@ -35,48 +35,4 @@ router.get('/:user_id', async (req, res) => {
   }
 });
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-module.exports = router; // ⬅⬅⬅ TO MUSI BYĆ NA KOŃCU
-
-
-
-
-
-
-
-
-
-
-// Pobierz ekwipunek
-const inventoryEl = document.getElementById('inventory');
-const { data: inventory } = await supabase
-  .from('user_inventory')
-  .select('*')
-  .eq('user_id', user.id);
-
-if (inventoryEl && inventory) {
-  inventoryEl.innerHTML = inventory.map(item => `
-    <div>
-      <img src="${item.image_url}" style="width:100px" />
-      <p>${item.item_name}</p>
-    </div>
-  `).join('');
-}
-
+module.exports = router;
