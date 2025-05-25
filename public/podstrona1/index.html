@@ -3,7 +3,33 @@
 <head>
   <meta charset="UTF-8" />
   <title>Losowanie nagród</title>
+  <style>.toast {
+  position: fixed;
+  bottom: 70px;
+  right: 600px;
+  background-color: #d75d118a;
+  color: rgb(254, 246, 246);
+  padding: 15px 25px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  font-size: 26px;
+  z-index: 1000;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: all 0.4s ease;
+}
+
+.toast.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.toast.hidden {
+  display: none;
+}
+</style>
 </head>
+
 <body>
   <h1>Losowanie</h1>
  <p>Twój balans: <span id="balance">0 zł</span></p>
@@ -26,8 +52,78 @@
 
 
 
+<script>
+
+document.addEventListener("DOMContentLoaded", () => {
+  const kontoBtn = document.getElementById("kontoBtn");
+  const losowanieBtn = document.getElementById("losowanieBtn");
+
+  if (kontoBtn) {
+    kontoBtn.addEventListener("click", (e) => {
+      const userId = localStorage.getItem("user_id");
+      if (!userId) {
+        e.preventDefault();
+        showToast("Musisz być zalogowany, aby przejść do konta.");
+      } else {
+        window.location.href = "/uzytkownikkonto/index.html";
+      }
+    });
+  }
+
+  if (losowanieBtn) {
+    losowanieBtn.addEventListener("click", (e) => {
+      const userId = localStorage.getItem("user_id");
+      if (!userId) {
+        e.preventDefault();
+        showToast("Musisz być zalogowany, aby przejść do losowania.");
+      } else {
+        window.location.href = "/podstrona1/index.html";
+      }
+    });
+  }
+});
+
+function showToast(message) {
+  const toast = document.getElementById("toast");
+  toast.textContent = message;
+  toast.classList.remove("hidden");
+  toast.classList.add("show");
+
+  setTimeout(() => {
+    toast.classList.remove("show");
+    toast.classList.add("hidden");
+  }, 3000);
+}
 
 
+
+
+
+
+
+
+
+
+
+
+
+document.addEventListener("DOMContentLoaded", () => {
+  const loader = document.getElementById("loader");
+  const knife = document.getElementById("knife");
+  const main = document.getElementById("main-content");
+
+  // Po zakończeniu animacji – powiększ nóż i przejdź dalej
+  setTimeout(() => {
+    knife.classList.add("zoom");
+
+    // Poczekaj chwilę i przejdź do strony
+    setTimeout(() => {
+      loader.style.display = "none";
+      main.style.display = "block";
+    }, 1000);
+  }, 3000);
+});
+</script>
   <a href="/index.html">← Powrót</a>
 
   <script type="module" src="./losowanie.js"></script>
