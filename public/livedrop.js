@@ -1,52 +1,47 @@
 document.addEventListener('DOMContentLoaded', async () => {
   const supabaseUrl = 'https://jotdnbkfgqtznjwbfjno.supabase.co';
-  const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpvdGRuYmtmZ3F0em5qd2Jmam5vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc1MTMwODAsImV4cCI6MjA2MzA4OTA4MH0.mQrwJS9exVIMoSl_XwRT2WhE8DMTbdUM996kJIVA4kM'; // wpisz swój klucz
+  const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpvdGRuYmtmZ3F0em5qd2Jmam5vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc1MTMwODAsImV4cCI6MjA2MzA4OTA4MH0.mQrwJS9exVIMoSl_XwRT2WhE8DMTbdUM996kJIVA4kM';
+
   const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
   const dropContainer = document.getElementById('live-drops');
   const maxDrops = 10;
 
-  let currentShift = 0; // ile px przesunięto taśmę
+  let currentShift = 0;
   const drops = [];
 
-  // Dodaje drop z lewej strony
   function addDrop(drop) {
     const el = document.createElement('div');
     el.classList.add('drop');
+
+    const imgSrc = drop.item_image && drop.item_image.startsWith('http')
+      ? drop.item_image
+      : 'https://via.placeholder.com/32?text=?';
+
     el.innerHTML = `
-      <img src="${drop.item_image || 'https://via.placeholder.com/32?text=?'}" alt="${drop.item_name || 'Item'}" />
-      <span><b>${drop.value.toFixed(2)} zł</b></span>
+      <img src="${imgSrc}" alt="${drop.item_name || 'Item'}" />
+      <span><b>${drop.value?.toFixed(2) || '0.00'} zł</b></span>
     `;
 
-    // Dodajemy element **na początek** kontenera (czyli z lewej)
     dropContainer.insertBefore(el, dropContainer.firstChild);
 
-    // Obliczamy szerokość nowego elementu
-    const elWidth = el.offsetWidth + 15; // 15px gap
-
-    // Dodajemy do tablicy na początek
+    const elWidth = el.offsetWidth + 15;
     drops.unshift({ el, width: elWidth });
 
-    // Przesuwamy całą taśmę w prawo o szerokość nowego elementu
-    currentShift -= elWidth; // przesuwamy ujemnie, bo przesuwamy w prawo (transformX ujemne = przesunięcie w lewo, więc tutaj ujemne przesunięcie to ruch w prawo)
+    currentShift -= elWidth;
 
-    // Ustawiamy transform i animację
     dropContainer.style.transition = 'transform 0.5s ease';
     dropContainer.style.transform = `translateX(${currentShift}px)`;
 
-    // Jeśli mamy więcej niż maxDrops, usuwamy najstarszy z prawej strony (koniec listy)
     if (drops.length > maxDrops) {
       const last = drops.pop();
       dropContainer.removeChild(last.el);
-      
-      // Teraz przesunięcie trzeba "przywrócić" bo element usunięty
+
       currentShift += last.width;
-      
-      // Wyłączamy animację, ustawiamy nową pozycję (przycięcie taśmy)
+
       dropContainer.style.transition = 'none';
       dropContainer.style.transform = `translateX(${currentShift}px)`;
 
-      // Przywracamy animację na następny ruch
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
           dropContainer.style.transition = 'transform 0.5s ease';
@@ -55,7 +50,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
-  // Pobieranie ostatnich dropów - pokazujemy w stanie startowym (bez przesunięć)
   async function fetchInitialDrops() {
     const { data, error } = await supabaseClient
       .from('user_inventory')
@@ -69,30 +63,33 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     if (data) {
-      // Resetujemy stan
       dropContainer.innerHTML = '';
       drops.length = 0;
       currentShift = 0;
       dropContainer.style.transition = 'none';
       dropContainer.style.transform = 'translateX(0)';
 
-      // Dodajemy dane od najstarszego (po prawej stronie)
       data.reverse().forEach((drop) => {
         const el = document.createElement('div');
         el.classList.add('drop');
+
+        const imgSrc = drop.item_image && drop.item_image.startsWith('http')
+          ? drop.item_image
+          : 'https://via.placeholder.com/32?text=?';
+
         el.innerHTML = `
-          <img src="${drop.item_image || 'https://via.placeholder.com/32?text=?'}" alt="${drop.item_name || 'Item'}" />
-          <span><b>${drop.value.toFixed(2)} zł</b></span>
+          <img src="${imgSrc}" alt="${drop.item_name || 'Item'}" />
+          <span><b>${drop.value?.toFixed(2) || '0.00'} zł</b></span>
         `;
+
         dropContainer.appendChild(el);
         drops.push({ el, width: el.offsetWidth + 15 });
       });
     }
   }
 
-  // Subskrypcja nowych dropów
   function subscribeToDrops() {
-    supabaseClient
+    const channel = supabaseClient
       .channel('user_inventory')
       .on('postgres_changes', {
         event: 'INSERT',
@@ -102,9 +99,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         console.log('Nowy drop:', payload);
         addDrop(payload.new);
       })
-      .subscribe()
-      .then(() => console.log('Subskrypcja aktywna'))
-      .catch(console.error);
+      .subscribe();
+
+    console.log('Subskrypcja aktywna');
   }
 
   await fetchInitialDrops();
