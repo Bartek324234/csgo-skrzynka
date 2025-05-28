@@ -1,21 +1,34 @@
+// livedrop.js
 document.addEventListener('DOMContentLoaded', async () => {
   const supabaseUrl = 'https://jotdnbkfgqtznjwbfjno.supabase.co';
   const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpvdGRuYmtmZ3F0em5qd2Jmam5vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc1MTMwODAsImV4cCI6MjA2MzA4OTA4MH0.mQrwJS9exVIMoSl_XwRT2WhE8DMTbdUM996kJIVA4kM';
   const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
   const dropContainer = document.getElementById('live-drops');
-  const maxDrops = 10;
-  const drops = [];
+  const maxDrops = 20; // maksymalna ilość dropów na pasku
+
+  // Usuwa drop z DOM po zakończeniu animacji (czyli jak zniknie po lewej)
+  function setupRemoveOnEnd(el) {
+    el.addEventListener('animationend', () => {
+      el.remove();
+    });
+  }
 
   function renderDrop(drop) {
     const el = document.createElement('div');
-    el.style.display = 'flex';
-    el.style.alignItems = 'center';
+    el.classList.add('drop');
     el.innerHTML = `
-      <img src="${drop.item_image}" style="width: 24px; height: 24px; margin-right: 5px;" />
-      🎯 <b>Gracz</b> trafił <b>${drop.item_name}</b> za <b>${drop.value.toFixed(2)} zł</b>
+      <img src="${drop.item_image || 'https://via.placeholder.com/32?text=?'}" alt="${drop.item_name}" />
+      <span><b>${drop.value.toFixed(2)} zł</b></span>
     `;
+
+    setupRemoveOnEnd(el);
     dropContainer.appendChild(el);
+
+    // Jeśli jest za dużo dropów, usuwamy najstarsze (najbardziej po lewej)
+    while (dropContainer.children.length > maxDrops) {
+      dropContainer.removeChild(dropContainer.children[0]);
+    }
   }
 
   async function fetchInitialDrops() {
@@ -31,10 +44,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     if (data) {
-      data.reverse().forEach((drop) => {
-        drops.push(drop);
-        renderDrop(drop);
-      });
+      data.reverse().forEach(renderDrop);
     }
   }
 
@@ -47,11 +57,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         table: 'user_inventory',
       }, (payload) => {
         console.log('Nowy drop:', payload);
-        const drop = payload.new;
-        drops.push(drop);
-        if (drops.length > maxDrops) drops.shift();
-        dropContainer.innerHTML = '';
-        drops.forEach(renderDrop);
+        renderDrop(payload.new);
       })
       .subscribe();
 
