@@ -118,53 +118,32 @@
 
 
 
+#live-drops {
+  display: flex;
+  gap: 15px;
+  transition: transform 0.5s ease;
+  will-change: transform;
+  /* Nie pozwalamy przewijać, user-select i pointer-events zablokowane w inline */
+}
 
+.drop {
+  flex-shrink: 0;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  padding: 5px 10px;
+  display: flex;
+  align-items: center;
+  min-width: 150px;
+  font-size: 14px;
+  color: white;
+  user-select: none;
+}
 
-  #live-drops {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 50px;
-      background: rgba(0, 0, 0, 0.7);
-      overflow: hidden; /* ważne, żeby ukryć nadmiar */
-      display: flex;
-      align-items: center;
-      gap: 15px;
-      padding: 0 10px;
-      box-sizing: border-box;
-      white-space: nowrap;
-      user-select: none;
-      pointer-events: none; /* żeby nie dało się scrollować */
-      z-index: 9999;
-    }
-    .drop {
-      display: flex;
-      align-items: center;
-      min-width: 150px;
-      flex-shrink: 0; /* żeby elementy się nie kurczyły */
-      background: rgba(255, 255, 255, 0.1);
-      padding: 5px 10px;
-      border-radius: 8px;
-      font-size: 14px;
-      animation: slide-left 15s linear forwards;
-      position: relative;
-    }
-    .drop img {
-      width: 32px;
-      height: 32px;
-      margin-right: 8px;
-      object-fit: contain;
-      border-radius: 4px;
-      background: white;
-    }
-    @keyframes slide-left {
-      from {
-        transform: translateX(100%);
-        opacity: 1;
-      }
-      to {
-        transform: translateX(-120%);
-        opacity: 0;
-      }
-    }
+.drop img {
+  width: 32px;
+  height: 32px;
+  margin-right: 8px;
+  border-radius: 4px;
+  object-fit: contain;
+  background: white;
+}
