@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', async () => {
   const supabaseUrl = 'https://jotdnbkfgqtznjwbfjno.supabase.co';
   const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpvdGRuYmtmZ3F0em5qd2Jmam5vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc1MTMwODAsImV4cCI6MjA2MzA4OTA4MH0.mQrwJS9exVIMoSl_XwRT2WhE8DMTbdUM996kJIVA4kM';
-const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+  const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
   const dropContainer = document.getElementById('live-drops');
   const maxDrops = 10;
@@ -39,7 +39,7 @@ const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
   }
 
   function subscribeToDrops() {
-    supabaseClient
+    const subscription = supabaseClient
       .channel('user_inventory')
       .on('postgres_changes', {
         event: 'INSERT',
@@ -53,9 +53,13 @@ const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
         dropContainer.innerHTML = '';
         drops.forEach(renderDrop);
       })
-      .subscribe()
-      .then(() => console.log('Subskrypcja aktywna'))
-      .catch(console.error);
+      .subscribe();
+
+    subscription.on('error', (error) => {
+      console.error('Błąd subskrypcji:', error);
+    });
+
+    console.log('Subskrypcja aktywna');
   }
 
   await fetchInitialDrops();
