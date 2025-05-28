@@ -1,0 +1,58 @@
+
+  const supabaseUrl = 'https://jotdnbkfgqtznjwbfjno.supabase.co'; // <-- ZAMIEN na swoje!
+  const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpvdGRuYmtmZ3F0em5qd2Jmam5vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc1MTMwODAsImV4cCI6MjA2MzA4OTA4MH0.mQrwJS9exVIMoSl_XwRT2WhE8DMTbdUM996kJIVA4kM'; // <-- ZAMIEN na swój publiczny klucz!
+  const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+  const dropContainer = document.getElementById('live-drops');
+  const maxDrops = 10;
+  const drops = [];
+
+  // Pokazuje drop w HTML
+  function renderDrop(drop) {
+    const el = document.createElement('div');
+    el.style.display = 'flex';
+    el.style.alignItems = 'center';
+    el.innerHTML = `
+      <img src="${drop.item_image}" style="width: 24px; height: 24px; margin-right: 5px;" />
+      🎯 <b>Gracz</b> trafił <b>${drop.item_name}</b> za <b>${drop.value.toFixed(2)} zł</b>
+    `;
+    dropContainer.appendChild(el);
+  }
+
+  // Pobierz ostatnie dropy
+  async function fetchInitialDrops() {
+    const { data, error } = await supabase
+      .from('user_inventory')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(maxDrops);
+
+    if (data) {
+      data.reverse().forEach((drop) => {
+        drops.push(drop);
+        renderDrop(drop);
+      });
+    }
+  }
+
+  // Subskrybuj realtime
+  function subscribeToDrops() {
+    supabase
+      .channel('user_inventory')
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'user_inventory',
+      }, (payload) => {
+        const drop = payload.new;
+        drops.push(drop);
+        if (drops.length > maxDrops) drops.shift();
+        dropContainer.innerHTML = '';
+        drops.forEach(renderDrop);
+      })
+      .subscribe();
+  }
+
+  fetchInitialDrops();
+  subscribeToDrops();
+

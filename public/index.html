@@ -9,15 +9,19 @@
       margin-top: 20px;
     }
   </style>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 </head>
 <body>
- <!-- LOADER--- -->
+ <!-- LIVE DROP --- -->
+
+  <div id="live-drops" style="position: fixed; top: 0; left: 0; right: 0; background: black; color: white; padding: 10px; display: flex; gap: 20px; overflow-x: auto; z-index: 999;"></div>
+
+  
 
 
 
 
-
-
+<!-- LIVE DROP --- -->
 
   <button id="loginBtn">Zaloguj przez Google
   </button>
@@ -27,7 +31,7 @@
   <div id="balanceSection" style="display:none;">
     <h3>Twój balans: <span id="userBalance">0.00</span> zł</h3>
   </div>
-  <p>co tam szymonku ? , na dole kody dla cb na free ehajs <3 </p>
+  <p>no dole kody promocyjne </p>
 <p>  SUPER100</p>
 <p>  NOWY50</p>
   <div id="promoSection" style="display:none;">
@@ -42,7 +46,7 @@
 <!-- Kontener na ładny komunikat -->
 <div id="toast" class="toast hidden"></div>
 
-
+<script src="livedrop.js"></script>
 <script src="index.js"></script>
 <script src="main.js"></script>
 
