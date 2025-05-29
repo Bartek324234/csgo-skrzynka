@@ -12,9 +12,14 @@ let currentShift = 0
 function createDropElement(drop) {
   const el = document.createElement('div')
   el.classList.add('drop')
+
+  const name = drop.item_name ?? 'Nieznany przedmiot'
+  const image = drop.item_image ?? 'https://via.placeholder.com/40?text=?'
+  const value = typeof drop.value === 'number' ? drop.value.toFixed(2) : '0.00'
+
   el.innerHTML = `
-    <img src="${drop.item_image ?? 'https://via.placeholder.com/40?text=?'}" alt="${drop.item_name ?? 'Przedmiot'}" />
-    <div>🎯 <b>${drop.item_name ?? 'Unknown'}</b> za <b>${drop.value.toFixed(2)} zł</b></div>
+    <img src="${image}" alt="${name}" />
+    <div>🎯 <b>${name}</b> za <b>${value} zł</b></div>
   `
   return el
 }
@@ -27,16 +32,13 @@ function updatePosition(shift) {
 function addDrop(drop) {
   const el = createDropElement(drop)
 
-  // Wstawiamy na początek taśmy
   dropContainer.insertBefore(el, dropContainer.firstChild)
 
-  // Po renderze elementu zmierz szerokość i wykonaj przesunięcie
   requestAnimationFrame(() => {
     const elWidth = el.offsetWidth + 15
 
     drops.unshift({ el, width: elWidth })
 
-    // Przesuwamy taśmę w prawo (zmniejszamy transformX)
     currentShift -= elWidth
     updatePosition(currentShift)
 
@@ -46,11 +48,9 @@ function addDrop(drop) {
 
       currentShift += removed.width
 
-      // Reset bez animacji by nie było skoków
       dropContainer.style.transition = 'none'
       dropContainer.style.transform = `translateX(${currentShift}px)`
 
-      // Przywróć animacje na kolejny ruch
       requestAnimationFrame(() => {
         dropContainer.style.transition = 'transform 0.5s ease'
       })
@@ -76,7 +76,6 @@ async function fetchInitialDrops() {
   dropContainer.style.transition = 'none'
   dropContainer.style.transform = 'translateX(0)'
 
-  // Dodaj od najstarszego do najnowszego (prawa strona do lewej)
   for (const drop of data.reverse()) {
     const el = createDropElement(drop)
     dropContainer.appendChild(el)
@@ -84,9 +83,10 @@ async function fetchInitialDrops() {
   }
 }
 
-function subscribeToDrops() {
-  const subscription = supabase
-    .channel('public:user_inventory')
+async function subscribeToDrops() {
+  const channel = supabase.channel('drops')
+
+  channel
     .on(
       'postgres_changes',
       { event: 'INSERT', schema: 'public', table: 'user_inventory' },
@@ -95,18 +95,16 @@ function subscribeToDrops() {
         addDrop(payload.new)
       }
     )
-    .subscribe()
-
-  subscription.on('subscription_error', (error) => {
-    console.error('Błąd subskrypcji:', error)
-  })
-
-  subscription.on('subscription_succeeded', () => {
-    console.log('Subskrypcja aktywna')
-  })
+    .subscribe((status) => {
+      if (status === 'SUBSCRIBED') {
+        console.log('Subskrypcja aktywna')
+      } else {
+        console.error('Błąd subskrypcji:', status)
+      }
+    })
 }
 
 ;(async () => {
   await fetchInitialDrops()
-  subscribeToDrops()
+  await subscribeToDrops()
 })()
