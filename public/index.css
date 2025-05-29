@@ -116,7 +116,7 @@
 /* Podstawowy reset */
 * {
   box-sizing: border-box;
-  margin-left: 200px;
+  margin-left: 0px;
  
   padding: 0;
 }
@@ -124,7 +124,7 @@
 /* Styl kontenera całego live drop */
 #live-drops-wrapper {
   width: 100%;
-  max-width: 80%;
+  max-width: 100%;
   overflow: hidden; /* Ukryj nadmiar — żadnego scrolla */
   padding: 10px 0;
   background: #111;
