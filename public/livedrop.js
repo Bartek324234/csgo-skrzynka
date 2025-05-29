@@ -6,22 +6,19 @@ const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS
 const supabase = createClient(supabaseUrl, supabaseKey)
 
 const dropContainer = document.getElementById('live-drops')
-if (!dropContainer) {
-  console.error('❌ Brakuje elementu #live-drops w HTML!')
-  throw new Error('Nie znaleziono kontenera dropów')
-}
-
 const maxDrops = 10
 const drops = []
 let currentShift = 0
 
-// 🔧 Pobieranie obrazka lokalnie z /images/
+// ✅ Pobieranie lokalnej ścieżki do obrazka
 function getImageUrl(path) {
-  if (!path || typeof path !== 'string') return 'https://via.placeholder.com/40?text=?'
-  const filename = path.split('/').pop()
-  const localPath = `/images/${filename}`
-  console.log('🔍 Image URL:', localPath)
-  return localPath
+  if (!path || typeof path !== 'string') {
+    console.warn('⚠️ Brak ścieżki do obrazka:', path)
+    return 'https://via.placeholder.com/40?text=?'
+  }
+
+  // Zakładamy, że path wygląda tak: "/images/deserteagleblue.jpg"
+  return path
 }
 
 function createDropElement(drop) {
@@ -81,7 +78,7 @@ async function fetchInitialDrops() {
     .limit(maxDrops)
 
   if (error) {
-    console.error('❌ Błąd pobierania dropów:', error)
+    console.error('Błąd pobierania dropów:', error)
     return
   }
 
@@ -106,7 +103,7 @@ async function subscribeToDrops() {
       'postgres_changes',
       { event: 'INSERT', schema: 'public', table: 'user_inventory' },
       (payload) => {
-        console.log('📩 Nowy drop:', payload.new)
+        console.log('Nowy drop:', payload.new)
         addDrop(payload.new)
       }
     )
