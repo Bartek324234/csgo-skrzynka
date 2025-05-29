@@ -113,56 +113,63 @@
 
 
 
-#live-drops {
+/* Podstawowy reset */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* Styl kontenera całego live drop */
+#live-drops-wrapper {
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden; /* Ukryj nadmiar — żadnego scrolla */
+  padding: 10px 0;
+  background: #111;
+  border-top: 2px solid #444;
+  border-bottom: 2px solid #444;
   position: relative;
+}
+
+/* Kontener na wszystkie dropy (będzie przesuwany) */
+#live-drops {
   display: flex;
   flex-direction: row;
-  align-items: center;
   gap: 15px;
-  width: 600px;              /* szerokość widoczna */
-  height: 60px;              /* wysokość kontenera */
-  padding: 10px;
-  background: #1e1e2f;
-  border-radius: 10px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-  overflow: hidden;          /* ukryj wszystko poza kontenerem */
-  user-select: none;
-  scrollbar-width: none;     /* Firefox – ukryj pasek */
+  transition: transform 0.5s ease;
+  will-change: transform;
 }
 
-/* Dla przeglądarek opartych na Webkit (Chrome, Edge) */
-#live-drops::-webkit-scrollbar {
-  display: none;
-}
-
+/* Pojedynczy drop */
 .drop {
-  display: flex;
-  align-items: center;
-  background: #2c2c3f;
+  flex: 0 0 auto; /* Nie pozwala dropowi się rozciągać */
+  width: 160px;
+  background: #1e1e1e;
+  border: 1px solid #333;
+  border-radius: 10px;
+  padding: 10px;
   color: #fff;
-  padding: 5px 10px;
-  border-radius: 8px;
   font-size: 14px;
-  flex-shrink: 0;            /* NIE pozwól się ściskać dropom */
-  white-space: nowrap;
-  gap: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-shadow: 0 0 5px rgba(255, 255, 255, 0.05);
+  transition: transform 0.3s ease;
 }
 
+/* Zdjęcie przedmiotu */
 .drop img {
-  width: 40px;
-  height: 40px;
+  width: 60px;
+  height: 60px;
   object-fit: contain;
-  border-radius: 4px;
+  margin-bottom: 8px;
+  border-radius: 6px;
+  background: #222;
 }
 
-.drop:hover {
-  transform: scale(1.05);
-  box-shadow: 0 6px 15px rgba(118, 75, 162, 0.6);
-}
-
-
+/* Tekst w dropie */
 .drop div {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  text-align: center;
+  line-height: 1.4;
 }
