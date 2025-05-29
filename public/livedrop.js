@@ -10,23 +10,22 @@ const maxDrops = 10
 const drops = []
 let currentShift = 0
 
-// ✅ Pobieranie lokalnej ścieżki do obrazka
 function getImageUrl(path) {
   if (!path || typeof path !== 'string') {
     console.warn('⚠️ Brak ścieżki do obrazka:', path)
     return 'https://via.placeholder.com/40?text=?'
   }
-
-  // Zakładamy, że path wygląda tak: "/images/deserteagleblue.jpg"
-  return path
+  return path // zakładamy, że path to np. "/images/deserteagleblue.jpg"
 }
 
 function createDropElement(drop) {
+  console.log('Dane dropa:', drop)  // log do debugowania
+
   const el = document.createElement('div')
   el.classList.add('drop')
 
   const name = drop.item_name ?? 'Nieznany przedmiot'
-  const image = getImageUrl(drop.item_image)
+  const image = getImageUrl(drop.image_url)
   const value = typeof drop.value === 'number' ? drop.value.toFixed(2) : '0.00'
 
   el.innerHTML = `
@@ -109,14 +108,14 @@ async function subscribeToDrops() {
     )
     .subscribe((status) => {
       if (status === 'SUBSCRIBED') {
-        console.log('✅ Subskrypcja aktywna')
+        console.log('Subskrypcja aktywna')
       } else {
         console.error('❌ Błąd subskrypcji:', status)
       }
     })
 }
 
-// 🚀 Start
+// Start
 ;(async () => {
   await fetchInitialDrops()
   await subscribeToDrops()
