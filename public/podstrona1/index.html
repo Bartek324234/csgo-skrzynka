@@ -27,10 +27,117 @@
 .toast.hidden {
   display: none;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* Podstawowy reset */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* Styl kontenera całego live drop */
+#live-drops-wrapper {
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden; /* Ukryj nadmiar — żadnego scrolla */
+  padding: 10px 0;
+  background: #111;
+  border-top: 2px solid #444;
+  border-bottom: 2px solid #444;
+  height: 100px;
+  position: absolute;
+}
+
+/* Kontener na wszystkie dropy (będzie przesuwany) */
+#live-drops {
+  position: absolute;
+  display: flex;
+  flex-direction: row;
+  gap: 15px;
+  transition: transform 0.5s ease;
+  will-change: transform;
+}
+
+/* Pojedynczy drop */
+.drop {
+  flex: 0 0 auto; /* Nie pozwala dropowi się rozciągać */
+  width: 160px;
+  min-width: 160px;
+  max-width: 160px;
+  height: 100%;
+
+  background: #1e1e1e;
+  border: 1px solid #333;
+  border-radius: 10px;
+  padding: 10px;
+  color: #fff;
+  font-size: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-shadow: 0 0 5px rgba(255, 255, 255, 0.05);
+  transition: transform 0.3s ease;
+}
+
+/* Zdjęcie przedmiotu */
+.drop img {
+  width: 75px;
+  height: 75px;
+  object-fit: contain;
+  margin-bottom: 6px;
+  border-radius: 4px;
+  background: #222;
+}
+
+/* Tekst w dropie */
+.drop div {
+  text-align: center;
+  line-height: 1.4;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 </style>
 </head>
 
 <body>
+
+<div id="live-drops-wrapper">
+  <div id="live-drops"></div>
+</div>
+
+
+
   <h1>Losowanie</h1>
  <p>Twój balans: <span id="balance">0 zł</span></p>
 <button id="drawBtn">Losuj (koszt 3.5 zł)</button>
@@ -127,5 +234,6 @@ document.addEventListener("DOMContentLoaded", () => {
   <a href="/index.html">← Powrót</a>
 
   <script type="module" src="./losowanie.js"></script>
+  <script type="module" src="livedrop.js" defer></script>
 </body>
 </html>
