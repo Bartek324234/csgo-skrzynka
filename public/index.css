@@ -115,20 +115,19 @@
 
 
 
-
-
 #live-drops {
   display: flex;
   gap: 15px;
-  overflow: hidden;       /* ukrywa dropy wykraczające poza kontener */
+  overflow: hidden;        /* ukrywa wszystko poza szerokością */
+  width: 600px;            /* ustaw szerokość kontenera na stałą wartość */
+  height: 60px;            /* wysokość kontenera */
   padding: 10px;
   background: #1e1e2f;
   border-radius: 10px;
   box-shadow: 0 4px 10px rgba(0,0,0,0.3);
   user-select: none;
   align-items: center;
-  min-height: 60px;
-  width: 100%;            /* pełna szerokość rodzica */
+  white-space: nowrap;
 }
 
 .drop {
