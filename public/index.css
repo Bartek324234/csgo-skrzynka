@@ -117,33 +117,53 @@
 
 
 
-
 #live-drops {
   display: flex;
   gap: 15px;
-  transition: transform 0.5s ease;
-  will-change: transform;
-  /* Nie pozwalamy przewijać, user-select i pointer-events zablokowane w inline */
+  overflow-x: hidden; /* zapobiega scrollowaniu na osi X */
+  padding: 10px;
+  background: #1e1e2f; /* ciemne tło */
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+  user-select: none;
+  align-items: center;
+  min-height: 60px;
 }
 
 .drop {
   flex-shrink: 0;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 6px;
-  padding: 5px 10px;
+  background: linear-gradient(135deg, #667eea, #764ba2); /* ładny gradient */
+  border-radius: 12px;
+  padding: 10px 15px;
   display: flex;
   align-items: center;
-  min-width: 150px;
-  font-size: 14px;
+  min-width: 180px;
   color: white;
-  user-select: none;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  cursor: default;
+}
+
+.drop:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 15px rgba(118, 75, 162, 0.6);
 }
 
 .drop img {
-  width: 32px;
-  height: 32px;
-  margin-right: 8px;
-  border-radius: 4px;
+  width: 40px;
+  height: 40px;
+  margin-right: 12px;
+  border-radius: 8px;
   object-fit: contain;
   background: white;
+  flex-shrink: 0;
 }
+
+.drop div {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
