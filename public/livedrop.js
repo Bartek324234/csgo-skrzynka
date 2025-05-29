@@ -1,19 +1,27 @@
+// livedrop.js
+// Upewnij się, że <script type="module" src="livedrop.js"> jest używane w HTML
+
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
 
+// Konfiguracja Supabase
 const supabaseUrl = 'https://jotdnbkfgqtznjwbfjno.supabase.co'
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpvdGRuYmtmZ3F0em5qd2Jmam5vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc1MTMwODAsImV4cCI6MjA2MzA4OTA4MH0.mQrwJS9exVIMoSl_XwRT2WhE8DMTbdUM996kJIVA4kM'
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
 const supabase = createClient(supabaseUrl, supabaseKey)
 
+// Ustawienia i zmienne
 const dropContainer = document.getElementById('live-drops')
 const maxDrops = 10
 const drops = []
 let currentShift = 0
 
+// 🔧 Zamienia ścieżkę z tabeli (np. images/file.jpg) na pełny publiczny URL Supabase Storage
 function getImageUrl(path) {
   if (!path || typeof path !== 'string') return 'https://via.placeholder.com/40?text=?'
-  return `${supabaseUrl}/storage/v1/object/public/${path}`
+  const cleanPath = path.startsWith('/') ? path.slice(1) : path
+  return `${supabaseUrl}/storage/v1/object/public/${cleanPath}`
 }
 
+// Tworzy element DOM pojedynczego dropa
 function createDropElement(drop) {
   const el = document.createElement('div')
   el.classList.add('drop')
@@ -23,39 +31,36 @@ function createDropElement(drop) {
   const value = typeof drop.value === 'number' ? drop.value.toFixed(2) : '0.00'
 
   el.innerHTML = `
-    <img src="${image}" alt="${name}" />
+    <img src="${image}" alt="${name}" height="40" style="margin-right: 8px;"/>
     <div>🎯 <b>${name}</b> za <b>${value} zł</b></div>
   `
   return el
 }
 
+// Przesuwa kontener w lewo
 function updatePosition(shift) {
   dropContainer.style.transition = 'transform 0.5s ease'
   dropContainer.style.transform = `translateX(${shift}px)`
 }
 
+// Dodaje nowy drop do listy
 function addDrop(drop) {
   const el = createDropElement(drop)
-
   dropContainer.insertBefore(el, dropContainer.firstChild)
 
   requestAnimationFrame(() => {
     const elWidth = el.offsetWidth + 15
-
     drops.unshift({ el, width: elWidth })
-
     currentShift -= elWidth
     updatePosition(currentShift)
 
     if (drops.length > maxDrops) {
       const removed = drops.pop()
       dropContainer.removeChild(removed.el)
-
       currentShift += removed.width
 
       dropContainer.style.transition = 'none'
       dropContainer.style.transform = `translateX(${currentShift}px)`
-
       requestAnimationFrame(() => {
         dropContainer.style.transition = 'transform 0.5s ease'
       })
@@ -63,6 +68,7 @@ function addDrop(drop) {
   })
 }
 
+// Pobiera początkowe dropy
 async function fetchInitialDrops() {
   const { data, error } = await supabase
     .from('user_inventory')
@@ -88,6 +94,7 @@ async function fetchInitialDrops() {
   }
 }
 
+// Subskrypcja na nowe wpisy
 async function subscribeToDrops() {
   const channel = supabase.channel('drops')
 
@@ -102,14 +109,13 @@ async function subscribeToDrops() {
     )
     .subscribe((status) => {
       if (status === 'SUBSCRIBED') {
-        console.log('Subskrypcja aktywna')
+        console.log('✅ Subskrypcja aktywna')
       } else {
-        console.error('Błąd subskrypcji:', status)
+        console.error('❌ Błąd subskrypcji:', status)
       }
     })
 }
 
-;(async () => {
-  await fetchInitialDrops()
-  await subscribeToDrops()
-})()
+// ⬇️ Inicjalizacja — działa poprawnie tylko, jeśli plik jest załadowany jako <script type="module">
+await fetchInitialDrops()
+await subscribeToDrops()
