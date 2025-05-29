@@ -10,21 +10,11 @@ const maxDrops = 10
 const drops = []
 let currentShift = 0
 
+// 🔧 Pobieranie obrazka lokalnie z /images/
 function getImageUrl(path) {
   if (!path || typeof path !== 'string') return 'https://via.placeholder.com/40?text=?'
-  const cleanPath = path.startsWith('/') ? path.substring(1) : path
-
-  // Pobierz publiczny URL z Supabase Storage (bucket 'public' – zmień, jeśli masz inny)
-  const { publicUrl, error } = supabase
-    .storage
-    .from('public')
-    .getPublicUrl(cleanPath)
-
-  if (error) {
-    console.error('Błąd pobierania publicznego URL:', error)
-    return 'https://via.placeholder.com/40?text=?'
-  }
-  return publicUrl
+  const filename = path.split('/').pop() // np. 'deserteagleblue.jpg'
+  return `/images/${filename}`
 }
 
 function createDropElement(drop) {
@@ -122,6 +112,7 @@ async function subscribeToDrops() {
     })
 }
 
+// 🚀 Start
 ;(async () => {
   await fetchInitialDrops()
   await subscribeToDrops()
