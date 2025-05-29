@@ -113,37 +113,46 @@
 
 
 
-
-
 #live-drops {
+  position: relative;
   display: flex;
+  flex-direction: row;
+  align-items: center;
   gap: 15px;
-  overflow: hidden;        /* ukrywa wszystko poza szerokością */
-  width: 600px;            /* ustaw szerokość kontenera na stałą wartość */
-  height: 60px;            /* wysokość kontenera */
+  width: 600px;              /* szerokość widoczna */
+  height: 60px;              /* wysokość kontenera */
   padding: 10px;
   background: #1e1e2f;
   border-radius: 10px;
   box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+  overflow: hidden;          /* ukryj wszystko poza kontenerem */
   user-select: none;
-  align-items: center;
-  white-space: nowrap;
+  scrollbar-width: none;     /* Firefox – ukryj pasek */
+}
+
+/* Dla przeglądarek opartych na Webkit (Chrome, Edge) */
+#live-drops::-webkit-scrollbar {
+  display: none;
 }
 
 .drop {
-  flex-shrink: 0;
-  background: linear-gradient(135deg, #667eea, #764ba2);
-  border-radius: 12px;
-  padding: 10px 15px;
   display: flex;
   align-items: center;
-  min-width: 180px;
-  color: white;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  font-weight: 600;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.25);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  cursor: default;
+  background: #2c2c3f;
+  color: #fff;
+  padding: 5px 10px;
+  border-radius: 8px;
+  font-size: 14px;
+  flex-shrink: 0;            /* NIE pozwól się ściskać dropom */
+  white-space: nowrap;
+  gap: 8px;
+}
+
+.drop img {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+  border-radius: 4px;
 }
 
 .drop:hover {
@@ -151,15 +160,6 @@
   box-shadow: 0 6px 15px rgba(118, 75, 162, 0.6);
 }
 
-.drop img {
-  width: 40px;
-  height: 40px;
-  margin-right: 12px;
-  border-radius: 8px;
-  object-fit: contain;
-  background: white;
-  flex-shrink: 0;
-}
 
 .drop div {
   white-space: nowrap;
