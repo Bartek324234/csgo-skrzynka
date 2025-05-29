@@ -120,19 +120,20 @@
 #live-drops {
   display: flex;
   gap: 15px;
-  overflow-x: hidden; /* zapobiega scrollowaniu na osi X */
+  overflow: hidden;       /* ukrywa dropy wykraczające poza kontener */
   padding: 10px;
-  background: #1e1e2f; /* ciemne tło */
+  background: #1e1e2f;
   border-radius: 10px;
   box-shadow: 0 4px 10px rgba(0,0,0,0.3);
   user-select: none;
   align-items: center;
   min-height: 60px;
+  width: 100%;            /* pełna szerokość rodzica */
 }
 
 .drop {
   flex-shrink: 0;
-  background: linear-gradient(135deg, #667eea, #764ba2); /* ładny gradient */
+  background: linear-gradient(135deg, #667eea, #764ba2);
   border-radius: 12px;
   padding: 10px 15px;
   display: flex;
@@ -166,4 +167,3 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
-
