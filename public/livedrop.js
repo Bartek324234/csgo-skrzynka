@@ -2,6 +2,7 @@ import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 
 const supabaseUrl = 'https://jotdnbkfgqtznjwbfjno.supabase.co'
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpvdGRuYmtmZ3F0em5qd2Jmam5vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc1MTMwODAsImV4cCI6MjA2MzA4OTA4MH0.mQrwJS9exVIMoSl_XwRT2WhE8DMTbdUM996kJIVA4kM'
+
 const supabase = createClient(supabaseUrl, supabaseKey)
 
 const dropContainer = document.getElementById('live-drops')
@@ -11,7 +12,10 @@ let currentShift = 0
 
 function getImageUrl(path) {
   if (!path || typeof path !== 'string') return 'https://via.placeholder.com/40?text=?'
-  return `${supabaseUrl}/storage/v1/object/public/${path}`
+  // usuń początkowy slash jeśli jest (bo path z bazy to np. /images/xxx.jpg)
+  const cleanPath = path.startsWith('/') ? path.substring(1) : path
+  // Supabase Storage publiczny bucket — przykładowo 'public' bucket i ścieżka do pliku
+  return `${supabaseUrl}/storage/v1/object/public/${cleanPath}`
 }
 
 function createDropElement(drop) {
