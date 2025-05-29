@@ -116,13 +116,14 @@
 /* Podstawowy reset */
 * {
   box-sizing: border-box;
-  margin-left: 10%;
+  margin-left: 0;
  
   padding: 0;
 }
 
 /* Styl kontenera całego live drop */
 #live-drops-wrapper {
+  margin-left: 10%;
   width: 100%;
   max-width: 100%;
   overflow: hidden; /* Ukryj nadmiar — żadnego scrolla */
