@@ -9,12 +9,17 @@ const maxDrops = 10
 const drops = []
 let currentShift = 0
 
+function getImageUrl(path) {
+  if (!path || typeof path !== 'string') return 'https://via.placeholder.com/40?text=?'
+  return `${supabaseUrl}/storage/v1/object/public/${path}`
+}
+
 function createDropElement(drop) {
   const el = document.createElement('div')
   el.classList.add('drop')
 
   const name = drop.item_name ?? 'Nieznany przedmiot'
-  const image = drop.item_image ?? 'https://via.placeholder.com/40?text=?'
+  const image = getImageUrl(drop.item_image)
   const value = typeof drop.value === 'number' ? drop.value.toFixed(2) : '0.00'
 
   el.innerHTML = `
