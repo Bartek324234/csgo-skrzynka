@@ -1,12 +1,16 @@
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
 
 const supabaseUrl = 'https://jotdnbkfgqtznjwbfjno.supabase.co'
-const supabaseKey =
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpvdGRuYmtmZ3F0em5qd2Jmam5vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc1MTMwODAsImV4cCI6MjA2MzA4OTA4MH0.mQrwJS9exVIMoSl_XwRT2WhE8DMTbdUM996kJIVA4kM'
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpvdGRuYmtmZ3F0em5qd2Jmam5vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc1MTMwODAsImV4cCI6MjA2MzA4OTA4MH0.mQrwJS9exVIMoSl_XwRT2WhE8DMTbdUM996kJIVA4kM'
 
 const supabase = createClient(supabaseUrl, supabaseKey)
 
 const dropContainer = document.getElementById('live-drops')
+if (!dropContainer) {
+  console.error('❌ Brakuje elementu #live-drops w HTML!')
+  throw new Error('Nie znaleziono kontenera dropów')
+}
+
 const maxDrops = 10
 const drops = []
 let currentShift = 0
@@ -14,10 +18,10 @@ let currentShift = 0
 // 🔧 Pobieranie obrazka lokalnie z /images/
 function getImageUrl(path) {
   if (!path || typeof path !== 'string') return 'https://via.placeholder.com/40?text=?'
-
-  // Obsługuje różne formaty: np. '/images/xyz.jpg', 'images/xyz.jpg', 'xyz.jpg'
   const filename = path.split('/').pop()
-  return `/images/${filename}`
+  const localPath = `/images/${filename}`
+  console.log('🔍 Image URL:', localPath)
+  return localPath
 }
 
 function createDropElement(drop) {
@@ -29,7 +33,7 @@ function createDropElement(drop) {
   const value = typeof drop.value === 'number' ? drop.value.toFixed(2) : '0.00'
 
   el.innerHTML = `
-    <img src="${image}" alt="${name}" onerror="this.src='https://via.placeholder.com/40?text=?'" />
+    <img src="${image}" alt="${name}" width="40" height="40" />
     <div>🎯 <b>${name}</b> za <b>${value} zł</b></div>
   `
   return el
@@ -47,13 +51,16 @@ function addDrop(drop) {
 
   requestAnimationFrame(() => {
     const elWidth = el.offsetWidth + 15
+
     drops.unshift({ el, width: elWidth })
+
     currentShift -= elWidth
     updatePosition(currentShift)
 
     if (drops.length > maxDrops) {
       const removed = drops.pop()
       dropContainer.removeChild(removed.el)
+
       currentShift += removed.width
 
       dropContainer.style.transition = 'none'
@@ -74,7 +81,7 @@ async function fetchInitialDrops() {
     .limit(maxDrops)
 
   if (error) {
-    console.error('Błąd pobierania dropów:', error)
+    console.error('❌ Błąd pobierania dropów:', error)
     return
   }
 
@@ -99,7 +106,7 @@ async function subscribeToDrops() {
       'postgres_changes',
       { event: 'INSERT', schema: 'public', table: 'user_inventory' },
       (payload) => {
-        console.log('Nowy drop:', payload.new)
+        console.log('📩 Nowy drop:', payload.new)
         addDrop(payload.new)
       }
     )
