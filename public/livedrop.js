@@ -12,10 +12,19 @@ let currentShift = 0
 
 function getImageUrl(path) {
   if (!path || typeof path !== 'string') return 'https://via.placeholder.com/40?text=?'
-  // usuń początkowy slash jeśli jest (bo path z bazy to np. /images/xxx.jpg)
   const cleanPath = path.startsWith('/') ? path.substring(1) : path
-  // Supabase Storage publiczny bucket — przykładowo 'public' bucket i ścieżka do pliku
-  return `${supabaseUrl}/storage/v1/object/public/${cleanPath}`
+
+  // Pobierz publiczny URL z Supabase Storage (bucket 'public' – zmień, jeśli masz inny)
+  const { publicUrl, error } = supabase
+    .storage
+    .from('public')
+    .getPublicUrl(cleanPath)
+
+  if (error) {
+    console.error('Błąd pobierania publicznego URL:', error)
+    return 'https://via.placeholder.com/40?text=?'
+  }
+  return publicUrl
 }
 
 function createDropElement(drop) {
