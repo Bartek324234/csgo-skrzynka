@@ -1,7 +1,8 @@
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
 
 const supabaseUrl = 'https://jotdnbkfgqtznjwbfjno.supabase.co'
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpvdGRuYmtmZ3F0em5qd2Jmam5vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc1MTMwODAsImV4cCI6MjA2MzA4OTA4MH0.mQrwJS9exVIMoSl_XwRT2WhE8DMTbdUM996kJIVA4kM'
+const supabaseKey =
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpvdGRuYmtmZ3F0em5qd2Jmam5vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc1MTMwODAsImV4cCI6MjA2MzA4OTA4MH0.mQrwJS9exVIMoSl_XwRT2WhE8DMTbdUM996kJIVA4kM'
 
 const supabase = createClient(supabaseUrl, supabaseKey)
 
@@ -13,7 +14,9 @@ let currentShift = 0
 // 🔧 Pobieranie obrazka lokalnie z /images/
 function getImageUrl(path) {
   if (!path || typeof path !== 'string') return 'https://via.placeholder.com/40?text=?'
-  const filename = path.split('/').pop() // np. 'deserteagleblue.jpg'
+
+  // Obsługuje różne formaty: np. '/images/xyz.jpg', 'images/xyz.jpg', 'xyz.jpg'
+  const filename = path.split('/').pop()
   return `/images/${filename}`
 }
 
@@ -26,7 +29,7 @@ function createDropElement(drop) {
   const value = typeof drop.value === 'number' ? drop.value.toFixed(2) : '0.00'
 
   el.innerHTML = `
-    <img src="${image}" alt="${name}" />
+    <img src="${image}" alt="${name}" onerror="this.src='https://via.placeholder.com/40?text=?'" />
     <div>🎯 <b>${name}</b> za <b>${value} zł</b></div>
   `
   return el
@@ -44,16 +47,13 @@ function addDrop(drop) {
 
   requestAnimationFrame(() => {
     const elWidth = el.offsetWidth + 15
-
     drops.unshift({ el, width: elWidth })
-
     currentShift -= elWidth
     updatePosition(currentShift)
 
     if (drops.length > maxDrops) {
       const removed = drops.pop()
       dropContainer.removeChild(removed.el)
-
       currentShift += removed.width
 
       dropContainer.style.transition = 'none'
@@ -105,7 +105,7 @@ async function subscribeToDrops() {
     )
     .subscribe((status) => {
       if (status === 'SUBSCRIBED') {
-        console.log('Subskrypcja aktywna')
+        console.log('✅ Subskrypcja aktywna')
       } else {
         console.error('❌ Błąd subskrypcji:', status)
       }
