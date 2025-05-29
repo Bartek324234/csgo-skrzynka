@@ -10,48 +10,76 @@
       overflow: hidden;
     }
 
-    #live-drops-wrapper {
-      width: 100%;
-      height: 100px;
-      background: #111;
-      color: #fff;
-      overflow: hidden;
-      position: relative;
-      font-family: Arial, sans-serif;
-      box-shadow: 0 0 10px #000;
-    }
+  
+/* Podstawowy reset */
+* {
+  box-sizing: border-box;
+  margin-left: 0;
+ 
+  padding: 0;
+}
 
-    #live-drops {
-      display: flex;
-      align-items: center;
-      gap: 15px;
-      height: 100%;
-      padding-left: 10px;
-      transition: transform 0.5s ease;
-      will-change: transform;
-    }
+/* Styl kontenera całego live drop */
+#live-drops-wrapper {
+  margin-left: 10%;
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden; /* Ukryj nadmiar — żadnego scrolla */
+  padding: 10px 0;
+  background: #111;
+  border-top: 2px solid #444;
+  border-bottom: 2px solid #444;
+  height: 210px;
+  position: absolute;
+}
 
-    .drop {
-      display: flex;
-      align-items: center;
-      background: #222;
-      border-radius: 8px;
-      padding: 5px 10px;
-      white-space: nowrap;
-      flex-shrink: 0;
-      box-shadow: 0 0 4px #000;
-    }
+/* Kontener na wszystkie dropy (będzie przesuwany) */
+#live-drops {
+  position: absolute;
+  display: flex;
+  flex-direction: row;
+  gap: 15px;
+  transition: transform 0.5s ease;
+  will-change: transform;
+}
 
-    .drop img {
-      width: 40px;
-      height: 40px;
-      object-fit: contain;
-      margin-right: 8px;
-    }
+/* Pojedynczy drop */
+.drop {
+  flex: 0 0 auto; /* Nie pozwala dropowi się rozciągać */
+  width: 160px;
+  min-width: 160px;
+  max-width: 160px;
+  height: 100%;
 
-    .drop div {
-      font-size: 14px;
-    }
+  background: #1e1e1e;
+  border: 1px solid #333;
+  border-radius: 10px;
+  padding: 10px;
+  color: #fff;
+  font-size: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-shadow: 0 0 5px rgba(255, 255, 255, 0.05);
+  transition: transform 0.3s ease;
+}
+
+/* Zdjęcie przedmiotu */
+.drop img {
+  width: 75px;
+  height: 75px;
+  object-fit: contain;
+  margin-bottom: 6px;
+  border-radius: 4px;
+  background: #222;
+}
+
+/* Tekst w dropie */
+.drop div {
+  text-align: center;
+  line-height: 1.4;
+}
+
   </style>
 </head>
 <body>
