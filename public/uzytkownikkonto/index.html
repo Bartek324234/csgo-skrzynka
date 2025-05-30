@@ -1,11 +1,10 @@
 <!DOCTYPE html>
 <html lang="pl">
 <head>
-   <link rel="stylesheet" href="index.css" />
+  <link rel="stylesheet" href="index.css" />
   <meta charset="UTF-8" />
   <title>Konto użytkownika</title>
   <style>
-  
     .item-name {
       font-weight: bold;
     }
@@ -17,6 +16,17 @@
     button.sell-btn {
       padding: 5px 10px;
       cursor: pointer;
+    }
+    #message {
+      margin-top: 10px;
+      padding: 10px;
+      font-weight: bold;
+    }
+    .message-success {
+      color: green;
+    }
+    .message-error {
+      color: red;
     }
   </style>
 </head>
@@ -32,14 +42,26 @@
   <h2>Twój ekwipunek</h2>
   <div id="inventory"></div>
 
-    <script>
+  <!-- 🔵 Komunikaty będą się pojawiać tutaj -->
+  <div id="message"></div>
+
+  <script>
     const userId = localStorage.getItem('user_id');
+
+    function showMessage(text, isError = false) {
+      const msgDiv = document.getElementById('message');
+      msgDiv.textContent = text;
+      msgDiv.className = isError ? 'message-error' : 'message-success';
+      setTimeout(() => {
+        msgDiv.textContent = '';
+        msgDiv.className = '';
+      }, 4000);
+    }
 
     if (!userId) {
       document.body.innerHTML = "<h2>Musisz być zalogowany, aby zobaczyć konto.</h2>";
       setTimeout(() => window.location.href = '/', 2000);
     } else {
-      // Załaduj dane użytkownika
       fetch(`/api/user-info/${userId}`)
         .then(res => res.json())
         .then(data => {
@@ -47,7 +69,6 @@
           document.getElementById('avatar').src = data.avatar || '/images/default-avatar.png';
         });
 
-      // Załaduj balans
       function loadBalance() {
         fetch(`/api/balance/${userId}`)
           .then(res => res.json())
@@ -63,9 +84,6 @@
           });
       }
 
-      loadBalance();
-
-      // Załaduj ekwipunek
       function loadInventory() {
         fetch(`/api/inventory/${userId}`)
           .then(res => res.json())
@@ -100,6 +118,7 @@
               sellBtn.textContent = 'Sprzedaj';
               sellBtn.className = 'sell-btn';
               sellBtn.onclick = () => {
+                // Bez potwierdzenia
                 sellItem(item.id, item.value, item.item_name);
               };
 
@@ -132,21 +151,20 @@
 
           console.log("Odpowiedź z serwera po sprzedaży:", data);
 
-          const messageDiv = document.getElementById('message');
-
           if (data.success) {
-            messageDiv.textContent = `Sprzedano "${itemName}" za ${parseFloat(value).toFixed(2)} zł. Nowy balans: ${data.newBalance.toFixed(2)} zł.`;
+            showMessage(`Sprzedano "${itemName}" za ${parseFloat(value).toFixed(2)} zł. Nowy balans: ${data.newBalance.toFixed(2)} zł`);
             loadBalance();
             loadInventory();
           } else {
-            messageDiv.textContent = `Błąd sprzedaży: ${data.error || 'Nieznany błąd'}`;
+            showMessage('Błąd podczas sprzedaży: ' + (data.error || 'Nieznany błąd'), true);
           }
         } catch (e) {
-          document.getElementById('message').textContent = 'Błąd komunikacji z serwerem.';
+          showMessage('Błąd komunikacji z serwerem.', true);
           console.error(e);
         }
       }
 
+      loadBalance();
       loadInventory();
     }
   </script>
