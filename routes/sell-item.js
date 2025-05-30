@@ -15,6 +15,18 @@ router.post('/', async (req, res) => {
   }
 
   try {
+    // Sprawdź, czy przedmiot faktycznie istnieje w ekwipunku użytkownika
+    const { data: item, error: errGetItem } = await supabase
+      .from('user_inventory')
+      .select('*')
+      .eq('id', item_id)
+      .eq('user_id', user_id)
+      .single();
+
+    if (errGetItem || !item) {
+      return res.status(404).json({ error: 'Przedmiot nie znaleziony w ekwipunku' });
+    }
+
     // Usuń przedmiot z ekwipunku użytkownika
     const { error: errDelete } = await supabase
       .from('user_inventory')
