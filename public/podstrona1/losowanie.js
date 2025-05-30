@@ -5,6 +5,21 @@ const supabase = createClient(
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpvdGRuYmtmZ3F0em5qd2Jmam5vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc1MTMwODAsImV4cCI6MjA2MzA4OTA4MH0.mQrwJS9exVIMoSl_XwRT2WhE8DMTbdUM996kJIVA4kM"
 );
 
+async function loadBalance(userId) {
+  const { data, error } = await supabase
+    .from('user_balances')
+    .select('balance')
+    .eq('user_id', userId)
+    .single();
+
+  if (error) {
+    console.error('Błąd ładowania salda:', error);
+    return 0;
+  }
+
+  return data?.balance ?? 0;
+}
+
 async function updateUI() {
   const { data: { session } } = await supabase.auth.getSession();
   const user = session?.user;
@@ -15,9 +30,6 @@ async function updateUI() {
     return;
   }
 
-  let drawCount = 1;
-  let currentDrawnItems = [];
-
   const balanceEl = document.getElementById('balance');
   const resultEl = document.getElementById('result');
   const imageEl = document.getElementById('resultImage');
@@ -26,83 +38,92 @@ async function updateUI() {
   const sellBtn = document.getElementById('sellBtn');
   const keepBtn = document.getElementById('keepBtn');
 
-  const updateBalance = async () => {
-    const balance = await loadBalance(user.id);
-    if (balanceEl) balanceEl.textContent = `${balance.toFixed(2)} zł`;
-  };
+  let balance = await loadBalance(user.id);
+  if (balanceEl) balanceEl.textContent = `${balance.toFixed(2)} zł`;
 
-  await updateBalance();
+  if (resultEl) resultEl.textContent = '';
+  if (imageEl) imageEl.style.display = 'none';
+  if (actionButtons) actionButtons.style.display = 'none';
 
-  // Obsługa wyboru x1-x5
-  document.querySelectorAll('.multiDraw').forEach(btn => {
-    btn.addEventListener('click', () => {
-      drawCount = parseInt(btn.getAttribute('data-count'));
-      document.querySelectorAll('.multiDraw').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-    });
-  });
+  if (drawBtn) {
+    drawBtn.addEventListener('click', async () => {
+      try {
+        drawBtn.disabled = true;
+        resultEl.textContent = '';
+        imageEl.style.display = 'none';
+        actionButtons.style.display = 'none';
 
-  drawBtn.addEventListener('click', async () => {
-    try {
-      drawBtn.disabled = true;
-      resultEl.innerHTML = '';
-      imageEl.style.display = 'none';
-      actionButtons.style.display = 'none';
-
-      const response = await fetch('/api/losuj', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ user_id: user.id, count: drawCount })
-      });
-
-      const result = await response.json();
-
-      if (result.error) {
-        resultEl.textContent = result.error;
-        return;
-      }
-
-      currentDrawnItems = result.items;
-
-      resultEl.innerHTML = '';
-      result.items.forEach(item => {
-        const img = document.createElement('img');
-        img.src = item.image;
-        img.style.maxWidth = '100px';
-        img.style.margin = '10px';
-        resultEl.appendChild(img);
-      });
-
-      actionButtons.style.display = 'block';
-      await updateBalance();
-
-      sellBtn.onclick = async () => {
-        const totalValue = currentDrawnItems.reduce((sum, item) => sum + item.value, 0);
-        const item_ids = currentDrawnItems.map(i => i.item_id);
-
-        const sellResponse = await fetch('/api/sell-item', {
+        const response = await fetch('/api/losuj', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ user_id: user.id, item_ids, total_value: totalValue })
+          body: JSON.stringify({ user_id: user.id })
         });
 
-        const sellResult = await sellResponse.json();
+        const result = await response.json();
 
-        resultEl.textContent = 'Sprzedano przedmioty!';
-        actionButtons.style.display = 'none';
-        await updateBalance();
-      };
+        if (result.error) {
+          resultEl.textContent = result.error;
+          return;
+        }
 
-      keepBtn.onclick = async () => {
-        resultEl.textContent = 'Przedmioty dodane do ekwipunku.';
-        actionButtons.style.display = 'none';
-      };
+        resultEl.textContent = result.message;
+        imageEl.src = result.image;
+        imageEl.style.display = 'block';
+        actionButtons.style.display = 'block';
 
-    } catch (err) {
-      console.error("Błąd losowania:", err);
-      resultEl.textContent = 'Błąd podczas losowania.';
-    } finally {
-      drawBtn.disabled = false;
-    }
-  });
+        if (typeof result.newBalance === 'number' && balanceEl) {
+          balance = result.newBalance;
+          balanceEl.textContent = `${balance.toFixed(2)} zł`;
+        }
+
+        const itemId = result.item_id;
+
+        sellBtn.onclick = async () => {
+          try {
+            const sellResponse = await fetch('/api/sell-item', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                user_id: user.id,
+                item_id: itemId,
+                value: result.value
+              })
+            });
+
+            const sellData = await sellResponse.json();
+
+            if (sellData.newBalance !== undefined && balanceEl) {
+              balance = sellData.newBalance;
+              balanceEl.textContent = `${balance.toFixed(2)} zł`;
+            }
+
+            resultEl.textContent = 'Przedmiot sprzedany!';
+            imageEl.style.display = 'none';
+            actionButtons.style.display = 'none';
+          } catch (err) {
+            console.error("Błąd sprzedaży:", err);
+            resultEl.textContent = 'Błąd sprzedaży przedmiotu.';
+          }
+        };
+
+        keepBtn.onclick = async () => {
+          try {
+            resultEl.textContent = 'Przedmiot jest już w ekwipunku.';
+            actionButtons.style.display = 'none';
+          } catch (err) {
+            console.error("Błąd dodania do ekwipunku:", err);
+            resultEl.textContent = 'Błąd dodania do ekwipunku.';
+          }
+        };
+
+      } catch (error) {
+        console.error('Błąd losowania:', error);
+        resultEl.textContent = 'Coś poszło nie tak podczas losowania.';
+      } finally {
+        drawBtn.disabled = false;
+      }
+    });
+  }
 }
+
+updateUI();
