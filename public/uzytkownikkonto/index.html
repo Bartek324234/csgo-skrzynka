@@ -32,7 +32,7 @@
   <h2>Twój ekwipunek</h2>
   <div id="inventory"></div>
 
-  <script>
+    <script>
     const userId = localStorage.getItem('user_id');
 
     if (!userId) {
@@ -100,9 +100,7 @@
               sellBtn.textContent = 'Sprzedaj';
               sellBtn.className = 'sell-btn';
               sellBtn.onclick = () => {
-                if (confirm(`Czy na pewno chcesz sprzedać "${item.item_name}" za ${parseFloat(item.value).toFixed(2)} zł?`)) {
-                  sellItem(item.id, item.value);
-                }
+                sellItem(item.id, item.value, item.item_name);
               };
 
               card.appendChild(img);
@@ -110,9 +108,9 @@
               card.appendChild(value);
 
               const btnWrapper = document.createElement('div');
-btnWrapper.className = 'btn-wrapper';
-btnWrapper.appendChild(sellBtn);
-card.appendChild(btnWrapper);
+              btnWrapper.className = 'btn-wrapper';
+              btnWrapper.appendChild(sellBtn);
+              card.appendChild(btnWrapper);
 
               container.appendChild(card);
             });
@@ -123,7 +121,7 @@ card.appendChild(btnWrapper);
           });
       }
 
-      async function sellItem(itemId, value) {
+      async function sellItem(itemId, value, itemName) {
         try {
           const res = await fetch('/api/sell-item', {
             method: 'POST',
@@ -132,15 +130,17 @@ card.appendChild(btnWrapper);
           });
           const data = await res.json();
 
+          const messageDiv = document.getElementById('message');
+
           if (data.success) {
-            alert(`Przedmiot sprzedany! Nowy balans: ${data.newBalance.toFixed(2)} zł`);
+            messageDiv.textContent = `Sprzedano "${itemName}" za ${parseFloat(value).toFixed(2)} zł. Nowy balans: ${data.newBalance.toFixed(2)} zł.`;
             loadBalance();
             loadInventory();
           } else {
-            alert('Błąd podczas sprzedaży: ' + (data.error || 'Nieznany błąd'));
+            messageDiv.textContent = `Błąd sprzedaży: ${data.error || 'Nieznany błąd'}`;
           }
         } catch (e) {
-          alert('Błąd podczas komunikacji z serwerem.');
+          document.getElementById('message').textContent = 'Błąd komunikacji z serwerem.';
           console.error(e);
         }
       }
