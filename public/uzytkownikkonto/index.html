@@ -103,13 +103,13 @@
                 sellItem(item.id, item.value, item.item_name);
               };
 
-              card.appendChild(img);
-              card.appendChild(name);
-              card.appendChild(value);
-
               const btnWrapper = document.createElement('div');
               btnWrapper.className = 'btn-wrapper';
               btnWrapper.appendChild(sellBtn);
+
+              card.appendChild(img);
+              card.appendChild(name);
+              card.appendChild(value);
               card.appendChild(btnWrapper);
 
               container.appendChild(card);
@@ -129,6 +129,8 @@
             body: JSON.stringify({ user_id: userId, item_id: itemId, value })
           });
           const data = await res.json();
+
+          console.log("Odpowiedź z serwera po sprzedaży:", data);
 
           const messageDiv = document.getElementById('message');
 
