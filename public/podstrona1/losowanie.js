@@ -36,20 +36,18 @@ function startAnimation(finalImage, onAnimationEnd) {
     '/images/p2000oceaniczny.jpg'
   ];
 
-  const totalRolls = 30;
-  const itemWidth = 110; // szerokość obrazka + margines
+  const itemWidth = 110;
+  const totalItems = 31;
+  const visibleItems = 3;
 
-  // wygeneruj 30 losowych obrazków
+  // 30 losowych + 1 wylosowany na końcu
   const skinList = [];
-  for (let i = 0; i < totalRolls; i++) {
+  for (let i = 0; i < totalItems - 1; i++) {
     const randomImage = availableImages[Math.floor(Math.random() * availableImages.length)];
     skinList.push(randomImage);
   }
-
-  // dodaj wygrany skin na końcu (31. miejsce, będzie na środku po zatrzymaniu)
   skinList.push(finalImage);
 
-  // stwórz pasek obrazków
   skinList.forEach(src => {
     const img = document.createElement('img');
     img.src = src;
@@ -58,30 +56,35 @@ function startAnimation(finalImage, onAnimationEnd) {
     imageStrip.appendChild(img);
   });
 
-  // przesuwanie tak, żeby finalImage był na środku kontenera (czyli pozycja (index - 2) * szerokość)
   let position = 0;
-  const finalIndex = skinList.length - 1;
-  const stopAt = (finalIndex - 2) * itemWidth; // środkowa pozycja 3. slot
+  let currentFrame = 0;
+  let totalFrames = 180; // ~3 sekundy animacji
+  let stopAt = (totalItems - visibleItems) * itemWidth;
 
-  let speed = 25;
+  function easeOutQuad(t) {
+    return t * (2 - t); // łagodne zwolnienie
+  }
+
   function animate() {
-    position += speed;
-
-    if (position >= stopAt) {
-      imageStrip.style.transform = `translateX(-${stopAt}px)`;
-      setTimeout(() => {
-        animationContainer.style.display = 'none';
-        if (onAnimationEnd) onAnimationEnd();
-      }, 300);
-      return;
-    }
+    currentFrame++;
+    let progress = currentFrame / totalFrames;
+    let eased = easeOutQuad(progress);
+    position = eased * stopAt;
 
     imageStrip.style.transform = `translateX(-${position}px)`;
-    requestAnimationFrame(animate);
+
+    if (currentFrame < totalFrames) {
+      requestAnimationFrame(animate);
+    } else {
+      // zatrzymaj dokładnie na zwycięzcy
+      imageStrip.style.transform = `translateX(-${stopAt}px)`;
+      if (onAnimationEnd) onAnimationEnd();
+    }
   }
 
   animate();
 }
+
 
 
 
