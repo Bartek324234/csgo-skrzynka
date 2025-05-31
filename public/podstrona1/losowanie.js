@@ -65,8 +65,7 @@ async function updateUI() {
         imageNameEl.style.display = 'none';
         actionButtons.style.display = 'none';
 
-        // Opóźnienie 3 sekundy przed wysłaniem zapytania
-        await new Promise(resolve => setTimeout(resolve, 3000));
+       
 
         const response = await fetch('/api/losuj', {
           method: 'POST',
