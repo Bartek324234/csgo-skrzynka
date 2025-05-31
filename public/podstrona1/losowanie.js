@@ -58,7 +58,7 @@ function startAnimation(finalImage, onAnimationEnd) {
 
   let position = 0;
   let currentFrame = 0;
-  let totalFrames = 180; // ~3 sekundy animacji
+  let totalFrames = 240; // ~3 sekundy animacji
   let stopAt = (totalItems - visibleItems) * itemWidth;
 
   function easeOutQuad(t) {
