@@ -20,6 +20,55 @@ async function loadBalance(userId) {
   return data?.balance ?? 0;
 }
 
+// Funkcja animacji paska obrazków
+function startAnimation(finalImage, onAnimationEnd) {
+  const animationContainer = document.getElementById('animationContainer');
+  const imageStrip = document.getElementById('imageStrip');
+
+  // Pokaż kontener animacji i wyczyść go
+  animationContainer.style.display = 'block';
+  imageStrip.innerHTML = '';
+
+  // Obrazki do animacji (możesz je modyfikować, ale zachowaj finalImage na końcu)
+  const images = [
+    '/images/deserteagleblue.jpg',
+    '/images/glock18moda.jpg',
+    '/images/mac10bronz.jpg',
+    '/images/p18dzielnia.jpg',
+    '/images/p2000oceaniczny.jpg',
+    finalImage
+  ];
+
+  // Dodaj obrazy do paska
+  images.forEach(src => {
+    const img = document.createElement('img');
+    img.src = src;
+    img.style.width = '100px';
+    img.style.marginRight = '10px';
+    imageStrip.appendChild(img);
+  });
+
+  let position = 0;
+  const maxShift = (images.length - 3) * 110; // przesunięcie aby zatrzymać na finalImage
+
+  function animate() {
+    position += 10;
+    if (position >= maxShift) {
+      imageStrip.style.transform = `translateX(-${maxShift}px)`;
+      // Po zakończeniu animacji ukryj animację i wywołaj callback
+      setTimeout(() => {
+        animationContainer.style.display = 'none';
+        if (onAnimationEnd) onAnimationEnd();
+      }, 500);
+      return;
+    }
+    imageStrip.style.transform = `translateX(-${position}px)`;
+    requestAnimationFrame(animate);
+  }
+
+  animate();
+}
+
 async function updateUI() {
   const { data: { session } } = await supabase.auth.getSession();
   const user = session?.user;
@@ -33,7 +82,7 @@ async function updateUI() {
   const balanceEl = document.getElementById('balance');
   const resultEl = document.getElementById('result');
   const imageEl = document.getElementById('resultImage');
-  const imageNameEl = document.getElementById('resultImageName');  // nowy element do nazwy obrazka
+  const imageNameEl = document.getElementById('resultImageName');
   const drawBtn = document.getElementById('drawBtn');
   const actionButtons = document.getElementById('actionButtons');
   const sellBtn = document.getElementById('sellBtn');
@@ -44,7 +93,7 @@ async function updateUI() {
 
   if (resultEl) resultEl.textContent = '';
   if (imageEl) imageEl.style.display = 'none';
-  if (imageNameEl) imageNameEl.style.display = 'none'; // ukrywamy nazwę na start
+  if (imageNameEl) imageNameEl.style.display = 'none';
   if (actionButtons) actionButtons.style.display = 'none';
 
   // Mapa ścieżek do nazw obrazków:
@@ -65,8 +114,7 @@ async function updateUI() {
         imageNameEl.style.display = 'none';
         actionButtons.style.display = 'none';
 
-       
-
+        // Wywołaj backend losowania
         const response = await fetch('/api/losuj', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -77,69 +125,71 @@ async function updateUI() {
 
         if (result.error) {
           resultEl.textContent = result.error;
+          drawBtn.disabled = false;
           return;
         }
 
-        resultEl.textContent = result.message;
-        imageEl.src = result.image;
-        imageEl.style.display = 'block';
+        // Uruchom animację i po niej pokaż wynik
+        startAnimation(result.image, () => {
+          resultEl.textContent = result.message;
+          imageEl.src = result.image;
+          imageEl.style.display = 'block';
+          imageNameEl.textContent = imageNameMap[result.image] || 'Nieznana nazwa';
+          imageNameEl.style.display = 'block';
+          actionButtons.style.display = 'block';
 
-        // Ustawiamy nazwę obrazka pod zdjęciem:
-        imageNameEl.textContent = imageNameMap[result.image] || 'Nieznana nazwa';
-        imageNameEl.style.display = 'block';
+          if (typeof result.newBalance === 'number' && balanceEl) {
+            balance = result.newBalance;
+            balanceEl.textContent = `${balance.toFixed(2)} zł`;
+          }
 
-        actionButtons.style.display = 'block';
+          const itemId = result.item_id;
 
-        if (typeof result.newBalance === 'number' && balanceEl) {
-          balance = result.newBalance;
-          balanceEl.textContent = `${balance.toFixed(2)} zł`;
-        }
+          sellBtn.onclick = async () => {
+            try {
+              const sellResponse = await fetch('/api/sell-item', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  user_id: user.id,
+                  item_id: itemId,
+                  value: result.value
+                })
+              });
 
-        const itemId = result.item_id;
+              const sellData = await sellResponse.json();
 
-        sellBtn.onclick = async () => {
-          try {
-            const sellResponse = await fetch('/api/sell-item', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                user_id: user.id,
-                item_id: itemId,
-                value: result.value
-              })
-            });
+              if (sellData.newBalance !== undefined && balanceEl) {
+                balance = sellData.newBalance;
+                balanceEl.textContent = `${balance.toFixed(2)} zł`;
+              }
 
-            const sellData = await sellResponse.json();
-
-            if (sellData.newBalance !== undefined && balanceEl) {
-              balance = sellData.newBalance;
-              balanceEl.textContent = `${balance.toFixed(2)} zł`;
+              resultEl.textContent = 'Przedmiot sprzedany!';
+              imageEl.style.display = 'none';
+              imageNameEl.style.display = 'none';
+              actionButtons.style.display = 'none';
+            } catch (err) {
+              console.error("Błąd sprzedaży:", err);
+              resultEl.textContent = 'Błąd sprzedaży przedmiotu.';
             }
+          };
 
-            resultEl.textContent = 'Przedmiot sprzedany!';
-            imageEl.style.display = 'none';
-            imageNameEl.style.display = 'none';
-            actionButtons.style.display = 'none';
-          } catch (err) {
-            console.error("Błąd sprzedaży:", err);
-            resultEl.textContent = 'Błąd sprzedaży przedmiotu.';
-          }
-        };
-
-        keepBtn.onclick = async () => {
-          try {
-            resultEl.textContent = 'Przedmiot jest już w ekwipunku.';
-            actionButtons.style.display = 'none';
-          } catch (err) {
-            console.error("Błąd dodania do ekwipunku:", err);
-            resultEl.textContent = 'Błąd dodania do ekwipunku.';
-          }
-        };
+          keepBtn.onclick = async () => {
+            try {
+              resultEl.textContent = 'Przedmiot jest już w ekwipunku.';
+              actionButtons.style.display = 'none';
+            } catch (err) {
+              console.error("Błąd dodania do ekwipunku:", err);
+              resultEl.textContent = 'Błąd dodania do ekwipunku.';
+            }
+          };
+          
+          drawBtn.disabled = false; // Odblokuj przycisk po animacji
+        });
 
       } catch (error) {
         console.error('Błąd losowania:', error);
         resultEl.textContent = 'Coś poszło nie tak podczas losowania.';
-      } finally {
         drawBtn.disabled = false;
       }
     });
