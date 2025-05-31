@@ -80,6 +80,38 @@
 
 
 
+
+#sellAllBtn {
+  background-color: #28a745; /* zielone tło */
+  color: white;             /* biały tekst */
+  border: none;             /* bez obramowania */
+  border-radius: 5px;       /* zaokrąglone rogi */
+  padding: 10px 20px;       /* odstępy wewnątrz */
+  font-size: 16px;          /* rozmiar tekstu */
+  cursor: pointer;          /* kursor wskazujący na kliknięcie */
+  transition: background-color 0.3s ease;
+}
+
+#sellAllBtn:hover {
+  background-color: #218838; /* ciemniejszy zielony po najechaniu */
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
    .btn-wrapper {
   margin-top: auto; /* „dociśnij” go do dołu kontenera */
   width: 100%;
