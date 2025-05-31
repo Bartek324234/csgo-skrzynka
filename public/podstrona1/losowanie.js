@@ -25,7 +25,6 @@ function startAnimation(finalImage, onAnimationEnd) {
   const animationContainer = document.getElementById('animationContainer');
   const imageStrip = document.getElementById('imageStrip');
 
-  // Pokaż kontener animacji i wyczyść pasek
   animationContainer.style.display = 'block';
   imageStrip.innerHTML = '';
 
@@ -37,17 +36,21 @@ function startAnimation(finalImage, onAnimationEnd) {
     '/images/p2000oceaniczny.jpg'
   ];
 
-  const totalCount = 50; // liczba przesuwanych skórek przed końcem
-  const skins = [];
+  const totalRolls = 30;
+  const itemWidth = 110; // szerokość obrazka + margines
 
-  for (let i = 0; i < totalCount; i++) {
+  // wygeneruj 30 losowych obrazków
+  const skinList = [];
+  for (let i = 0; i < totalRolls; i++) {
     const randomImage = availableImages[Math.floor(Math.random() * availableImages.length)];
-    skins.push(randomImage);
+    skinList.push(randomImage);
   }
 
-  skins.push(finalImage); // dodaj finalny wylosowany skin na końcu
+  // dodaj wygrany skin na końcu (31. miejsce, będzie na środku po zatrzymaniu)
+  skinList.push(finalImage);
 
-  skins.forEach(src => {
+  // stwórz pasek obrazków
+  skinList.forEach(src => {
     const img = document.createElement('img');
     img.src = src;
     img.style.width = '100px';
@@ -55,15 +58,17 @@ function startAnimation(finalImage, onAnimationEnd) {
     imageStrip.appendChild(img);
   });
 
+  // przesuwanie tak, żeby finalImage był na środku kontenera (czyli pozycja (index - 2) * szerokość)
   let position = 0;
-  const itemWidth = 110; // szerokość obrazka + margines
-  const maxShift = (skins.length - 3) * itemWidth; // zatrzymaj gdy 3. od lewej to wylosowany
+  const finalIndex = skinList.length - 1;
+  const stopAt = (finalIndex - 2) * itemWidth; // środkowa pozycja 3. slot
 
+  let speed = 25;
   function animate() {
-    position += 10;
+    position += speed;
 
-    if (position >= maxShift) {
-      imageStrip.style.transform = `translateX(-${maxShift}px)`;
+    if (position >= stopAt) {
+      imageStrip.style.transform = `translateX(-${stopAt}px)`;
       setTimeout(() => {
         animationContainer.style.display = 'none';
         if (onAnimationEnd) onAnimationEnd();
