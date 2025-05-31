@@ -25,22 +25,29 @@ function startAnimation(finalImage, onAnimationEnd) {
   const animationContainer = document.getElementById('animationContainer');
   const imageStrip = document.getElementById('imageStrip');
 
-  // Pokaż kontener animacji i wyczyść go
+  // Pokaż kontener animacji i wyczyść pasek
   animationContainer.style.display = 'block';
   imageStrip.innerHTML = '';
 
-  // Obrazki do animacji (możesz je modyfikować, ale zachowaj finalImage na końcu)
-  const images = [
+  const availableImages = [
     '/images/deserteagleblue.jpg',
     '/images/glock18moda.jpg',
     '/images/mac10bronz.jpg',
     '/images/p18dzielnia.jpg',
-    '/images/p2000oceaniczny.jpg',
-    finalImage
+    '/images/p2000oceaniczny.jpg'
   ];
 
-  // Dodaj obrazy do paska
-  images.forEach(src => {
+  const totalCount = 50; // liczba przesuwanych skórek przed końcem
+  const skins = [];
+
+  for (let i = 0; i < totalCount; i++) {
+    const randomImage = availableImages[Math.floor(Math.random() * availableImages.length)];
+    skins.push(randomImage);
+  }
+
+  skins.push(finalImage); // dodaj finalny wylosowany skin na końcu
+
+  skins.forEach(src => {
     const img = document.createElement('img');
     img.src = src;
     img.style.width = '100px';
@@ -49,25 +56,32 @@ function startAnimation(finalImage, onAnimationEnd) {
   });
 
   let position = 0;
-  const maxShift = (images.length - 3) * 110; // przesunięcie aby zatrzymać na finalImage
+  const itemWidth = 110; // szerokość obrazka + margines
+  const maxShift = (skins.length - 3) * itemWidth; // zatrzymaj gdy 3. od lewej to wylosowany
 
   function animate() {
     position += 10;
+
     if (position >= maxShift) {
       imageStrip.style.transform = `translateX(-${maxShift}px)`;
-      // Po zakończeniu animacji ukryj animację i wywołaj callback
       setTimeout(() => {
         animationContainer.style.display = 'none';
         if (onAnimationEnd) onAnimationEnd();
-      }, 500);
+      }, 300);
       return;
     }
+
     imageStrip.style.transform = `translateX(-${position}px)`;
     requestAnimationFrame(animate);
   }
 
   animate();
 }
+
+
+
+
+
 
 async function updateUI() {
   const { data: { session } } = await supabase.auth.getSession();
