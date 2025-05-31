@@ -38,7 +38,7 @@ function startAnimation(finalImage, onAnimationEnd) {
 
   const itemWidth = 110;
   const totalItems = 21;
-  const visibleItems = 3;
+  const visibleItems = 8;
 
   // 30 losowych + 1 wylosowany na końcu
   const skinList = [];
