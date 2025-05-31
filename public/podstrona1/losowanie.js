@@ -33,6 +33,7 @@ async function updateUI() {
   const balanceEl = document.getElementById('balance');
   const resultEl = document.getElementById('result');
   const imageEl = document.getElementById('resultImage');
+  const imageNameEl = document.getElementById('resultImageName');  // nowy element do nazwy obrazka
   const drawBtn = document.getElementById('drawBtn');
   const actionButtons = document.getElementById('actionButtons');
   const sellBtn = document.getElementById('sellBtn');
@@ -43,7 +44,17 @@ async function updateUI() {
 
   if (resultEl) resultEl.textContent = '';
   if (imageEl) imageEl.style.display = 'none';
+  if (imageNameEl) imageNameEl.style.display = 'none'; // ukrywamy nazwę na start
   if (actionButtons) actionButtons.style.display = 'none';
+
+  // Mapa ścieżek do nazw obrazków:
+  const imageNameMap = {
+    "/images/deserteagleblue.jpg": "Desert Eagle - Niebieski",
+    "/images/glock18moda.jpg": "Glock 18 - Moda",
+    "/images/mac10bronz.jpg": "MAC-10 - Brązowy",
+    "/images/p18dzielnia.jpg": "P18 - Dzielnia",
+    "/images/p2000oceaniczny.jpg": "P2000 - Oceaniczny"
+  };
 
   if (drawBtn) {
     drawBtn.addEventListener('click', async () => {
@@ -51,13 +62,11 @@ async function updateUI() {
         drawBtn.disabled = true;
         resultEl.textContent = '';
         imageEl.style.display = 'none';
+        imageNameEl.style.display = 'none';
         actionButtons.style.display = 'none';
 
-
-
-
-// Delay przed wysłaniem zapytania do backendu (np. 3 sekundy)
-    await new Promise(resolve => setTimeout(resolve, 3000));
+        // Opóźnienie 3 sekundy przed wysłaniem zapytania
+        await new Promise(resolve => setTimeout(resolve, 3000));
 
         const response = await fetch('/api/losuj', {
           method: 'POST',
@@ -72,12 +81,14 @@ async function updateUI() {
           return;
         }
 
-
-
-
         resultEl.textContent = result.message;
         imageEl.src = result.image;
         imageEl.style.display = 'block';
+
+        // Ustawiamy nazwę obrazka pod zdjęciem:
+        imageNameEl.textContent = imageNameMap[result.image] || 'Nieznana nazwa';
+        imageNameEl.style.display = 'block';
+
         actionButtons.style.display = 'block';
 
         if (typeof result.newBalance === 'number' && balanceEl) {
@@ -108,6 +119,7 @@ async function updateUI() {
 
             resultEl.textContent = 'Przedmiot sprzedany!';
             imageEl.style.display = 'none';
+            imageNameEl.style.display = 'none';
             actionButtons.style.display = 'none';
           } catch (err) {
             console.error("Błąd sprzedaży:", err);
