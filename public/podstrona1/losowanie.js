@@ -66,6 +66,12 @@ async function updateUI() {
           return;
         }
 
+
+   // tutaj delay 2 sekundy (2000 ms)
+    await new Promise(resolve => setTimeout(resolve, 4000));
+
+
+
         resultEl.textContent = result.message;
         imageEl.src = result.image;
         imageEl.style.display = 'block';
