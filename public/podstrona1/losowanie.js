@@ -53,6 +53,12 @@ async function updateUI() {
         imageEl.style.display = 'none';
         actionButtons.style.display = 'none';
 
+
+
+
+// Delay przed wysłaniem zapytania do backendu (np. 3 sekundy)
+    await new Promise(resolve => setTimeout(resolve, 3000));
+
         const response = await fetch('/api/losuj', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -66,9 +72,6 @@ async function updateUI() {
           return;
         }
 
-
-   // tutaj delay 2 sekundy (2000 ms)
-    await new Promise(resolve => setTimeout(resolve, 4000));
 
 
 
