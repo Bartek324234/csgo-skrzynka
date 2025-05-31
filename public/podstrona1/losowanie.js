@@ -37,7 +37,7 @@ function startAnimation(finalImage, onAnimationEnd) {
   ];
 
   const itemWidth = 120; // zwiększamy odstępy, by mniej przewinęło się w 3s
-  const visibleItems = 5; // ile obrazków widać naraz
+  const visibleItems = 3; // ile obrazków widać naraz
   const totalItems = 18; // 17 losowych + 1 wygrany = mniej przewijania
 
   // Buduj listę skinów
