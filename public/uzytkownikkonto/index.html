@@ -73,6 +73,10 @@
           document.getElementById('avatar').src = data.avatar || '/images/default-avatar.png';
         });
 
+
+
+
+
       function loadBalance() {
         fetch(`/api/balance/${userId}`)
           .then(res => res.json())
@@ -88,67 +92,74 @@
           });
       }
 
+
+
+
       function loadInventory() {
-        fetch(`/api/inventory/${userId}`)
-          .then(res => res.json())
-          .then(items => {
-            const container = document.getElementById('inventory');
-            container.innerHTML = '';
+  fetch(`/api/inventory/${userId}`)
+    .then(res => res.json())
+    .then(items => {
+      const container = document.getElementById('inventory');
+      container.innerHTML = '';
 
-            if (items.length === 0) {
-  container.textContent = "Brak przedmiotów w ekwipunku.";
-  document.getElementById('sellAllBtn').style.display = 'none';
-  return;
-} else {
-  document.getElementById('sellAllBtn').style.display = 'inline-block';
-}
+      if (items.length === 0) {
+        container.textContent = "Brak przedmiotów w ekwipunku.";
+        document.getElementById('sellAllBtn').style.display = 'none';
+        return;
+      } else {
+        // Obliczamy łączną wartość wszystkich itemów
+        const totalValue = items.reduce((sum, item) => sum + parseFloat(item.value), 0);
 
-
-            items.forEach(item => {
-              const card = document.createElement('div');
-              card.className = 'item-card';
-
-              const img = document.createElement('img');
-              img.src = item.image_url;
-              img.alt = item.item_name;
-              img.style.width = '60px';
-              img.style.height = '60px';
-
-              const name = document.createElement('div');
-              name.className = 'item-name';
-              name.textContent = item.item_name;
-
-              const value = document.createElement('div');
-              value.className = 'item-value';
-              value.textContent = `${parseFloat(item.value).toFixed(2)} zł`;
-
-              const sellBtn = document.createElement('button');
-              sellBtn.textContent = 'Sprzedaj';
-              sellBtn.className = 'sell-btn';
-              sellBtn.onclick = () => {
-                // Bez potwierdzenia
-                sellItem(item.id, item.value, item.item_name);
-              };
-
-              const btnWrapper = document.createElement('div');
-              btnWrapper.className = 'btn-wrapper';
-              btnWrapper.appendChild(sellBtn);
-
-              card.appendChild(img);
-              card.appendChild(name);
-              card.appendChild(value);
-              card.appendChild(btnWrapper);
-
-              container.appendChild(card);
-            });
-          })
-          .catch(err => {
-            console.error("Błąd ładowania ekwipunku:", err);
-            document.getElementById('inventory').textContent = "Błąd ładowania ekwipunku.";
-          });
+        // Aktualizujemy tekst i widoczność przycisku "Sprzedaj wszystko"
+        const sellAllBtn = document.getElementById('sellAllBtn');
+        sellAllBtn.textContent = `Sprzedaj wszystko za ${totalValue.toFixed(2)} zł`;
+        sellAllBtn.style.display = 'inline-block';
       }
 
+      items.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'item-card';
 
+        const img = document.createElement('img');
+        img.src = item.image_url;
+        img.alt = item.item_name;
+        img.style.width = '60px';
+        img.style.height = '60px';
+
+        const name = document.createElement('div');
+        name.className = 'item-name';
+        name.textContent = item.item_name;
+
+        const value = document.createElement('div');
+        value.className = 'item-value';
+        value.textContent = `${parseFloat(item.value).toFixed(2)} zł`;
+
+        const sellBtn = document.createElement('button');
+        sellBtn.textContent = 'Sprzedaj';
+        sellBtn.className = 'sell-btn';
+        sellBtn.onclick = () => {
+          // Bez potwierdzenia
+          sellItem(item.id, item.value, item.item_name);
+        };
+
+        const btnWrapper = document.createElement('div');
+        btnWrapper.className = 'btn-wrapper';
+        btnWrapper.appendChild(sellBtn);
+
+        card.appendChild(img);
+        card.appendChild(name);
+        card.appendChild(value);
+        card.appendChild(btnWrapper);
+
+        container.appendChild(card);
+      });
+    })
+    .catch(err => {
+      console.error("Błąd ładowania ekwipunku:", err);
+      document.getElementById('inventory').textContent = "Błąd ładowania ekwipunku.";
+      document.getElementById('sellAllBtn').style.display = 'none';
+    });
+}
 
 
 
