@@ -36,11 +36,11 @@ function startAnimation(finalImage, onAnimationEnd) {
     '/images/p2000oceaniczny.jpg'
   ];
 
-  const itemWidth = 110;
-  const totalItems = 21;
-  const visibleItems = 8;
+  const itemWidth = 120; // zwiększamy odstępy, by mniej przewinęło się w 3s
+  const visibleItems = 5; // ile obrazków widać naraz
+  const totalItems = 18; // 17 losowych + 1 wygrany = mniej przewijania
 
-  // 30 losowych + 1 wylosowany na końcu
+  // Buduj listę skinów
   const skinList = [];
   for (let i = 0; i < totalItems - 1; i++) {
     const randomImage = availableImages[Math.floor(Math.random() * availableImages.length)];
@@ -48,27 +48,28 @@ function startAnimation(finalImage, onAnimationEnd) {
   }
   skinList.push(finalImage);
 
+  // Renderuj obrazki
   skinList.forEach(src => {
     const img = document.createElement('img');
     img.src = src;
     img.style.width = '100px';
-    img.style.marginRight = '10px';
+    img.style.marginRight = '20px'; // większe odstępy = mniej przewijanego
     imageStrip.appendChild(img);
   });
 
   let position = 0;
   let currentFrame = 0;
-  let totalFrames = 180; // ~3 sekundy animacji
-  let stopAt = (totalItems - visibleItems) * itemWidth;
+  const totalFrames = 180; // ~3 sekundy przy 60fps
+  const stopAt = (totalItems - visibleItems) * itemWidth;
 
   function easeOutQuad(t) {
-    return t * (2 - t); // łagodne zwolnienie
+    return t * (2 - t); // łagodne wyhamowanie
   }
 
   function animate() {
     currentFrame++;
-    let progress = currentFrame / totalFrames;
-    let eased = easeOutQuad(progress);
+    const progress = currentFrame / totalFrames;
+    const eased = easeOutQuad(progress);
     position = eased * stopAt;
 
     imageStrip.style.transform = `translateX(-${position}px)`;
@@ -76,7 +77,6 @@ function startAnimation(finalImage, onAnimationEnd) {
     if (currentFrame < totalFrames) {
       requestAnimationFrame(animate);
     } else {
-      // zatrzymaj dokładnie na zwycięzcy
       imageStrip.style.transform = `translateX(-${stopAt}px)`;
       if (onAnimationEnd) onAnimationEnd();
     }
@@ -84,6 +84,7 @@ function startAnimation(finalImage, onAnimationEnd) {
 
   animate();
 }
+
 
 
 
