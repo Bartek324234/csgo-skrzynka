@@ -5,6 +5,11 @@ const supabase = createClient(
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpvdGRuYmtmZ3F0em5qd2Jmam5vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc1MTMwODAsImV4cCI6MjA2MzA4OTA4MH0.mQrwJS9exVIMoSl_XwRT2WhE8DMTbdUM996kJIVA4kM"
 );
 
+
+document.addEventListener('DOMContentLoaded', () => {
+  showStaticSkinsOnce();
+});
+
 async function loadBalance(userId) {
   const { data, error } = await supabase
     .from('user_balances')
@@ -26,24 +31,50 @@ async function loadBalance(userId) {
 
 
 
+
 // Funkcja animacji paska obrazków
 let lastOffsetX = 0;
 let currentSkinList = [];
 let isFirstSpin = true;
+let staticShown = false;
 
+const availableImages = [
+  '/images/deserteagleblue.jpg',
+  '/images/glock18moda.jpg',
+  '/images/mac10bronz.jpg',
+  '/images/p18dzielnia.jpg',
+  '/images/p2000oceaniczny.jpg'
+];
+
+// Funkcja pokazująca statyczny pasek skinów tylko raz, przy wejściu na stronę
+function showStaticSkinsOnce() {
+  if (staticShown) return;
+  staticShown = true;
+
+  const strip = document.getElementById('imageStripStatic');
+  strip.innerHTML = '';
+  strip.style.display = 'flex'; // pokazujemy statyczny pasek
+
+  for (let i = 0; i < 15; i++) {
+    const src = availableImages[Math.floor(Math.random() * availableImages.length)];
+    const img = document.createElement('img');
+    img.src = src;
+    img.style.width = '100px';
+    img.style.marginRight = '20px';
+    strip.appendChild(img);
+  }
+}
 function startAnimation(finalImage, onAnimationEnd) {
   const animationContainer = document.getElementById('animationContainer');
   const imageStrip = document.getElementById('imageStrip');
+  const staticStrip = document.getElementById('imageStripStatic');
+
+  // Ukrywamy statyczny pasek przy starcie animacji
+  if (staticStrip && staticStrip.style.display !== 'none') {
+    staticStrip.style.display = 'none';
+  }
 
   animationContainer.style.display = 'block';
-
-  const availableImages = [
-    '/images/deserteagleblue.jpg',
-    '/images/glock18moda.jpg',
-    '/images/mac10bronz.jpg',
-    '/images/p18dzielnia.jpg',
-    '/images/p2000oceaniczny.jpg'
-  ];
 
   const visibleItems = 7;
   const itemWidth = 120; // 100px image + 20px margin
@@ -112,6 +143,7 @@ function startAnimation(finalImage, onAnimationEnd) {
 
   requestAnimationFrame(animate);
 }
+
 
 
 
