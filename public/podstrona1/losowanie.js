@@ -25,9 +25,10 @@ function startAnimation(finalImage, onAnimationEnd) {
   const animationContainer = document.getElementById('animationContainer');
   const imageStrip = document.getElementById('imageStrip');
 
+  // Reset
   animationContainer.style.display = 'block';
-  imageStrip.innerHTML = ''; // wyczyść stare obrazki
-  imageStrip.style.transform = 'translateX(0)'; // resetuj pozycję na początek!
+  imageStrip.innerHTML = '';
+  imageStrip.style.transform = 'translateX(0)';
 
   const availableImages = [
     '/images/deserteagleblue.jpg',
@@ -37,29 +38,26 @@ function startAnimation(finalImage, onAnimationEnd) {
     '/images/p2000oceaniczny.jpg'
   ];
 
-  const visibleItems = 7; // ile widocznych
-  const itemWidth = 120; // szerokość + marginesy
+  const visibleItems = 7;
+  const itemWidth = 120;
   animationContainer.style.width = `${visibleItems * itemWidth}px`;
 
-  const itemsBeforeWinner = Math.floor(visibleItems / 2); // np. 3
-  const extraBefore = 20; // więcej losowych przed wygranym
-  const extraAfter = 5;  // i więcej po wygranym, żeby były te 3 skiny po
+  const itemsBeforeWinner = Math.floor(visibleItems / 2);
+  const extraBefore = 30;
+  const extraAfter = 5;
 
   const winnerIndex = extraBefore + itemsBeforeWinner;
   const totalItems = winnerIndex + 1 + extraAfter;
 
   const skinList = [];
 
-  // dodaj losowe przed wygranym
   for (let i = 0; i < totalItems - 1; i++) {
     const randomImage = availableImages[Math.floor(Math.random() * availableImages.length)];
     skinList.push(randomImage);
   }
 
-  // wstaw wygranego na odpowiednie miejsce
   skinList.splice(winnerIndex, 0, finalImage);
 
-  // renderuj
   skinList.forEach(src => {
     const img = document.createElement('img');
     img.src = src;
@@ -68,24 +66,27 @@ function startAnimation(finalImage, onAnimationEnd) {
     imageStrip.appendChild(img);
   });
 
-  let position = 0;
-  let currentFrame = 0;
-  const totalFrames = 300; // długość animacji
-  const stopAt = (winnerIndex - itemsBeforeWinner) * (itemWidth); // gdzie zatrzymać
+  const stopAt = (winnerIndex - itemsBeforeWinner) * itemWidth;
 
-  function easeOutQuad(t) {
-    return t * (2 - t); // spowolnienie
+  // ⏱️ Ustawienia animacji
+  const duration = 5000; // 5 sekund
+  const fastPart = 500; // pierwsze 0.5 sekundy szybko
+  const startTime = performance.now();
+
+  function easeOutExpo(t) {
+    return t === 1 ? 1 : 1 - Math.pow(2, -10 * t); // ładne wyhamowanie
   }
 
-  function animate() {
-    currentFrame++;
-    const progress = currentFrame / totalFrames;
-    const eased = easeOutQuad(progress);
-    position = eased * stopAt;
+  function animate(now) {
+    const elapsed = now - startTime;
+    const progress = Math.min(elapsed / duration, 1);
+
+    const eased = easeOutExpo(progress);
+    const position = eased * stopAt;
 
     imageStrip.style.transform = `translateX(-${position}px)`;
 
-    if (currentFrame < totalFrames) {
+    if (progress < 1) {
       requestAnimationFrame(animate);
     } else {
       imageStrip.style.transform = `translateX(-${stopAt}px)`;
@@ -93,8 +94,9 @@ function startAnimation(finalImage, onAnimationEnd) {
     }
   }
 
-  animate();
+  requestAnimationFrame(animate);
 }
+
 
 
 
