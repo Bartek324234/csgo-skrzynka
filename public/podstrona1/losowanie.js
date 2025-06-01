@@ -76,7 +76,7 @@ function showStaticSkinsOnce() {
   strip.innerHTML = '';
   strip.style.display = 'flex';
   strip.style.overflow = 'hidden';
-  strip.style.width = `${7 * 100}px`; // 7 widocznych elementów * 120px (100px + 20px margin)
+  strip.style.width = `${7 * 120}px`; // 7 widocznych elementów * 120px (100px + 20px margin)
   strip.style.whiteSpace = 'nowrap'; // wymusz liniowe ułożenie
 
   for (let i = 0; i < 7; i++) {  // tylko 7 elementów, tak jak w animacji
@@ -114,7 +114,7 @@ function startAnimation(finalImage, onAnimationEnd) {
   imageStrip.style.transform = `translateX(-${lastOffsetX}px)`; // startowa pozycja
 
   const visibleItems = 7;
-  const itemWidth = 100; // 100px + 20px margin
+  const itemWidth = 120; // 100px + 20px margin
   animationContainer.style.width = `${visibleItems * itemWidth}px`;
 
   const itemsBeforeWinner = Math.floor(visibleItems / 2);
