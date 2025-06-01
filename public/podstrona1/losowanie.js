@@ -37,26 +37,26 @@ function startAnimation(finalImage, onAnimationEnd) {
   ];
 
   const visibleItems = 7;
-const itemWidth = 120;
-document.getElementById('animationContainer').style.width = `${visibleItems * itemWidth}px`;
+  const itemWidth = 120;
+  animationContainer.style.width = `${visibleItems * itemWidth}px`;
 
-  const itemsBeforeWinner = Math.floor(visibleItems / 2); // 3 przed
-  const itemsAfterWinner = visibleItems - itemsBeforeWinner - 1; // 3 po
-  const totalItems = itemsBeforeWinner + 1 + itemsAfterWinner + 20; // dodajemy extra 10 na animację
+  const itemsBeforeWinner = Math.floor(visibleItems / 2); // np. 3
+  const extraItems = 25; // ile losowych przed wygranym
+  const winnerIndex = extraItems + itemsBeforeWinner; // index w tablicy gdzie ma być wygrany skin
+  const totalItems = winnerIndex + (visibleItems - itemsBeforeWinner); // łącznie z tymi po wygranym
 
   const skinList = [];
 
-  // losowe przed "wygraną"
+  // dodaj losowe przed wygranym
   for (let i = 0; i < totalItems - 1; i++) {
     const randomImage = availableImages[Math.floor(Math.random() * availableImages.length)];
     skinList.push(randomImage);
   }
 
-  // wstaw wygraną na środku
-  const winnerIndex = itemsBeforeWinner + 5; // wygrana będzie 5 obrazków od końca, co przy animacji da środek
+  // wstaw wygrany skin dokładnie w winnerIndex
   skinList.splice(winnerIndex, 0, finalImage);
 
-  // renderuj wszystkie
+  // renderuj obrazki
   skinList.forEach(src => {
     const img = document.createElement('img');
     img.src = src;
@@ -67,8 +67,8 @@ document.getElementById('animationContainer').style.width = `${visibleItems * it
 
   let position = 0;
   let currentFrame = 0;
-  const totalFrames = 180;
-  const stopAt = (winnerIndex - itemsBeforeWinner) * itemWidth;
+  const totalFrames = 300; // dłuższa animacja ~5s
+  const stopAt = (winnerIndex - itemsBeforeWinner) * (itemWidth + 20); // +20 za margin
 
   function easeOutQuad(t) {
     return t * (2 - t);
