@@ -29,6 +29,7 @@ async function loadBalance(userId) {
 // Funkcja animacji paska obrazków
 let lastOffsetX = 0;
 let currentSkinList = [];
+let isFirstSpin = true;
 
 function startAnimation(finalImage, onAnimationEnd) {
   const animationContainer = document.getElementById('animationContainer');
@@ -45,23 +46,32 @@ function startAnimation(finalImage, onAnimationEnd) {
   ];
 
   const visibleItems = 7;
-  const itemWidth = 120;
+  const itemWidth = 120; // 100px image + 20px margin
   animationContainer.style.width = `${visibleItems * itemWidth}px`;
 
   const itemsBeforeWinner = Math.floor(visibleItems / 2);
   const extraBefore = 40;
   const extraAfter = 10;
-  const winnerIndex = currentSkinList.length / 1 + extraBefore + itemsBeforeWinner;
+  const winnerIndex = currentSkinList.length + extraBefore + itemsBeforeWinner;
   const totalItems = winnerIndex + 1 + extraAfter;
 
   const newSkins = [];
-  for (let i = 0; i < totalItems - 1; i++) {
+
+  for (let i = 0; i < totalItems - currentSkinList.length - 1; i++) {
     const randomImage = availableImages[Math.floor(Math.random() * availableImages.length)];
     newSkins.push(randomImage);
   }
+
   newSkins.splice(winnerIndex - currentSkinList.length, 0, finalImage);
 
-  // Doklej nowe skiny do imageStrip i do currentSkinList
+  // Czyszczenie tylko przy pierwszym losowaniu
+  if (isFirstSpin) {
+    imageStrip.innerHTML = '';
+    currentSkinList = [];
+    lastOffsetX = 0;
+    isFirstSpin = false;
+  }
+
   newSkins.forEach(src => {
     const img = document.createElement('img');
     img.src = src;
@@ -71,10 +81,10 @@ function startAnimation(finalImage, onAnimationEnd) {
     currentSkinList.push(src);
   });
 
-  // Oblicz dystans od obecnej pozycji do wygranego skinu
-  const distanceToMove = (winnerIndex - itemsBeforeWinner) * itemWidth;
+  const distanceToMove = (winnerIndex - itemsBeforeWinner) * itemWidth - lastOffsetX;
   const newOffsetX = lastOffsetX + distanceToMove;
-  const totalDuration = 5500;
+
+  const totalDuration = 6000;
 
   function easeOutCubic(t) {
     return 1 - Math.pow(1 - t, 3);
@@ -102,6 +112,7 @@ function startAnimation(finalImage, onAnimationEnd) {
 
   requestAnimationFrame(animate);
 }
+
 
 
 
