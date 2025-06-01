@@ -46,6 +46,16 @@ const availableImages = [
   '/images/p2000oceaniczny.jpg'
 ];
 
+
+
+
+
+
+
+
+
+
+
 // Funkcja pokazująca statyczny pasek skinów tylko raz, przy wejściu na stronę
 function showStaticSkinsOnce() {
   if (staticShown) return;
@@ -69,20 +79,28 @@ function showStaticSkinsOnce() {
   }
 }
 
+animationContainer.style.display = 'block';
+imageStrip.style.display = 'flex';  // albo 'block', by był widoczny
+
+
+ 
 function startAnimation(finalImage, onAnimationEnd) {
+  console.log('startAnimation wywołane');
+
   const animationContainer = document.getElementById('animationContainer');
   const imageStrip = document.getElementById('imageStrip');
   const staticStrip = document.getElementById('imageStripStatic');
 
-  // Ukrywamy statyczny pasek przy starcie animacji
   if (staticStrip && staticStrip.style.display !== 'none') {
     staticStrip.style.display = 'none';
   }
 
   animationContainer.style.display = 'block';
+  imageStrip.style.display = 'flex';
+  imageStrip.style.transform = `translateX(-${lastOffsetX}px)`; // startowa pozycja
 
   const visibleItems = 7;
-  const itemWidth = 120; // 100px image + 20px margin
+  const itemWidth = 120; // 100px + 20px margin
   animationContainer.style.width = `${visibleItems * itemWidth}px`;
 
   const itemsBeforeWinner = Math.floor(visibleItems / 2);
@@ -100,7 +118,6 @@ function startAnimation(finalImage, onAnimationEnd) {
 
   newSkins.splice(winnerIndex - currentSkinList.length, 0, finalImage);
 
-  // Czyszczenie tylko przy pierwszym losowaniu
   if (isFirstSpin) {
     imageStrip.innerHTML = '';
     currentSkinList = [];
@@ -116,6 +133,8 @@ function startAnimation(finalImage, onAnimationEnd) {
     imageStrip.appendChild(img);
     currentSkinList.push(src);
   });
+
+  console.log('Nowe obrazy do animacji:', newSkins);
 
   const distanceToMove = (winnerIndex - itemsBeforeWinner) * itemWidth - lastOffsetX;
   const newOffsetX = lastOffsetX + distanceToMove;
