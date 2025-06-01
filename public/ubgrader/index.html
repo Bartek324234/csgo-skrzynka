@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8" />
+  <title>Moje Skórki</title>
+  <style>
+    body {
+      font-family: sans-serif;
+    }
+    .item-card {
+      display: flex;
+      align-items: center;
+      border: 1px solid #ccc;
+      padding: 10px;
+      margin-bottom: 10px;
+      border-radius: 8px;
+      background: #f9f9f9;
+      max-width: 400px;
+    }
+    .item-card img {
+      width: 60px;
+      height: 60px;
+      margin-right: 10px;
+    }
+    .item-name {
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <a href="/index.html">← Powrót</a>
+  <h2>Twoje skiny</h2>
+  <div id="inventory">Ładowanie ekwipunku...</div>
+
+  <script>
+    const userId = localStorage.getItem('user_id');
+
+    if (!userId) {
+      document.body.innerHTML = "<h2>Musisz być zalogowany, aby zobaczyć swoje skiny.</h2>";
+      setTimeout(() => window.location.href = '/', 2000);
+    } else {
+      fetch(`/api/inventory/${userId}`)
+        .then(res => res.json())
+        .then(items => {
+          const container = document.getElementById('inventory');
+          container.innerHTML = '';
+
+          if (items.length === 0) {
+            container.textContent = "Brak przedmiotów w ekwipunku.";
+            return;
+          }
+
+          items.forEach(item => {
+            const card = document.createElement('div');
+            card.className = 'item-card';
+
+            const img = document.createElement('img');
+            img.src = item.image_url;
+            img.alt = item.item_name;
+
+            const name = document.createElement('div');
+            name.className = 'item-name';
+            name.textContent = item.item_name;
+
+            card.appendChild(img);
+            card.appendChild(name);
+            container.appendChild(card);
+          });
+        })
+        .catch(err => {
+          console.error("Błąd ładowania ekwipunku:", err);
+          document.getElementById('inventory').textContent = "Błąd ładowania ekwipunku.";
+        });
+    }
+  </script>
+</body>
+</html>
