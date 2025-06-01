@@ -20,6 +20,12 @@ async function loadBalance(userId) {
   return data?.balance ?? 0;
 }
 
+
+
+
+
+
+
 // Funkcja animacji paska obrazków
 function startAnimation(finalImage, onAnimationEnd) {
   const animationContainer = document.getElementById('animationContainer');
@@ -43,8 +49,8 @@ function startAnimation(finalImage, onAnimationEnd) {
   animationContainer.style.width = `${visibleItems * itemWidth}px`;
 
   const itemsBeforeWinner = Math.floor(visibleItems / 2);
-  const extraBefore = 30;
-  const extraAfter = 5;
+  const extraBefore = 25;
+  const extraAfter = 10;
 
   const winnerIndex = extraBefore + itemsBeforeWinner;
   const totalItems = winnerIndex + 1 + extraAfter;
@@ -68,33 +74,47 @@ function startAnimation(finalImage, onAnimationEnd) {
 
   const stopAt = (winnerIndex - itemsBeforeWinner) * itemWidth;
 
-  // ⏱️ Ustawienia animacji
-  const duration = 5000; // 5 sekund
-  const fastPart = 500; // pierwsze 0.5 sekundy szybko
-  const startTime = performance.now();
+  // Przesunięcia klatka po klatce
+  const positions = [];
+  let total = 0;
 
-  function easeOutExpo(t) {
-    return t === 1 ? 1 : 1 - Math.pow(2, -10 * t); // ładne wyhamowanie
+  // Faza 1: szybkie przewijanie
+  for (let i = 0; i < 25; i++) {
+    total += 40; // szybkie
+    positions.push(total);
   }
 
-  function animate(now) {
-    const elapsed = now - startTime;
-    const progress = Math.min(elapsed / duration, 1);
+  // Faza 2: zwalnianie
+  for (let i = 0; i < 15; i++) {
+    total += 25 - i; // coraz wolniej
+    positions.push(total);
+  }
 
-    const eased = easeOutExpo(progress);
-    const position = eased * stopAt;
+  // Faza 3: końcowe przesuwanie ostatnich 6 skinów bardzo wolno
+  const remaining = stopAt - total;
+  const slowSteps = 6;
+  const slowStepDistance = remaining / slowSteps;
 
-    imageStrip.style.transform = `translateX(-${position}px)`;
+  for (let i = 0; i < slowSteps; i++) {
+    total += slowStepDistance;
+    positions.push(total);
+  }
 
-    if (progress < 1) {
-      requestAnimationFrame(animate);
+  // Animacja klatka po klatce
+  let frame = 0;
+  function animateStep() {
+    if (frame < positions.length) {
+      imageStrip.style.transform = `translateX(-${positions[frame]}px)`;
+      frame++;
+      const delay = frame < 25 ? 15 : frame < 40 ? 40 : 150;
+      setTimeout(animateStep, delay);
     } else {
       imageStrip.style.transform = `translateX(-${stopAt}px)`;
       if (onAnimationEnd) onAnimationEnd();
     }
   }
 
-  requestAnimationFrame(animate);
+  animateStep();
 }
 
 
