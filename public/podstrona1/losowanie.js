@@ -28,13 +28,13 @@ async function loadBalance(userId) {
 
 // Funkcja animacji paska obrazków
 let lastOffsetX = 0;
+let currentSkinList = [];
 
 function startAnimation(finalImage, onAnimationEnd) {
   const animationContainer = document.getElementById('animationContainer');
   const imageStrip = document.getElementById('imageStrip');
 
   animationContainer.style.display = 'block';
-  imageStrip.innerHTML = '';
 
   const availableImages = [
     '/images/deserteagleblue.jpg',
@@ -51,24 +51,27 @@ function startAnimation(finalImage, onAnimationEnd) {
   const itemsBeforeWinner = Math.floor(visibleItems / 2);
   const extraBefore = 40;
   const extraAfter = 10;
-  const winnerIndex = extraBefore + itemsBeforeWinner;
+  const winnerIndex = currentSkinList.length / 1 + extraBefore + itemsBeforeWinner;
   const totalItems = winnerIndex + 1 + extraAfter;
 
-  const skinList = [];
+  const newSkins = [];
   for (let i = 0; i < totalItems - 1; i++) {
     const randomImage = availableImages[Math.floor(Math.random() * availableImages.length)];
-    skinList.push(randomImage);
+    newSkins.push(randomImage);
   }
-  skinList.splice(winnerIndex, 0, finalImage);
+  newSkins.splice(winnerIndex - currentSkinList.length, 0, finalImage);
 
-  skinList.forEach(src => {
+  // Doklej nowe skiny do imageStrip i do currentSkinList
+  newSkins.forEach(src => {
     const img = document.createElement('img');
     img.src = src;
     img.style.width = '100px';
     img.style.marginRight = '20px';
     imageStrip.appendChild(img);
+    currentSkinList.push(src);
   });
 
+  // Oblicz dystans od obecnej pozycji do wygranego skinu
   const distanceToMove = (winnerIndex - itemsBeforeWinner) * itemWidth;
   const newOffsetX = lastOffsetX + distanceToMove;
   const totalDuration = 5500;
@@ -99,6 +102,7 @@ function startAnimation(finalImage, onAnimationEnd) {
 
   requestAnimationFrame(animate);
 }
+
 
 
 
