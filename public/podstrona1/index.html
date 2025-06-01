@@ -142,6 +142,40 @@
 
 
 
+.indicator {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    z-index: 10;
+  }
+
+  .top-indicator {
+    top: -10px;
+    border-left: 10px solid transparent;
+    border-right: 10px solid transparent;
+    border-bottom: 15px solid red; /* kolor wskaźnika */
+  }
+
+  .bottom-indicator {
+    bottom: -10px;
+    border-left: 10px solid transparent;
+    border-right: 10px solid transparent;
+    border-top: 15px solid red;
+  }
+
+
+
+
+
+
+
+
+
+
+
+
 </style>
 </head>
 
@@ -161,6 +195,13 @@
 
 
 
+
+
+
+
+<div id="animationWrapper" style="position: relative; width: fit-content; margin: 20px auto;">
+  <div class="indicator top-indicator"></div>
+  <div class="indicator bottom-indicator"></div>
 
 <div id="animationContainer" style="overflow:hidden; border: 1px solid #ccc; margin: 20px auto;">
   <div id="imageStrip" style="display: flex; transition: transform 1s ease-out;"></div>
