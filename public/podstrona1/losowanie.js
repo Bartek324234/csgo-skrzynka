@@ -76,21 +76,35 @@ function showStaticSkinsOnce() {
   strip.innerHTML = '';
   strip.style.display = 'flex';
   strip.style.overflow = 'hidden';
-  strip.style.width = `${7 * 120}px`; // 7 widocznych elementów * 120px (100px + 20px margin)
-  strip.style.whiteSpace = 'nowrap'; // wymusz liniowe ułożenie
 
-  for (let i = 0; i < 7; i++) {  // tylko 7 elementów, tak jak w animacji
+  // Losujemy 7 obrazków
+  const skins = [];
+  for (let i = 0; i < 7; i++) {
     const src = availableImages[Math.floor(Math.random() * availableImages.length)];
+    skins.push(src);
+  }
+
+  // Ustawiamy szerokość: 7 obrazków * (100px szerokości + 20px marginesów po bokach)
+  strip.style.width = `${7 * (100 + 20)}px`;
+
+  // Ustaw kolor tła kontenera na podstawie pierwszego obrazka
+  const firstBgClass = imageBackgroundMap[skins[0]] || '';
+  strip.className = ''; // resetujemy klasy
+  if (firstBgClass) strip.classList.add(firstBgClass);
+
+  // Dodajemy obrazki z marginesem 10px
+  skins.forEach(src => {
     const img = document.createElement('img');
     img.src = src;
     img.classList.add('skin-img');
-const bgClass = imageBackgroundMap[src] || '';
-if (bgClass) img.classList.add(bgClass);
+    // Dodatkowo nadaj klasę tła jeśli chcesz do samego obrazka (opcjonalne)
+    const bgClass = imageBackgroundMap[src] || '';
+    if (bgClass) img.classList.add(bgClass);
 
-    img.style.display = 'inline-block';
     strip.appendChild(img);
-  }
+  });
 }
+
 
 
 
@@ -114,7 +128,7 @@ function startAnimation(finalImage, onAnimationEnd) {
   imageStrip.style.transform = `translateX(-${lastOffsetX}px)`; // startowa pozycja
 
   const visibleItems = 7;
-  const itemWidth = 120; // 100px + 20px margin
+  const itemWidth = 120; // 100px + 20px marginesów (10px z każdej strony)
   animationContainer.style.width = `${visibleItems * itemWidth}px`;
 
   const itemsBeforeWinner = Math.floor(visibleItems / 2);
@@ -139,13 +153,19 @@ function startAnimation(finalImage, onAnimationEnd) {
     isFirstSpin = false;
   }
 
+  // Ustaw klasę tła na podstawie pierwszego obrazka w newSkins
+  const firstBgClass = imageBackgroundMap[newSkins[0]] || '';
+  imageStrip.className = '';
+  if (firstBgClass) imageStrip.classList.add(firstBgClass);
+
+  // Dodaj obrazki z marginesami
+  imageStrip.innerHTML = ''; // czyścimy jeszcze raz, by mieć pewność
   newSkins.forEach(src => {
     const img = document.createElement('img');
     img.src = src;
-   img.classList.add('skin-img');
-const bgClass = imageBackgroundMap[src] || '';
-if (bgClass) img.classList.add(bgClass);
-
+    img.classList.add('skin-img');
+    const bgClass = imageBackgroundMap[src] || '';
+    if (bgClass) img.classList.add(bgClass);
     imageStrip.appendChild(img);
     currentSkinList.push(src);
   });
