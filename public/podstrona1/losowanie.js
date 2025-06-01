@@ -6,6 +6,17 @@ const supabase = createClient(
 );
 
 
+const imageBackgroundMap = {
+  "/images/deserteagleblue.jpg": "bg-blue",
+  "/images/glock18moda.jpg": "bg-purple",
+  "/images/mac10bronz.jpg": "bg-bronze",
+  "/images/p18dzielnia.jpg": "bg-red",
+  "/images/p2000oceaniczny.jpg": "bg-gold"
+};
+
+
+
+
 document.addEventListener('DOMContentLoaded', () => {
   showStaticSkinsOnce();
 });
@@ -72,15 +83,18 @@ function showStaticSkinsOnce() {
     const src = availableImages[Math.floor(Math.random() * availableImages.length)];
     const img = document.createElement('img');
     img.src = src;
-    img.style.width = '100px';
-    img.style.marginRight = '20px';
+    img.classList.add('skin-img');
+const bgClass = imageBackgroundMap[src] || '';
+if (bgClass) img.classList.add(bgClass);
+
     img.style.display = 'inline-block';
     strip.appendChild(img);
   }
 }
 
-animationContainer.style.display = 'block';
-imageStrip.style.display = 'flex';  // albo 'block', by był widoczny
+
+
+
 
 
  
@@ -128,8 +142,10 @@ function startAnimation(finalImage, onAnimationEnd) {
   newSkins.forEach(src => {
     const img = document.createElement('img');
     img.src = src;
-    img.style.width = '100px';
-    img.style.marginRight = '20px';
+   img.classList.add('skin-img');
+const bgClass = imageBackgroundMap[src] || '';
+if (bgClass) img.classList.add(bgClass);
+
     imageStrip.appendChild(img);
     currentSkinList.push(src);
   });
