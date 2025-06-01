@@ -31,10 +31,9 @@ function startAnimation(finalImage, onAnimationEnd) {
   const animationContainer = document.getElementById('animationContainer');
   const imageStrip = document.getElementById('imageStrip');
 
-  // Reset
   animationContainer.style.display = 'block';
   imageStrip.innerHTML = '';
-  imageStrip.style.transform = 'translateX(0)';
+  imageStrip.style.transform = 'translateX(0px)';
 
   const availableImages = [
     '/images/deserteagleblue.jpg',
@@ -74,48 +73,34 @@ function startAnimation(finalImage, onAnimationEnd) {
 
   const stopAt = (winnerIndex - itemsBeforeWinner) * itemWidth;
 
-  // Przesunięcia klatka po klatce
-  const positions = [];
-  let total = 0;
-
-  // Faza 1: szybkie przewijanie
-  for (let i = 0; i < 25; i++) {
-    total += 40; // szybkie
-    positions.push(total);
+  // 🔽 Easing: bardzo płynne zwalnianie
+  function easeOutExpo(t) {
+    return t === 1 ? 1 : 1 - Math.pow(2, -10 * t);
   }
 
-  // Faza 2: zwalnianie
-  for (let i = 0; i < 15; i++) {
-    total += 25 - i; // coraz wolniej
-    positions.push(total);
-  }
+  const duration = 4000; // ms (4 sekundy)
+  let startTime = null;
 
-  // Faza 3: końcowe przesuwanie ostatnich 6 skinów bardzo wolno
-  const remaining = stopAt - total;
-  const slowSteps = 6;
-  const slowStepDistance = remaining / slowSteps;
+  function animate(timestamp) {
+    if (!startTime) startTime = timestamp;
+    const elapsed = timestamp - startTime;
+    const t = Math.min(elapsed / duration, 1); // normalizujemy od 0 do 1
+    const eased = easeOutExpo(t);
 
-  for (let i = 0; i < slowSteps; i++) {
-    total += slowStepDistance;
-    positions.push(total);
-  }
+    const position = eased * stopAt;
+    imageStrip.style.transform = `translateX(-${position}px)`;
 
-  // Animacja klatka po klatce
-  let frame = 0;
-  function animateStep() {
-    if (frame < positions.length) {
-      imageStrip.style.transform = `translateX(-${positions[frame]}px)`;
-      frame++;
-      const delay = frame < 25 ? 15 : frame < 40 ? 40 : 150;
-      setTimeout(animateStep, delay);
+    if (t < 1) {
+      requestAnimationFrame(animate);
     } else {
       imageStrip.style.transform = `translateX(-${stopAt}px)`;
       if (onAnimationEnd) onAnimationEnd();
     }
   }
 
-  animateStep();
+  requestAnimationFrame(animate);
 }
+
 
 
 
