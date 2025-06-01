@@ -27,13 +27,14 @@ async function loadBalance(userId) {
 
 
 // Funkcja animacji paska obrazków
+let lastOffsetX = 0;
+
 function startAnimation(finalImage, onAnimationEnd) {
   const animationContainer = document.getElementById('animationContainer');
   const imageStrip = document.getElementById('imageStrip');
 
   animationContainer.style.display = 'block';
   imageStrip.innerHTML = '';
-  imageStrip.style.transform = 'translateX(0px)';
 
   const availableImages = [
     '/images/deserteagleblue.jpg',
@@ -48,7 +49,7 @@ function startAnimation(finalImage, onAnimationEnd) {
   animationContainer.style.width = `${visibleItems * itemWidth}px`;
 
   const itemsBeforeWinner = Math.floor(visibleItems / 2);
-  const extraBefore = 40; // więcej skinów dla dłuższej animacji
+  const extraBefore = 40;
   const extraAfter = 10;
   const winnerIndex = extraBefore + itemsBeforeWinner;
   const totalItems = winnerIndex + 1 + extraAfter;
@@ -68,8 +69,9 @@ function startAnimation(finalImage, onAnimationEnd) {
     imageStrip.appendChild(img);
   });
 
-  const stopAt = (winnerIndex - itemsBeforeWinner) * itemWidth;
-  const totalDuration = 5500; // 5.5 sekundy
+  const distanceToMove = (winnerIndex - itemsBeforeWinner) * itemWidth;
+  const newOffsetX = lastOffsetX + distanceToMove;
+  const totalDuration = 5500;
 
   function easeOutCubic(t) {
     return 1 - Math.pow(1 - t, 3);
@@ -83,19 +85,22 @@ function startAnimation(finalImage, onAnimationEnd) {
     const progress = Math.min(elapsed / totalDuration, 1);
     const eased = easeOutCubic(progress);
 
-    const position = eased * stopAt;
-    imageStrip.style.transform = `translateX(-${position}px)`;
+    const currentOffset = lastOffsetX + eased * distanceToMove;
+    imageStrip.style.transform = `translateX(-${currentOffset}px)`;
 
     if (progress < 1) {
       requestAnimationFrame(animate);
     } else {
-      imageStrip.style.transform = `translateX(-${stopAt}px)`;
+      imageStrip.style.transform = `translateX(-${newOffsetX}px)`;
+      lastOffsetX = newOffsetX;
       if (onAnimationEnd) onAnimationEnd();
     }
   }
 
   requestAnimationFrame(animate);
 }
+
+
 
 
 
