@@ -209,6 +209,20 @@
 
 
 
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+}
+.name {
+  font-weight: bold;
+}
 
 
 
@@ -231,6 +245,22 @@ body {
 </head>
 
 <body>
+
+
+
+
+<div class="user-info">
+  <img id="avatar" class="avatar" src="/images/default-avatar.png" alt="Avatar użytkownika" />
+  <div id="name" class="name">Ładowanie...</div>
+</div>
+
+
+
+
+
+
+
+
 
 <iframe src="/livedrop.html" style="width: 100%; height: 135px; border: none;"></iframe>
 
