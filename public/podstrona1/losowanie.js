@@ -36,8 +36,10 @@ function startAnimation(finalImage, onAnimationEnd) {
     '/images/p2000oceaniczny.jpg'
   ];
 
-  const itemWidth = 120;
-  const visibleItems = 7; // ile obrazków ma być widocznych naraz
+  const visibleItems = 7;
+const itemWidth = 120;
+document.getElementById('animationContainer').style.width = `${visibleItems * itemWidth}px`;
+
   const itemsBeforeWinner = Math.floor(visibleItems / 2); // 3 przed
   const itemsAfterWinner = visibleItems - itemsBeforeWinner - 1; // 3 po
   const totalItems = itemsBeforeWinner + 1 + itemsAfterWinner + 10; // dodajemy extra 10 na animację
