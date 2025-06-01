@@ -53,17 +53,22 @@ function showStaticSkinsOnce() {
 
   const strip = document.getElementById('imageStripStatic');
   strip.innerHTML = '';
-  strip.style.display = 'flex'; // pokazujemy statyczny pasek
+  strip.style.display = 'flex';
+  strip.style.overflow = 'hidden';
+  strip.style.width = `${7 * 120}px`; // 7 widocznych elementów * 120px (100px + 20px margin)
+  strip.style.whiteSpace = 'nowrap'; // wymusz liniowe ułożenie
 
-  for (let i = 0; i < 15; i++) {
+  for (let i = 0; i < 7; i++) {  // tylko 7 elementów, tak jak w animacji
     const src = availableImages[Math.floor(Math.random() * availableImages.length)];
     const img = document.createElement('img');
     img.src = src;
     img.style.width = '100px';
     img.style.marginRight = '20px';
+    img.style.display = 'inline-block';
     strip.appendChild(img);
   }
 }
+
 function startAnimation(finalImage, onAnimationEnd) {
   const animationContainer = document.getElementById('animationContainer');
   const imageStrip = document.getElementById('imageStrip');
