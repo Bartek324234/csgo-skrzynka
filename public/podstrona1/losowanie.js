@@ -48,7 +48,7 @@ function startAnimation(finalImage, onAnimationEnd) {
   animationContainer.style.width = `${visibleItems * itemWidth}px`;
 
   const itemsBeforeWinner = Math.floor(visibleItems / 2);
-  const extraBefore = 30; // więcej obrazków przed zwycięzcą
+  const extraBefore = 40; // więcej skinów dla dłuższej animacji
   const extraAfter = 10;
   const winnerIndex = extraBefore + itemsBeforeWinner;
   const totalItems = winnerIndex + 1 + extraAfter;
@@ -69,39 +69,26 @@ function startAnimation(finalImage, onAnimationEnd) {
   });
 
   const stopAt = (winnerIndex - itemsBeforeWinner) * itemWidth;
+  const totalDuration = 5500; // 5.5 sekundy
 
-  const fastDuration = 1500; // 1.5 sekundy szybkie
-  const slowDuration = 4000; // 4 sekundy hamowanie
-  const totalDuration = fastDuration + slowDuration;
+  function easeOutCubic(t) {
+    return 1 - Math.pow(1 - t, 3);
+  }
 
   let startTime = null;
-
-  // Faza 1: szybkie przewijanie (stała prędkość)
-  // Faza 2: hamowanie easeOutExpo
-  function easeOutExpo(t) {
-    return t === 1 ? 1 : 1 - Math.pow(2, -8 * t); // łagodniejsze niż -10
-  }
 
   function animate(timestamp) {
     if (!startTime) startTime = timestamp;
     const elapsed = timestamp - startTime;
+    const progress = Math.min(elapsed / totalDuration, 1);
+    const eased = easeOutCubic(progress);
 
-    if (elapsed < fastDuration) {
-      // Faza szybka: liniowy ruch
-      const progress = elapsed / fastDuration;
-      const fastPosition = progress * (stopAt * 0.6); // do 60% drogi
-      imageStrip.style.transform = `translateX(-${fastPosition}px)`;
-      requestAnimationFrame(animate);
-    } else if (elapsed < totalDuration) {
-      // Faza hamowania
-      const slowElapsed = elapsed - fastDuration;
-      const progress = slowElapsed / slowDuration;
-      const eased = easeOutExpo(progress);
-      const slowPosition = (stopAt * 0.6) + eased * (stopAt * 0.4); // końcowe 40% drogi
-      imageStrip.style.transform = `translateX(-${slowPosition}px)`;
+    const position = eased * stopAt;
+    imageStrip.style.transform = `translateX(-${position}px)`;
+
+    if (progress < 1) {
       requestAnimationFrame(animate);
     } else {
-      // Stop na zwycięzcy
       imageStrip.style.transform = `translateX(-${stopAt}px)`;
       if (onAnimationEnd) onAnimationEnd();
     }
@@ -109,6 +96,7 @@ function startAnimation(finalImage, onAnimationEnd) {
 
   requestAnimationFrame(animate);
 }
+
 
 
 
