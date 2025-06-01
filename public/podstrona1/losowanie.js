@@ -26,7 +26,8 @@ function startAnimation(finalImage, onAnimationEnd) {
   const imageStrip = document.getElementById('imageStrip');
 
   animationContainer.style.display = 'block';
-  imageStrip.innerHTML = '';
+  imageStrip.innerHTML = ''; // wyczyść stare obrazki
+  imageStrip.style.transform = 'translateX(0)'; // resetuj pozycję na początek!
 
   const availableImages = [
     '/images/deserteagleblue.jpg',
@@ -36,14 +37,16 @@ function startAnimation(finalImage, onAnimationEnd) {
     '/images/p2000oceaniczny.jpg'
   ];
 
-  const visibleItems = 7;
-  const itemWidth = 120;
+  const visibleItems = 7; // ile widocznych
+  const itemWidth = 120; // szerokość + marginesy
   animationContainer.style.width = `${visibleItems * itemWidth}px`;
 
   const itemsBeforeWinner = Math.floor(visibleItems / 2); // np. 3
-  const extraItems = 25; // ile losowych przed wygranym
-  const winnerIndex = extraItems + itemsBeforeWinner; // index w tablicy gdzie ma być wygrany skin
-  const totalItems = winnerIndex + (visibleItems - itemsBeforeWinner); // łącznie z tymi po wygranym
+  const extraBefore = 20; // więcej losowych przed wygranym
+  const extraAfter = 5;  // i więcej po wygranym, żeby były te 3 skiny po
+
+  const winnerIndex = extraBefore + itemsBeforeWinner;
+  const totalItems = winnerIndex + 1 + extraAfter;
 
   const skinList = [];
 
@@ -53,10 +56,10 @@ function startAnimation(finalImage, onAnimationEnd) {
     skinList.push(randomImage);
   }
 
-  // wstaw wygrany skin dokładnie w winnerIndex
+  // wstaw wygranego na odpowiednie miejsce
   skinList.splice(winnerIndex, 0, finalImage);
 
-  // renderuj obrazki
+  // renderuj
   skinList.forEach(src => {
     const img = document.createElement('img');
     img.src = src;
@@ -67,11 +70,11 @@ function startAnimation(finalImage, onAnimationEnd) {
 
   let position = 0;
   let currentFrame = 0;
-  const totalFrames = 300; // dłuższa animacja ~5s
-  const stopAt = (winnerIndex - itemsBeforeWinner) * (itemWidth + 20); // +20 za margin
+  const totalFrames = 300; // długość animacji
+  const stopAt = (winnerIndex - itemsBeforeWinner) * (itemWidth); // gdzie zatrzymać
 
   function easeOutQuad(t) {
-    return t * (2 - t);
+    return t * (2 - t); // spowolnienie
   }
 
   function animate() {
@@ -92,6 +95,7 @@ function startAnimation(finalImage, onAnimationEnd) {
 
   animate();
 }
+
 
 
 
