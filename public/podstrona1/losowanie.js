@@ -36,34 +36,40 @@ function startAnimation(finalImage, onAnimationEnd) {
     '/images/p2000oceaniczny.jpg'
   ];
 
-  const itemWidth = 120; // zwiększamy odstępy, by mniej przewinęło się w 3s
-  const visibleItems = 3; // ile obrazków widać naraz
-  const totalItems = 18; // 17 losowych + 1 wygrany = mniej przewijania
+  const itemWidth = 120;
+  const visibleItems = 7; // ile obrazków ma być widocznych naraz
+  const itemsBeforeWinner = Math.floor(visibleItems / 2); // 3 przed
+  const itemsAfterWinner = visibleItems - itemsBeforeWinner - 1; // 3 po
+  const totalItems = itemsBeforeWinner + 1 + itemsAfterWinner + 10; // dodajemy extra 10 na animację
 
-  // Buduj listę skinów
   const skinList = [];
+
+  // losowe przed "wygraną"
   for (let i = 0; i < totalItems - 1; i++) {
     const randomImage = availableImages[Math.floor(Math.random() * availableImages.length)];
     skinList.push(randomImage);
   }
-  skinList.push(finalImage);
 
-  // Renderuj obrazki
+  // wstaw wygraną na środku
+  const winnerIndex = itemsBeforeWinner + 5; // wygrana będzie 5 obrazków od końca, co przy animacji da środek
+  skinList.splice(winnerIndex, 0, finalImage);
+
+  // renderuj wszystkie
   skinList.forEach(src => {
     const img = document.createElement('img');
     img.src = src;
     img.style.width = '100px';
-    img.style.marginRight = '20px'; // większe odstępy = mniej przewijanego
+    img.style.marginRight = '20px';
     imageStrip.appendChild(img);
   });
 
   let position = 0;
   let currentFrame = 0;
-  const totalFrames = 180; // ~3 sekundy przy 60fps
-  const stopAt = (totalItems - visibleItems) * itemWidth;
+  const totalFrames = 180;
+  const stopAt = (winnerIndex - itemsBeforeWinner) * itemWidth;
 
   function easeOutQuad(t) {
-    return t * (2 - t); // łagodne wyhamowanie
+    return t * (2 - t);
   }
 
   function animate() {
