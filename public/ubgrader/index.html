@@ -4,27 +4,39 @@
   <meta charset="UTF-8" />
   <title>Moje Skórki</title>
   <style>
-    body {
-      font-family: sans-serif;
-    }
-    .item-card {
-      display: flex;
-      align-items: center;
-      border: 1px solid #ccc;
-      padding: 10px;
-      margin-bottom: 10px;
-      border-radius: 8px;
-      background: #f9f9f9;
-      max-width: 400px;
-    }
-    .item-card img {
-      width: 60px;
-      height: 60px;
-      margin-right: 10px;
-    }
-    .item-name {
-      font-weight: bold;
-    }
+   #inventory {
+  width: 100%;
+  max-width: 1300px;
+  min-width: 800px;
+  margin: 0 auto;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  padding: 10px;
+  box-sizing: border-box;
+  justify-content: flex-start;
+}
+
+.item-card {
+  width: 200px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background-color: #fff;
+  padding: 10px;
+  text-align: center;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.item-card img {
+  width: 100%;
+  height: auto;
+  border-radius: 4px;
+}
+
+
+
+
+
   </style>
 </head>
 <body>
