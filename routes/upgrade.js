@@ -17,14 +17,14 @@ router.post('/', async (req, res) => {
   }
 
   try {
-    // Pobierz skiny z inventory użytkownika
+    // Pobierz skiny z inventory użytkownika (user_inventory)
     const { data: inventoryData, error: invErr } = await supabase
-      .from('inventory')
+      .from('user_inventory')
       .select('id, value')
       .in('id', inventorySkins)
       .eq('user_id', userId);
 
-    if (invErr || !inventoryData) throw invErr || new Error('Błąd pobierania inventory');
+    if (invErr || !inventoryData) throw invErr || new Error('Błąd pobierania user_inventory');
 
     // Pobierz skiny z katalogu available_items
     const { data: availableData, error: availErr } = await supabase
@@ -32,7 +32,7 @@ router.post('/', async (req, res) => {
       .select('id, value, name, image')
       .in('id', availableSkins);
 
-    if (availErr || !availableData) throw availErr || new Error('Błąd pobierania available items');
+    if (availErr || !availableData) throw availErr || new Error('Błąd pobierania available_items');
 
     // Sumuj wartości skinów
     const invSum = inventoryData.reduce((sum, item) => sum + parseFloat(item.value), 0);
@@ -47,14 +47,14 @@ router.post('/', async (req, res) => {
     const success = Math.random() < chance;
 
     if (success) {
-      // Usuń ulepszane skiny z inventory
+      // Usuwamy skiny do ulepszenia z user_inventory
       await supabase
-        .from('inventory')
+        .from('user_inventory')
         .delete()
         .in('id', inventorySkins)
         .eq('user_id', userId);
 
-      // Dodaj do inventory nowe skiny (ulepszone)
+      // Dodajemy nowe ulepszone skiny do user_inventory
       const newItems = availableData.map(item => ({
         user_id: userId,
         item_id: item.id,
@@ -63,11 +63,11 @@ router.post('/', async (req, res) => {
         image: item.image,
       }));
 
-      await supabase.from('inventory').insert(newItems);
+      await supabase.from('user_inventory').insert(newItems);
     } else {
-      // Ulepszenie nieudane — usuwamy skiny z inventory (te próbujące ulepszyć)
+      // Ulepszenie nieudane — usuwamy tylko skiny z user_inventory (te zaznaczone do ulepszenia)
       await supabase
-        .from('inventory')
+        .from('user_inventory')
         .delete()
         .in('id', inventorySkins)
         .eq('user_id', userId);
