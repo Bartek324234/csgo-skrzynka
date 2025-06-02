@@ -131,78 +131,60 @@
   </div>
 </div>
   <script>
-    const userId = localStorage.getItem('user_id');
+  const userId = localStorage.getItem('user_id');
 
-    if (!userId) {
-      document.body.innerHTML = "<h2>Musisz być zalogowany, aby zobaczyć swoje skiny.</h2>";
-      setTimeout(() => window.location.href = '/', 2000);
-    } else {
-      fetch(`/api/inventory/${userId}`)
-        .then(res => res.json())
-        .then(items => {
-          const container = document.getElementById('inventory');
-          container.innerHTML = '';
+  if (!userId) {
+    document.body.innerHTML = "<h2>Musisz być zalogowany, aby zobaczyć swoje skiny.</h2>";
+    setTimeout(() => window.location.href = '/', 2000);
+  } else {
+    fetch(`/api/inventory/${userId}`)
+      .then(res => res.json())
+      .then(items => {
+        console.log(items);  // sprawdzamy, co jest w itemach
+        
+        const container = document.getElementById('inventory');
+        container.innerHTML = '';
 
-          if (items.length === 0) {
-            container.textContent = "Brak przedmiotów w ekwipunku.";
-            return;
-          }
+        if (items.length === 0) {
+          container.textContent = "Brak przedmiotów w ekwipunku.";
+          return;
+        }
 
+        items.forEach(item => {
+          const card = document.createElement('div');
+          card.className = 'item-card';
 
+          // W tym miejscu sprawdzamy, jak nazywa się właściwość z wartością w itemie
+          console.log(item); // dodatkowo log pojedynczego elementu
 
+          // Zamień 'price' na prawidłową nazwę pola, np. 'value', 'cost', 'amount' itp.
+          const itemPrice = parseFloat(item.price) || 0; // jeśli pole jest price
 
+          card.dataset.value = itemPrice;
 
-         items.forEach(item => {
-  const card = document.createElement('div');
-  card.className = 'item-card';
+          const img = document.createElement('img');
+          img.src = item.image_url;
+          img.alt = item.item_name;
 
-  // ✅ dodajemy wartość jako data-value
-  const itemPrice = parseFloat(item.price) || 0;
-  card.dataset.value = itemPrice;
+          const name = document.createElement('div');
+          name.className = 'item-name';
+          name.textContent = item.item_name;
 
-  const img = document.createElement('img');
-  img.src = item.image_url;
-  img.alt = item.item_name;
+          const price = document.createElement('div');
+          price.className = 'item-price';
+          price.innerHTML = `<strong>Wartość:</strong> ${itemPrice.toFixed(2)} zł`;
 
-  const name = document.createElement('div');
-  name.className = 'item-name';
-  name.textContent = item.item_name;
-
-  // ✅ pokazujemy wartość na karcie
-  const price = document.createElement('div');
-  price.className = 'item-price';
-  price.innerHTML = `<strong>Wartość:</strong> ${itemPrice.toFixed(2)} zł`;
-
-  // 📦 składamy całą kartę
-  card.appendChild(img);
-  card.appendChild(name);
-  card.appendChild(price);
-  container.appendChild(card);
-});
-
-        })
-        .catch(err => {
-          console.error("Błąd ładowania ekwipunku:", err);
-          document.getElementById('inventory').textContent = "Błąd ładowania ekwipunku.";
+          card.appendChild(img);
+          card.appendChild(name);
+          card.appendChild(price);
+          container.appendChild(card);
         });
-    }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+      })
+      .catch(err => {
+        console.error("Błąd ładowania ekwipunku:", err);
+        document.getElementById('inventory').textContent = "Błąd ładowania ekwipunku.";
+      });
+  }
 
   function updateSum(containerId, outputId) {
     const container = document.getElementById(containerId);
@@ -228,19 +210,12 @@
     });
   }
 
-  // Te linie musisz wywołać PO załadowaniu kontentu
-  setupSelectableCards('inventory', 'inventory-sum');
-  setupSelectableCards('available-skins', 'available-sum');
+  // Wywołaj te funkcje po załadowaniu zawartości kontenerów (np. w oknie onload)
+  window.onload = () => {
+    setupSelectableCards('inventory', 'inventory-sum');
+    setupSelectableCards('available-skins', 'available-sum');
+  };
+</script>
 
-
-
-
-
-
-
-
-
-
-  </script>
 </body>
 </html>
