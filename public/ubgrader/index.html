@@ -55,7 +55,7 @@
 
 
 #page-content {
-  margin-top: 15%;
+  margin-top: 20%;
   display: flex;
   justify-content: space-between;
   align-items: flex-start; /* ważne – żeby góry były równo */
@@ -89,52 +89,94 @@
     }
 
 
+
+
+
+
+
+
+#upgrade-layout {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 30px;
+  gap: 30px;
+}
+
+#selected-sections {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0 40px;
+  gap: 40px;
+}
+
+#selected-sections > div {
+  flex: 1;
+}
+
+#selected-inventory,
+#selected-available {
+  min-height: 150px;
+  border: 2px dashed #444;
+  padding: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  background-color: #f7f7f7;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
   </style>
 </head>
 <body>
   <a href="/index.html">← Powrót</a>
+
+  <div id="upgrade-layout">
+    <div id="selected-sections">
+      <div>
+        <h3>Zaznaczone z Inventory:</h3>
+        <div id="selected-inventory"></div>
+      </div>
+      <div>
+        <h3>Zaznaczone z Available:</h3>
+        <div id="selected-available"></div>
+      </div>
+    </div>
+
+    <div id="center-controls">
+      <div style="margin-top: 20px; font-size: 1.3em;">
+        Szansa na ulepszenie: <span id="chance-percent">0%</span>
+      </div>
+      <div style="margin-top: 20px;">
+        <button id="upgrade-btn" disabled>Ulepsz skiny</button>
+      </div>
+    </div>
+  </div>
+
   <h2>Twoje skiny</h2>
-
-
   <div id="page-content">
-  <div>
-    <h3>Inventory</h3>
-    <div id="inventory">
-      <!-- Twoje skiny (ładowane dynamicznie) -->
+    <div>
+      <h3>Inventory</h3>
+      <div id="inventory"></div>
+    </div>
+
+    <div>
+      <h3>Available Items</h3>
+      <div id="available-skins"></div>
     </div>
   </div>
-
-  <div>
- <h3>Available Items</h3>
-<div id="available-skins"></div>
-
-</div>
-</div>
-  </div>
-
-  <div>
-    <h3>Zaznaczone skórki z Inventory (ulepszane):</h3>
-    <div id="selected-inventory" style="min-height: 150px; border: 2px dashed #444; padding: 10px;">
-      <!-- Tutaj trafią skiny zaznaczone z inventory -->
-    </div>
-  </div>
-
-  <div>
-    <h3>Zaznaczone skórki z Available Items (docelowe):</h3>
-    <div id="selected-available" style="min-height: 150px; border: 2px dashed #444; padding: 10px;">
-      <!-- Tutaj trafią skiny zaznaczone z available -->
-    </div>
-  </div>
-</div>
-
-<div style="margin-top: 20px; font-size: 1.3em;">
-  Szansa na ulepszenie: <span id="chance-percent">0%</span>
-</div>
-
-<div style="margin-top: 20px;">
-  <button id="upgrade-btn" disabled>Ulepsz skiny</button>
-</div>
-</div>
 </div>
 
 
