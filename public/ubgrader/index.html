@@ -6,7 +6,6 @@
   <style>
  #inventory {
   margin-left: 10px;
-  margin-top: 10%;
   margin-right: auto; /* po prawej stronie auto, żeby trzymał się lewej */
   max-width: 750px;
   min-width: 700px;
@@ -41,7 +40,6 @@
 
 #available-skins {
   margin-right: 10px;
-  margin-top: 10%;
   margin-left: auto; /* po prawej stronie auto, żeby trzymał się lewej */
   max-width: 750px;
   min-width: 700px;
@@ -56,6 +54,13 @@
 
 
 
+#page-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start; /* ważne – żeby góry były równo */
+  gap: 20px;
+  padding: 20px;
+}
 
 
 
@@ -65,24 +70,20 @@
 <body>
   <a href="/index.html">← Powrót</a>
   <h2>Twoje skiny</h2>
+
+
+  <div id="page-content">
   <div id="inventory">Ładowanie ekwipunku...</div>
 
-
-
-
   <div id="available-skins">
-  <div class="item-card">
-    <img src="https://cdn.example.com/skin1.png" alt="AK-47 | Redline" />
-    <div>AK-47 | Redline</div>
-    <div><strong>Wartość:</strong> 12.50 zł</div>
-  </div>
-
-  <div class="item-card">
-    <img src="https://cdn.example.com/skin2.png" alt="AWP | Asiimov" />
-    <div>AWP | Asiimov</div>
-    <div><strong>Wartość:</strong> 45.00 zł</div>
+    <div class="item-card">
+      <img src="https://cdn.example.com/skin1.png" alt="AK-47 | Redline" />
+      <div>AK-47 | Redline</div>
+      <div><strong>Wartość:</strong> 12.50 zł</div>
+    </div>
   </div>
 </div>
+
 
   <script>
     const userId = localStorage.getItem('user_id');
