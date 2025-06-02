@@ -162,20 +162,11 @@
   </div>
 
   <div>
-    <h3>Available Items</h3>
-    <div id="available-skins">
-      <!-- Dostępne skiny (statyczne lub dynamiczne) -->
-      <div class="item-card" data-value="12.50">
-        <img src="/images/uspdrog.png" alt="AK-47 | Redline" />
-        <div>AK-47 | Redline</div>
-        <div><strong>Wartość:</strong> 12.50 zł</div>
-      </div>
-      <div class="item-card" data-value="45.00">
-        <img src="/images/zlotyak47.png" alt="AWP | Asiimov" />
-        <div>AWP | Asiimov</div>
-        <div><strong>Wartość:</strong> 45.00 zł</div>
-      </div>
-    </div>
+ <h3>Available Items</h3>
+<div id="available-skins"></div>
+
+</div>
+</div>
   </div>
 
   <div>
@@ -239,6 +230,10 @@
         console.error(err);
       });
 
+
+
+
+
     // Pomocnicza funkcja do tworzenia karty
     function createItemCard(id, value, imgSrc, name) {
       const card = document.createElement('div');
@@ -262,6 +257,14 @@
 
       return card;
     }
+
+
+
+
+
+
+
+
 
     // Zaznaczanie w inventory
     inventoryContainer.addEventListener('click', e => {
@@ -378,6 +381,11 @@
       });
     });
 
+
+
+
+
+
     function loadInventory() {
       fetch(`/api/inventory/${userId}`)
         .then(res => res.json())
@@ -398,6 +406,38 @@
         });
     }
 
+
+
+
+function loadAvailableItems() {
+  fetch('/api/available-items')
+    .then(res => res.json())
+    .then(items => {
+      availableContainer.innerHTML = '';
+      if (!items.length) {
+        availableContainer.textContent = 'Brak dostępnych skinów.';
+        return;
+      }
+      items.forEach(item => {
+        const card = createItemCard(item.id, item.value, item.image_url, item.name); // UŻYWASZ item.name
+        availableContainer.appendChild(card);
+      });
+    })
+    .catch(err => {
+      availableContainer.textContent = 'Błąd ładowania dostępnych skinów.';
+      console.error(err);
+    });
+}
+
+
+
+
+
+
+
+
+
+
     function clearSelections() {
       inventoryContainer.querySelectorAll('.item-card.selected').forEach(c => c.classList.remove('selected'));
       availableContainer.querySelectorAll('.item-card.selected').forEach(c => c.classList.remove('selected'));
@@ -405,6 +445,13 @@
       selectedAvailable.innerHTML = '';
       checkCanUpgrade();
     }
+
+
+
+
+
+loadAvailableItems();
+
 
   </script>
 
