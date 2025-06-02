@@ -130,7 +130,7 @@
     </div>
   </div>
 </div>
-  <script>
+ <script>
   const userId = localStorage.getItem('user_id');
 
   if (!userId) {
@@ -154,12 +154,7 @@
           const card = document.createElement('div');
           card.className = 'item-card';
 
-          // W tym miejscu sprawdzamy, jak nazywa się właściwość z wartością w itemie
-          console.log(item); // dodatkowo log pojedynczego elementu
-
-          // Zamień 'price' na prawidłową nazwę pola, np. 'value', 'cost', 'amount' itp.
-          const itemPrice = parseFloat(item.price) || 0; // jeśli pole jest price
-
+          const itemPrice = parseFloat(item.value) || 0; // tutaj value zamiast price
           card.dataset.value = itemPrice;
 
           const img = document.createElement('img');
@@ -210,12 +205,13 @@
     });
   }
 
-  // Wywołaj te funkcje po załadowaniu zawartości kontenerów (np. w oknie onload)
+  // Wywołaj setup po załadowaniu całej strony
   window.onload = () => {
     setupSelectableCards('inventory', 'inventory-sum');
     setupSelectableCards('available-skins', 'available-sum');
   };
 </script>
+
 
 </body>
 </html>
