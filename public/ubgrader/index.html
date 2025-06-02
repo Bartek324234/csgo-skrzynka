@@ -63,36 +63,10 @@
   padding: 20px;
 }
 
-
-
-
-
-
-
-
 .item-card.selected {
   border: 2px solid green;
   background-color: #eaffea;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 #selected-inventory, #selected-available {
       min-height: 150px;
       border: 2px dashed #444;
@@ -115,42 +89,11 @@
     }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
   </style>
 </head>
 <body>
   <a href="/index.html">← Powrót</a>
   <h2>Twoje skiny</h2>
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
   <div id="page-content">
@@ -383,9 +326,6 @@
 
 
 
-
-
-
     function loadInventory() {
       fetch(`/api/inventory/${userId}`)
         .then(res => res.json())
@@ -428,13 +368,6 @@ function loadAvailableItems() {
       console.error(err);
     });
 }
-
-
-
-
-
-
-
 
 
 
