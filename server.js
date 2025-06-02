@@ -24,6 +24,9 @@ app.use('/api/sell-item', sellItemRouter);
 const userInfoRouter = require('./routes/user-info');
 app.use('/api/user-info', userInfoRouter);
 
+const upgradeRouter = require('./routes/upgrade');
+app.use('/api/upgrade', upgradeRouter);
+
 // 🔹 🔥 NOWOŚĆ: Trasa do balansu użytkownika (balance.js)
 const balanceRouter = require('./routes/balance');
 app.use('/api/balance', balanceRouter);
