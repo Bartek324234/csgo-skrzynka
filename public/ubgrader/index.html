@@ -66,6 +66,25 @@
 
 
 
+
+
+
+
+.item-card.selected {
+  border: 2px solid green;
+  background-color: #eaffea;
+}
+
+
+
+
+
+
+
+
+
+
+
   </style>
 </head>
 <body>
@@ -73,19 +92,44 @@
   <h2>Twoje skiny</h2>
 
 
-  <div id="page-content">
-  <div id="inventory">Ładowanie ekwipunku...</div>
 
-  <div id="available-skins">
-    <div class="item-card">
-      <img src="images/default-avatar.png" alt="AK-47 | Redline" />
-      <div>AK-47 | Redline</div>
-      <div><strong>Wartość:</strong> 12.50 zł</div>
+
+
+
+
+
+
+
+
+
+
+
+
+  <div id="page-content">
+  <div>
+    <h3>Zaznaczone z ekwipunku: <span id="inventory-sum">0.00 zł</span></h3>
+    <div id="inventory">
+      <!-- skiny będą ładowane dynamicznie -->
+    </div>
+  </div>
+
+  <div>
+    <h3>Zaznaczone z dostępnych: <span id="available-sum">0.00 zł</span></h3>
+    <div id="available-skins">
+      <div class="item-card" data-value="12.50">
+        <img src="https://cdn.example.com/skin1.png" alt="AK-47 | Redline" />
+        <div>AK-47 | Redline</div>
+        <div><strong>Wartość:</strong> 12.50 zł</div>
+      </div>
+
+      <div class="item-card" data-value="45.00">
+        <img src="images/default-avatar.png" alt="AWP | Asiimov" />
+        <div>AWP | Asiimov</div>
+        <div><strong>Wartość:</strong> 45.00 zł</div>
+      </div>
     </div>
   </div>
 </div>
-
-
   <script>
     const userId = localStorage.getItem('user_id');
 
@@ -104,28 +148,99 @@
             return;
           }
 
-          items.forEach(item => {
-            const card = document.createElement('div');
-            card.className = 'item-card';
 
-            const img = document.createElement('img');
-            img.src = item.image_url;
-            img.alt = item.item_name;
 
-            const name = document.createElement('div');
-            name.className = 'item-name';
-            name.textContent = item.item_name;
 
-            card.appendChild(img);
-            card.appendChild(name);
-            container.appendChild(card);
-          });
+
+         items.forEach(item => {
+  const card = document.createElement('div');
+  card.className = 'item-card';
+
+  // ✅ dodajemy wartość jako data-value
+  const itemPrice = parseFloat(item.price) || 0;
+  card.dataset.value = itemPrice;
+
+  const img = document.createElement('img');
+  img.src = item.image_url;
+  img.alt = item.item_name;
+
+  const name = document.createElement('div');
+  name.className = 'item-name';
+  name.textContent = item.item_name;
+
+  // ✅ pokazujemy wartość na karcie
+  const price = document.createElement('div');
+  price.className = 'item-price';
+  price.innerHTML = `<strong>Wartość:</strong> ${itemPrice.toFixed(2)} zł`;
+
+  // 📦 składamy całą kartę
+  card.appendChild(img);
+  card.appendChild(name);
+  card.appendChild(price);
+  container.appendChild(card);
+});
+
         })
         .catch(err => {
           console.error("Błąd ładowania ekwipunku:", err);
           document.getElementById('inventory').textContent = "Błąd ładowania ekwipunku.";
         });
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  function updateSum(containerId, outputId) {
+    const container = document.getElementById(containerId);
+    const selected = container.querySelectorAll('.item-card.selected');
+    let sum = 0;
+
+    selected.forEach(card => {
+      sum += parseFloat(card.dataset.value);
+    });
+
+    document.getElementById(outputId).textContent = sum.toFixed(2) + ' zł';
+  }
+
+  function setupSelectableCards(containerId, outputId) {
+    const container = document.getElementById(containerId);
+
+    container.addEventListener('click', (e) => {
+      const card = e.target.closest('.item-card');
+      if (card) {
+        card.classList.toggle('selected');
+        updateSum(containerId, outputId);
+      }
+    });
+  }
+
+  // Te linie musisz wywołać PO załadowaniu kontentu
+  setupSelectableCards('inventory', 'inventory-sum');
+  setupSelectableCards('available-skins', 'available-sum');
+
+
+
+
+
+
+
+
+
+
   </script>
 </body>
 </html>
