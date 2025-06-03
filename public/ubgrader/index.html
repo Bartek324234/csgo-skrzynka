@@ -583,10 +583,9 @@ function drawWheel(chancePercent) {
   ctx.arc(radius, radius, radius - ringThickness, 0, 2 * Math.PI);
   ctx.fill();
 
-// Dorysuj wskaźnik po pierścieniu
-  drawPointer(lastAngle);
-
+  // **TU NIE RYSUJ WSKAŹNIKA!**
 }
+
 
 
 
@@ -595,22 +594,23 @@ function drawWheel(chancePercent) {
 function drawPointer(angleDeg) {
   const radius = canvas.width / 2;
   const pointerLength = 20; // długość wskaźnika (trójkąta)
-  const pointerWidth = 15; // szerokość u podstawy
+  const pointerWidth = 15;  // szerokość u podstawy
 
+  // Najpierw czyścimy cały canvas, bo będziemy rysować od nowa
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // Rysujemy pierścień (koło) — bez wskaźnika
+  drawWheel(currentChance);
+
+  // Teraz rysujemy wskaźnik
   ctx.save();
-  
-
-  drawWheel(currentChance); // narysuj pierścień
-
-  // Przesuń układ do środka koła
   ctx.translate(radius, radius);
   ctx.rotate((angleDeg * Math.PI) / 180);
 
-  // Rysuj trójkąt wskaźnika skierowany "do góry"
   ctx.beginPath();
-  ctx.moveTo(0, -radius + 5); // szczyt trójkąta, blisko krawędzi koła
-  ctx.lineTo(-pointerWidth / 2, -radius + pointerLength + 5);
-  ctx.lineTo(pointerWidth / 2, -radius + pointerLength + 5);
+  ctx.moveTo(0, -radius + 5);                     // wierzchołek trójkąta (bliżej krawędzi)
+  ctx.lineTo(-pointerWidth / 2, -radius + pointerLength + 5);  // lewy dół
+  ctx.lineTo(pointerWidth / 2, -radius + pointerLength + 5);   // prawy dół
   ctx.closePath();
 
   ctx.fillStyle = '#000'; // czarny wskaźnik
