@@ -370,6 +370,7 @@ let lastAngle = 0; // pamięta ostatni kąt trójkąta
       const chance = invSum / availSum;
       chanceDisplay.textContent = Math.round(chance * 100) + '%';
       drawWheel(Math.round(chance * 100));
+       drawPointer(lastAngle);
     }
 
     // Sprawdza, czy można kliknąć ulepszanie
