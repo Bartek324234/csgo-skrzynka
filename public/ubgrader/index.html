@@ -654,41 +654,6 @@ function drawWheel(chancePercent) {
 
 
 
-function animateWheelTo(targetPercent) {
-  const duration = 500;
-  const start = performance.now();
-  const startPercent = currentChance;
-
-  if (animationFrameId) {
-    cancelAnimationFrame(animationFrameId); // zatrzymaj poprzednią animację
-  }
-
-  function animate(timestamp) {
-    const elapsed = timestamp - start;
-    const t = Math.min(elapsed / duration, 1);
-    const eased = easeOutCubic(t);
-    currentChance = startPercent + (targetPercent - startPercent) * eased;
-
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    drawWheel(currentChance);
-    drawPointer(lastAngle);
-
-    if (t < 1) {
-      animationFrameId = requestAnimationFrame(animate);
-    } else {
-      currentChance = targetPercent;
-      previousChance = targetPercent;
-      drawWheel(currentChance);
-      drawPointer(lastAngle);
-    }
-  }
-
-  animationFrameId = requestAnimationFrame(animate);
-}
-
-
-
-
 
 
 
