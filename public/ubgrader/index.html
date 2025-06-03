@@ -226,6 +226,8 @@ html, body {
 
 
  <script>
+let previousChance = 0;
+let animationFrameId = null;
 
 let lastAngle = 0; // pamięta ostatni kąt trójkąta
 
@@ -350,28 +352,85 @@ let lastAngle = 0; // pamięta ostatni kąt trójkąta
     }
 
     // Oblicza i pokazuje szansę na ulepszenie
-    function updateChance() {
-      const invSelected = Array.from(inventoryContainer.querySelectorAll('.item-card.selected'));
-      const availSelected = Array.from(availableContainer.querySelectorAll('.item-card.selected'));
+   function updateChance() {
+  const invSelected = Array.from(inventoryContainer.querySelectorAll('.item-card.selected'));
+  const availSelected = Array.from(availableContainer.querySelectorAll('.item-card.selected'));
 
-      if (invSelected.length === 0 || availSelected.length === 0) {
-        chanceDisplay.textContent = '0%';
-        return;
-      }
+  if (invSelected.length === 0 || availSelected.length === 0) {
+    animateWheelTo(currentChance, 0); // animuj do 0%
+    animateChanceText(currentChance, 0);
+    currentChance = 0;
+    return;
+  }
 
-      const invSum = invSelected.reduce((sum, c) => sum + parseFloat(c.dataset.value), 0);
-      const availSum = availSelected.reduce((sum, c) => sum + parseFloat(c.dataset.value), 0);
+  const invSum = invSelected.reduce((sum, c) => sum + parseFloat(c.dataset.value), 0);
+  const availSum = availSelected.reduce((sum, c) => sum + parseFloat(c.dataset.value), 0);
 
-      if (availSum <= invSum) {
-        chanceDisplay.textContent = '0%';
-        return;
-      }
+  if (availSum <= invSum) {
+    animateWheelTo(currentChance, 0);
+    animateChanceText(currentChance, 0);
+    currentChance = 0;
+    return;
+  }
 
-      const chance = invSum / availSum;
-      chanceDisplay.textContent = Math.round(chance * 100) + '%';
-      drawWheel(Math.round(chance * 100));
-       drawPointer(lastAngle);
+  const newChance = Math.round((invSum / availSum) * 100);
+
+  animateWheelTo(currentChance, newChance);        // animuj pierścień
+  animateChanceText(currentChance, newChance);     // animuj % tekstu
+  currentChance = newChance;
+}
+
+
+
+
+
+function animateWheelTo(fromPercent, toPercent) {
+  const duration = 500;
+  const start = performance.now();
+
+  function animate(time) {
+    const progress = Math.min((time - start) / duration, 1);
+    const eased = easeOutCubic(progress);
+    const current = fromPercent + (toPercent - fromPercent) * eased;
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    drawWheel(current);
+    drawPointer(lastAngle); // pointer się nie porusza
+
+    if (progress < 1) {
+      requestAnimationFrame(animate);
     }
+  }
+
+  requestAnimationFrame(animate);
+}
+
+function animateChanceText(from, to) {
+  const duration = 500;
+  const start = performance.now();
+
+  function animate(time) {
+    const progress = Math.min((time - start) / duration, 1);
+    const eased = easeOutCubic(progress);
+    const value = Math.round(from + (to - from) * eased);
+
+    chanceDisplay.textContent = value + '%';
+
+    if (progress < 1) {
+      requestAnimationFrame(animate);
+    }
+  }
+
+  requestAnimationFrame(animate);
+}
+
+
+
+
+
+
+
+
 
     // Sprawdza, czy można kliknąć ulepszanie
     function checkCanUpgrade() {
@@ -586,6 +645,53 @@ function drawWheel(chancePercent) {
 
   // **TU NIE RYSUJ WSKAŹNIKA!**
 }
+
+
+
+
+
+
+
+
+
+function animateWheelTo(targetPercent) {
+  const duration = 500;
+  const start = performance.now();
+  const startPercent = currentChance;
+
+  if (animationFrameId) {
+    cancelAnimationFrame(animationFrameId); // zatrzymaj poprzednią animację
+  }
+
+  function animate(timestamp) {
+    const elapsed = timestamp - start;
+    const t = Math.min(elapsed / duration, 1);
+    const eased = easeOutCubic(t);
+    currentChance = startPercent + (targetPercent - startPercent) * eased;
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    drawWheel(currentChance);
+    drawPointer(lastAngle);
+
+    if (t < 1) {
+      animationFrameId = requestAnimationFrame(animate);
+    } else {
+      currentChance = targetPercent;
+      previousChance = targetPercent;
+      drawWheel(currentChance);
+      drawPointer(lastAngle);
+    }
+  }
+
+  animationFrameId = requestAnimationFrame(animate);
+}
+
+
+
+
+
+
+
 
 
 
