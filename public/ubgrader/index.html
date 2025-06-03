@@ -178,7 +178,20 @@ html, body {
 </head>
 <body>
   <a href="/index.html">← Powrót</a>
-<canvas id="upgrade-wheel" width="300" height="300"></canvas>
+<div id="wheel-container" style="position:relative; width:300px; height:300px; margin:auto;">
+  <canvas id="wheel" width="300" height="300"></canvas>
+  <div id="pointer" style="
+    position:absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0; 
+    height: 0; 
+    border-left: 15px solid transparent;
+    border-right: 15px solid transparent;
+    border-bottom: 30px solid black;
+  "></div>
+</div>
 
 
 
@@ -509,7 +522,7 @@ loadAvailableItems();
 
 
 
-const canvas = document.getElementById('upgrade-wheel');
+const canvas = document.getElementById('wheel');
 const ctx = canvas.getContext('2d');
 let currentChance = 0;
 
@@ -523,26 +536,18 @@ function drawWheel(chancePercent) {
   const successAngle = (2 * Math.PI) * (chancePercent / 100);
   ctx.beginPath();
   ctx.moveTo(radius, radius);
-  ctx.fillStyle = '#28a745';
+  ctx.fillStyle = '#28a745'; // zielony
   ctx.arc(radius, radius, radius, -Math.PI / 2, -Math.PI / 2 + successAngle);
   ctx.fill();
 
   // Czerwony (przegrana)
   ctx.beginPath();
   ctx.moveTo(radius, radius);
-  ctx.fillStyle = '#dc3545';
+  ctx.fillStyle = '#dc3545'; // czerwony
   ctx.arc(radius, radius, radius, -Math.PI / 2 + successAngle, -Math.PI / 2 + 2 * Math.PI);
   ctx.fill();
-
-  // Strzałka
-  ctx.beginPath();
-  ctx.moveTo(radius - 10, 10);
-  ctx.lineTo(radius + 10, 10);
-  ctx.lineTo(radius, 30);
-  ctx.closePath();
-  ctx.fillStyle = 'black';
-  ctx.fill();
 }
+
 
 
 
@@ -559,37 +564,48 @@ function drawWheel(chancePercent) {
 
 
 function spinWheel(success, callback) {
-  const duration = 3000; // ms
-  const spins = 5;
-  const finalAngle = success
-    ? Math.random() * (currentChance / 100) * 360
-    : Math.random() * ((100 - currentChance) / 100) * 360 + (currentChance / 100) * 360;
+  const duration = 3000; // czas animacji w ms
+  const spins = 5;       // ile pełnych obrotów
+  const radius = 360;
 
-  const targetAngle = spins * 360 + finalAngle;
+  // Przeliczamy currentChance na zakres 0-360 stopni
+  const successDegree = (currentChance / 100) * radius;
+
+  let finalAngle;
+
+  if (success) {
+    // Kąt losowy w zielonej części (0 do successDegree)
+    const randomDegree = Math.random() * successDegree;
+    // Obracamy tak, by pod trójkątem był ten zielony kąt
+    finalAngle = spins * radius + (270 - randomDegree); // 270 = -90° + 360° (obrót)
+  } else {
+    // Kąt losowy w czerwonej części (successDegree do 360)
+    const randomDegree = successDegree + Math.random() * (radius - successDegree);
+    // Obracamy tak, by pod trójkątem był czerwony kąt
+    finalAngle = spins * radius + (270 - randomDegree);
+  }
+
   let start = null;
 
   function animate(timestamp) {
     if (!start) start = timestamp;
     const progress = timestamp - start;
-    const ease = easeOutCubic(progress / duration);
-    const angle = ease * targetAngle;
+    const ease = easeOutCubic(Math.min(progress / duration, 1));
+    const angle = ease * finalAngle;
 
     canvas.style.transform = `rotate(${angle}deg)`;
 
     if (progress < duration) {
       requestAnimationFrame(animate);
     } else {
-      canvas.style.transform = `rotate(${targetAngle}deg)`;
-      callback(); // np. alert
+      canvas.style.transform = `rotate(${finalAngle}deg)`;
+      callback();
     }
   }
 
   requestAnimationFrame(animate);
 }
 
-function easeOutCubic(t) {
-  return (--t) * t * t + 1;
-}
 
 
 
