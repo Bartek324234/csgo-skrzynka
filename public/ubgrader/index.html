@@ -236,6 +236,20 @@ html, body {
 
 
  <script>
+
+
+ function easeOutCubic(t) {
+    return 1 - Math.pow(1 - t, 3);
+  }
+
+ 
+
+
+
+
+
+
+
     const userId = localStorage.getItem('user_id');
 
     if (!userId) {
