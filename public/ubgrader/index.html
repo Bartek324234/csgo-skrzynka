@@ -582,6 +582,10 @@ function drawWheel(chancePercent) {
   ctx.fillStyle = 'white'; // kolor tła lub transparent jeśli chcesz
   ctx.arc(radius, radius, radius - ringThickness, 0, 2 * Math.PI);
   ctx.fill();
+
+// Dorysuj wskaźnik po pierścieniu
+  drawPointer(lastAngle);
+
 }
 
 
