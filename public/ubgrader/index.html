@@ -89,12 +89,6 @@
     }
 
 
-
-
-
-
-
-
 #upgrade-layout {
   display: flex;
   flex-direction: column;
@@ -106,7 +100,7 @@
 #selected-sections {
   display: flex;
   justify-content: space-between;
-  width: 400px;
+  width: 100%;
   padding: 0 40px;
   gap: 40px;
 }
@@ -136,18 +130,15 @@ html, body {
 
   overflow-x: hidden; /* ukrywa poziomy scroll */
 }
-
-
-
-
-
-
-
-
   </style>
 </head>
 <body>
   <a href="/index.html">← Powrót</a>
+<canvas id="upgrade-wheel" width="300" height="300"></canvas>
+
+
+
+
 
   <div id="upgrade-layout">
     <div id="selected-sections">
@@ -316,6 +307,7 @@ html, body {
 
       const chance = invSum / availSum;
       chanceDisplay.textContent = Math.round(chance * 100) + '%';
+      drawWheel(Math.round(chance * 100));
     }
 
     // Sprawdza, czy można kliknąć ulepszanie
@@ -325,52 +317,73 @@ html, body {
       upgradeBtn.disabled = invCount === 0 || availCount === 0;
     }
 
+
+
+
+
+
+
     // Obsługa kliknięcia ulepszania
     upgradeBtn.addEventListener('click', () => {
-      const invSelectedIds = Array.from(inventoryContainer.querySelectorAll('.item-card.selected')).map(c => parseInt(c.dataset.id));
-      const availSelectedIds = Array.from(availableContainer.querySelectorAll('.item-card.selected')).map(c => parseInt(c.dataset.id));
+  const invSelectedIds = Array.from(inventoryContainer.querySelectorAll('.item-card.selected')).map(c => parseInt(c.dataset.id));
+  const availSelectedIds = Array.from(availableContainer.querySelectorAll('.item-card.selected')).map(c => parseInt(c.dataset.id));
 
-      if (invSelectedIds.length === 0 || availSelectedIds.length === 0) {
-        alert('Zaznacz skiny z inventory i dostępne skiny do ulepszenia.');
+  if (invSelectedIds.length === 0 || availSelectedIds.length === 0) {
+    alert('Zaznacz skiny z inventory i dostępne skiny do ulepszenia.');
+    return;
+  }
+
+  upgradeBtn.disabled = true;
+  upgradeBtn.textContent = 'Ulepszanie...';
+
+  fetch('/api/upgrade', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      userId,
+      inventorySkins: invSelectedIds,
+      availableSkins: availSelectedIds
+    })
+  })
+    .then(res => res.json())
+    .then(data => {
+      if (data.error) {
+        alert('Błąd: ' + data.error);
+        upgradeBtn.disabled = false;
+        upgradeBtn.textContent = 'Ulepsz skiny';
         return;
       }
 
-      upgradeBtn.disabled = true;
-      upgradeBtn.textContent = 'Ulepszanie...';
-
-      fetch('/api/upgrade', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userId,
-          inventorySkins: invSelectedIds,
-          availableSkins: availSelectedIds
-        })
-      })
-      .then(res => res.json())
-      .then(data => {
-        if (data.error) {
-          alert('Błąd: ' + data.error);
+      // Uruchom animację koła
+      spinWheel(data.success, () => {
+        // Po zakończeniu animacji pokazujemy wynik
+        if (data.success) {
+          alert('Ulepszenie powiodło się! Szansa: ' + data.chance + '%');
         } else {
-          if (data.success) {
-            alert('Ulepszenie powiodło się! Szansa: ' + data.chance + '%');
-          } else {
-            alert('Ulepszenie nie powiodło się. Szansa: ' + data.chance + '%');
-          }
-          // Odśwież inventory po wyniku (najprościej - załaduj na nowo)
-          loadInventory();
-          clearSelections();
-          chanceDisplay.textContent = '0%';
+          alert('Ulepszenie nie powiodło się. Szansa: ' + data.chance + '%');
         }
-      })
-      .catch(err => {
-        alert('Błąd sieci: ' + err);
-      })
-      .finally(() => {
+
+        loadInventory();
+        clearSelections();
+        chanceDisplay.textContent = '0%';
+        drawWheel(0); // zresetuj koło
+
         upgradeBtn.disabled = false;
         upgradeBtn.textContent = 'Ulepsz skiny';
       });
+    })
+    .catch(err => {
+      alert('Błąd sieci: ' + err);
+      upgradeBtn.disabled = false;
+      upgradeBtn.textContent = 'Ulepsz skiny';
     });
+});
+
+
+
+
+
+
 
 
 
@@ -432,6 +445,121 @@ function loadAvailableItems() {
 
 
 loadAvailableItems();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+const canvas = document.getElementById('upgrade-wheel');
+const ctx = canvas.getContext('2d');
+let currentChance = 0;
+
+// Rysuj koło z aktualną szansą
+function drawWheel(chancePercent) {
+  currentChance = chancePercent;
+  const radius = canvas.width / 2;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // Zielony (wygrana)
+  const successAngle = (2 * Math.PI) * (chancePercent / 100);
+  ctx.beginPath();
+  ctx.moveTo(radius, radius);
+  ctx.fillStyle = '#28a745';
+  ctx.arc(radius, radius, radius, -Math.PI / 2, -Math.PI / 2 + successAngle);
+  ctx.fill();
+
+  // Czerwony (przegrana)
+  ctx.beginPath();
+  ctx.moveTo(radius, radius);
+  ctx.fillStyle = '#dc3545';
+  ctx.arc(radius, radius, radius, -Math.PI / 2 + successAngle, -Math.PI / 2 + 2 * Math.PI);
+  ctx.fill();
+
+  // Strzałka
+  ctx.beginPath();
+  ctx.moveTo(radius - 10, 10);
+  ctx.lineTo(radius + 10, 10);
+  ctx.lineTo(radius, 30);
+  ctx.closePath();
+  ctx.fillStyle = 'black';
+  ctx.fill();
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function spinWheel(success, callback) {
+  const duration = 3000; // ms
+  const spins = 5;
+  const finalAngle = success
+    ? Math.random() * (currentChance / 100) * 360
+    : Math.random() * ((100 - currentChance) / 100) * 360 + (currentChance / 100) * 360;
+
+  const targetAngle = spins * 360 + finalAngle;
+  let start = null;
+
+  function animate(timestamp) {
+    if (!start) start = timestamp;
+    const progress = timestamp - start;
+    const ease = easeOutCubic(progress / duration);
+    const angle = ease * targetAngle;
+
+    canvas.style.transform = `rotate(${angle}deg)`;
+
+    if (progress < duration) {
+      requestAnimationFrame(animate);
+    } else {
+      canvas.style.transform = `rotate(${targetAngle}deg)`;
+      callback(); // np. alert
+    }
+  }
+
+  requestAnimationFrame(animate);
+}
+
+function easeOutCubic(t) {
+  return (--t) * t * t + 1;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
   </script>
