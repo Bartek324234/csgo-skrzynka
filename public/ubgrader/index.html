@@ -227,6 +227,7 @@ html, body {
 
  <script>
 
+let lastAngle = 0; // pamięta ostatni kąt trójkąta
 
  function easeOutCubic(t) {
     return 1 - Math.pow(1 - t, 3);
@@ -434,6 +435,11 @@ html, body {
         currentChance = 0;
         drawWheel(0);
         drawPointer(0);
+
+  // **TU DODAJ reset pointera:**
+  lastAngle = 0;       // resetujemy do godziny 12
+  drawPointer(lastAngle);  // rysujemy pointer na pozycji 0°
+
 
         upgradeBtn.disabled = false;
         upgradeBtn.textContent = 'Ulepsz skiny';
@@ -655,7 +661,8 @@ function spinPointer(success, callback) {
     if (progress < duration) {
       requestAnimationFrame(animate);
     } else {
-      drawPointer(finalAngleDeg % 360);
+      lastAngle = finalAngleDeg % 360; // zapisz końcowy kąt
+      drawPointer(lastAngle);          // narysuj go jeszcze raz
       callback();
     }
   }
@@ -668,6 +675,10 @@ function spinPointer(success, callback) {
 
 
 
+document.addEventListener('DOMContentLoaded', () => {
+  drawWheel(0);            
+  drawPointer(lastAngle);  
+});
 
 
 
