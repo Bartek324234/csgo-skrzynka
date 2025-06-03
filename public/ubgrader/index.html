@@ -226,6 +226,8 @@ html, body {
 
 
  <script>
+
+  
 let previousChance = 0;
 let animationFrameId = null;
 
@@ -703,51 +705,69 @@ function drawPointer(angleDeg) {
 
 
 function spinPointer(success, callback) {
-  const duration = 3000; // animacja w ms
-  const spins = 5;       // pełne obroty
+  const spin1Duration = 2000; // 2 obroty w 2 sekundy
+  const spin2Duration = 1200; // ostatni obrót wolniej
 
   const successAngleDeg = (currentChance / 100) * 360;
 
-  let finalAngleDeg;
-
+  let targetAngle;
   if (success) {
-    finalAngleDeg = Math.random() * successAngleDeg;
+    targetAngle = Math.random() * successAngleDeg;
   } else {
-    finalAngleDeg = successAngleDeg + Math.random() * (360 - successAngleDeg);
+    targetAngle = successAngleDeg + Math.random() * (360 - successAngleDeg);
   }
 
-  finalAngleDeg += spins * 360; // dodaj pełne obroty
+  const fullRotation = 360;
+  const phase1Angle = 2 * fullRotation;       // 720° — 2 szybkie obroty
+  const phase2Angle = fullRotation + targetAngle; // 1 obrót + cel
 
-  let start = null;
+  let startTime = null;
 
-  function animate(timestamp) {
-    if (!start) start = timestamp;
-    const progress = timestamp - start;
-    const ease = easeOutCubic(Math.min(progress / duration, 1));
-    const angle = ease * finalAngleDeg;
+  function animatePhase1(timestamp) {
+    if (!startTime) startTime = timestamp;
+    const elapsed = timestamp - startTime;
+    const t = Math.min(elapsed / spin1Duration, 1);
+    const eased = easeOutCubic(t);
+    const angle = eased * phase1Angle;
 
-    // Najpierw czyścimy canvas i rysujemy pierścień
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     drawWheel(currentChance);
+    drawPointer((lastAngle + angle) % 360);
 
-    // Teraz rysujemy wskaźnik
-    drawPointer(angle % 360);
-
-    if (progress < duration) {
-      requestAnimationFrame(animate);
+    if (t < 1) {
+      requestAnimationFrame(animatePhase1);
     } else {
-      lastAngle = finalAngleDeg % 360; // zapisz końcowy kąt
-      
-      // Końcowe rysowanie wskaźnika i koła
+      lastAngle = (lastAngle + phase1Angle) % 360;
+      startTime = null;
+      requestAnimationFrame(animatePhase2);
+    }
+  }
+
+  function animatePhase2(timestamp) {
+    if (!startTime) startTime = timestamp;
+    const elapsed = timestamp - startTime;
+    const t = Math.min(elapsed / spin2Duration, 1);
+    const eased = easeOutCubic(t);
+    const angle = eased * phase2Angle;
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    drawWheel(currentChance);
+    drawPointer((lastAngle + angle) % 360);
+
+    if (t < 1) {
+      requestAnimationFrame(animatePhase2);
+    } else {
+      lastAngle = (lastAngle + phase2Angle) % 360;
+
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       drawWheel(currentChance);
       drawPointer(lastAngle);
-      
+
       callback();
     }
   }
 
-  requestAnimationFrame(animate);
+  requestAnimationFrame(animatePhase1);
 }
 
 
