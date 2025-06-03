@@ -540,6 +540,8 @@ const canvas = document.getElementById('wheel');
 const ctx = canvas.getContext('2d');
 let currentChance = 0;
 
+
+
 // Rysuj koło z aktualną szansą
 function drawWheel(chancePercent) {
   currentChance = chancePercent;
@@ -548,35 +550,38 @@ function drawWheel(chancePercent) {
 
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  // Zielony (wygrana)
+  const startAngle = -Math.PI / 2; // góra koła
+
+  // Zielona część (wygrana)
   const successAngle = (2 * Math.PI) * (chancePercent / 100);
 
-  // Rysujemy pierścień zielony
+  // Rysowanie zielonego pierścienia
   ctx.beginPath();
   ctx.fillStyle = '#28a745'; // zielony
-  ctx.moveTo(radius + (radius), radius); // start na zewnętrznej krawędzi na prawo od środka (opcjonalne)
 
-  // Zewnętrzny łuk
-  ctx.arc(radius, radius, radius, -Math.PI / 2, -Math.PI / 2 + successAngle, false);
+  // zewnętrzny łuk zielony
+  ctx.arc(radius, radius, radius, startAngle, startAngle + successAngle, false);
 
-  // Łuk wewnętrzny (do środka koła)
-  ctx.arc(radius, radius, radius - thickness, -Math.PI / 2 + successAngle, -Math.PI / 2, true);
+  // wewnętrzny łuk zielony (wracający do punktu startu, kierunek przeciwny)
+  ctx.arc(radius, radius, radius - thickness, startAngle + successAngle, startAngle, true);
 
   ctx.closePath();
   ctx.fill();
 
-  // Czerwony (przegrana)
+  // Czerwona część (przegrana)
   ctx.beginPath();
   ctx.fillStyle = '#dc3545'; // czerwony
-  ctx.moveTo(radius + (radius), radius);
 
-  ctx.arc(radius, radius, radius, -Math.PI / 2 + successAngle, -Math.PI / 2 + 2 * Math.PI, false);
+  // zewnętrzny łuk czerwony od końca zielonego do pełnego koła
+  ctx.arc(radius, radius, radius, startAngle + successAngle, startAngle + 2 * Math.PI, false);
 
-  ctx.arc(radius, radius, radius - thickness, -Math.PI / 2 + 2 * Math.PI, -Math.PI / 2 + successAngle, true);
+  // wewnętrzny łuk czerwony (wracający do punktu startu), przeciwny kierunek
+  ctx.arc(radius, radius, radius - thickness, startAngle + 2 * Math.PI, startAngle + successAngle, true);
 
   ctx.closePath();
   ctx.fill();
 }
+
 
 
 
