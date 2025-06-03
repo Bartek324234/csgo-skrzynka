@@ -544,23 +544,40 @@ let currentChance = 0;
 function drawWheel(chancePercent) {
   currentChance = chancePercent;
   const radius = canvas.width / 2;
+  const thickness = 40; // grubość pierścienia
+
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   // Zielony (wygrana)
   const successAngle = (2 * Math.PI) * (chancePercent / 100);
+
+  // Rysujemy pierścień zielony
   ctx.beginPath();
-  ctx.moveTo(radius, radius);
   ctx.fillStyle = '#28a745'; // zielony
-  ctx.arc(radius, radius, radius, -Math.PI / 2, -Math.PI / 2 + successAngle);
+  ctx.moveTo(radius + (radius), radius); // start na zewnętrznej krawędzi na prawo od środka (opcjonalne)
+
+  // Zewnętrzny łuk
+  ctx.arc(radius, radius, radius, -Math.PI / 2, -Math.PI / 2 + successAngle, false);
+
+  // Łuk wewnętrzny (do środka koła)
+  ctx.arc(radius, radius, radius - thickness, -Math.PI / 2 + successAngle, -Math.PI / 2, true);
+
+  ctx.closePath();
   ctx.fill();
 
   // Czerwony (przegrana)
   ctx.beginPath();
-  ctx.moveTo(radius, radius);
   ctx.fillStyle = '#dc3545'; // czerwony
-  ctx.arc(radius, radius, radius, -Math.PI / 2 + successAngle, -Math.PI / 2 + 2 * Math.PI);
+  ctx.moveTo(radius + (radius), radius);
+
+  ctx.arc(radius, radius, radius, -Math.PI / 2 + successAngle, -Math.PI / 2 + 2 * Math.PI, false);
+
+  ctx.arc(radius, radius, radius - thickness, -Math.PI / 2 + 2 * Math.PI, -Math.PI / 2 + successAngle, true);
+
+  ctx.closePath();
   ctx.fill();
 }
+
 
 
 
