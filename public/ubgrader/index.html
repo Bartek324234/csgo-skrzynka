@@ -395,7 +395,7 @@ html, body {
 
 
     // Obsługa kliknięcia ulepszania
-    upgradeBtn.addEventListener('click', () => {
+   upgradeBtn.addEventListener('click', () => {
   const invSelectedIds = Array.from(inventoryContainer.querySelectorAll('.item-card.selected')).map(c => parseInt(c.dataset.id));
   const availSelectedIds = Array.from(availableContainer.querySelectorAll('.item-card.selected')).map(c => parseInt(c.dataset.id));
 
@@ -425,30 +425,44 @@ html, body {
         return;
       }
 
-      // Uruchom animację koła
-      spinWheel(data.success, () => {
-        // Po zakończeniu animacji pokazujemy wynik
-        if (data.success) {
-          alert('Ulepszenie powiodło się! Szansa: ' + data.chance + '%');
+      const success = data.success;
+      const chance = data.chance;
+
+      currentChance = chance;
+      drawWheel(currentChance); // narysuj statyczny pierścień
+
+      spinPointer(success, () => {
+        if (success) {
+          alert('✅ Ulepszenie powiodło się! Szansa: ' + chance + '%');
         } else {
-          alert('Ulepszenie nie powiodło się. Szansa: ' + data.chance + '%');
+          alert('❌ Ulepszenie nie powiodło się. Szansa: ' + chance + '%');
         }
 
         loadInventory();
         clearSelections();
         chanceDisplay.textContent = '0%';
-        drawWheel(0); // zresetuj koło
+        currentChance = 0;
+        drawWheel(0);
+        drawPointer(0);
 
         upgradeBtn.disabled = false;
         upgradeBtn.textContent = 'Ulepsz skiny';
       });
     })
     .catch(err => {
-      alert('Błąd sieci: ' + err);
+      alert('Wystąpił błąd: ' + err);
       upgradeBtn.disabled = false;
       upgradeBtn.textContent = 'Ulepsz skiny';
     });
 });
+
+
+
+
+
+
+
+
 
 
 
@@ -544,42 +558,65 @@ let currentChance = 0;
 
 // Rysuj koło z aktualną szansą
 function drawWheel(chancePercent) {
-  currentChance = chancePercent;
   const radius = canvas.width / 2;
-  const thickness = 40; // grubość pierścienia
-
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  const startAngle = -Math.PI / 2; // góra koła
+  const startAngle = -Math.PI / 2; // godzina 12
+  const successAngle = 2 * Math.PI * (chancePercent / 100);
 
-  // Zielona część (wygrana)
-  const successAngle = (2 * Math.PI) * (chancePercent / 100);
-
-  // Rysowanie zielonego pierścienia
+  // Zielony łuk
   ctx.beginPath();
-  ctx.fillStyle = '#28a745'; // zielony
-
-  // zewnętrzny łuk zielony
-  ctx.arc(radius, radius, radius, startAngle, startAngle + successAngle, false);
-
-  // wewnętrzny łuk zielony (wracający do punktu startu, kierunek przeciwny)
-  ctx.arc(radius, radius, radius - thickness, startAngle + successAngle, startAngle, true);
-
-  ctx.closePath();
+  ctx.moveTo(radius, radius);
+  ctx.fillStyle = '#28a745';
+  ctx.arc(radius, radius, radius, startAngle, startAngle + successAngle);
+  ctx.lineTo(radius, radius);
   ctx.fill();
 
-  // Czerwona część (przegrana)
+  // Czerwony łuk
   ctx.beginPath();
-  ctx.fillStyle = '#dc3545'; // czerwony
-
-  // zewnętrzny łuk czerwony od końca zielonego do pełnego koła
-  ctx.arc(radius, radius, radius, startAngle + successAngle, startAngle + 2 * Math.PI, false);
-
-  // wewnętrzny łuk czerwony (wracający do punktu startu), przeciwny kierunek
-  ctx.arc(radius, radius, radius - thickness, startAngle + 2 * Math.PI, startAngle + successAngle, true);
-
-  ctx.closePath();
+  ctx.moveTo(radius, radius);
+  ctx.fillStyle = '#dc3545';
+  ctx.arc(radius, radius, radius, startAngle + successAngle, startAngle + 2 * Math.PI);
+  ctx.lineTo(radius, radius);
   ctx.fill();
+
+  // Wytnij środek, żeby był pierścień
+  const ringThickness = 40; // np 40px
+  ctx.beginPath();
+  ctx.fillStyle = 'white'; // kolor tła lub transparent jeśli chcesz
+  ctx.arc(radius, radius, radius - ringThickness, 0, 2 * Math.PI);
+  ctx.fill();
+}
+
+
+
+
+
+function drawPointer(angleDeg) {
+  const radius = canvas.width / 2;
+  const pointerLength = 20; // długość wskaźnika (trójkąta)
+  const pointerWidth = 15; // szerokość u podstawy
+
+  ctx.save();
+  
+
+  drawWheel(currentChance); // narysuj pierścień
+
+  // Przesuń układ do środka koła
+  ctx.translate(radius, radius);
+  ctx.rotate((angleDeg * Math.PI) / 180);
+
+  // Rysuj trójkąt wskaźnika skierowany "do góry"
+  ctx.beginPath();
+  ctx.moveTo(0, -radius + 5); // szczyt trójkąta, blisko krawędzi koła
+  ctx.lineTo(-pointerWidth / 2, -radius + pointerLength + 5);
+  ctx.lineTo(pointerWidth / 2, -radius + pointerLength + 5);
+  ctx.closePath();
+
+  ctx.fillStyle = '#000'; // czarny wskaźnik
+  ctx.fill();
+
+  ctx.restore();
 }
 
 
@@ -599,27 +636,21 @@ function drawWheel(chancePercent) {
 
 
 
-function spinWheel(success, callback) {
-  const duration = 3000; // czas animacji w ms
-  const spins = 5;       // ile pełnych obrotów
-  const radius = 360;
+function spinPointer(success, callback) {
+  const duration = 3000; // animacja w ms
+  const spins = 5;       // pełne obroty
 
-  // Przeliczamy currentChance na zakres 0-360 stopni
-  const successDegree = (currentChance / 100) * radius;
+  const successAngleDeg = (currentChance / 100) * 360;
 
-  let finalAngle;
+  let finalAngleDeg;
 
   if (success) {
-    // Kąt losowy w zielonej części (0 do successDegree)
-    const randomDegree = Math.random() * successDegree;
-    // Obracamy tak, by pod trójkątem był ten zielony kąt
-    finalAngle = spins * radius + (270 - randomDegree); // 270 = -90° + 360° (obrót)
+    finalAngleDeg = Math.random() * successAngleDeg;
   } else {
-    // Kąt losowy w czerwonej części (successDegree do 360)
-    const randomDegree = successDegree + Math.random() * (radius - successDegree);
-    // Obracamy tak, by pod trójkątem był czerwony kąt
-    finalAngle = spins * radius + (270 - randomDegree);
+    finalAngleDeg = successAngleDeg + Math.random() * (360 - successAngleDeg);
   }
+
+  finalAngleDeg += spins * 360; // dodaj pełne obroty
 
   let start = null;
 
@@ -627,22 +658,20 @@ function spinWheel(success, callback) {
     if (!start) start = timestamp;
     const progress = timestamp - start;
     const ease = easeOutCubic(Math.min(progress / duration, 1));
-    const angle = ease * finalAngle;
+    const angle = ease * finalAngleDeg;
 
-    canvas.style.transform = `rotate(${angle}deg)`;
+    drawPointer(angle % 360);
 
     if (progress < duration) {
       requestAnimationFrame(animate);
     } else {
-      canvas.style.transform = `rotate(${finalAngle}deg)`;
+      drawPointer(finalAngleDeg % 360);
       callback();
     }
   }
 
   requestAnimationFrame(animate);
 }
-
-
 
 
 
