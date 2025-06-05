@@ -705,9 +705,7 @@ function easeOutCubic(t) {
 }
 
 function spinPointer(success, callback) {
-  const spin1Duration = 2000; // 2 szybkie obroty
-  const spin2Duration = 1200; // ostatni obrót wolniej
-  const totalDuration = spin1Duration + spin2Duration;
+  const duration = 3200; // całkowity czas animacji w ms
 
   const successAngleDeg = (currentChance / 100) * 360;
 
@@ -718,33 +716,20 @@ function spinPointer(success, callback) {
     targetAngle = successAngleDeg + Math.random() * (360 - successAngleDeg);
   }
 
-  const fullRotation = 360;
-  const totalRotation = 2 * fullRotation + fullRotation + targetAngle; // 3 obroty + wynik
-
+  const totalRotation = 3 * 360 + targetAngle; // 3 pełne obroty + cel
   let startTime = null;
 
   function animate(timestamp) {
     if (!startTime) startTime = timestamp;
     const elapsed = timestamp - startTime;
-    const t = Math.min(elapsed / totalDuration, 1);
+    const t = Math.min(elapsed / duration, 1);
 
-    // Część szybka i wolna – osobne fazy easingowe
-    const phaseSplit = spin1Duration / totalDuration;
-
-    let eased;
-    if (t < phaseSplit) {
-      // pierwsza faza (szybka)
-      const t1 = t / phaseSplit;
-      eased = easeOutCubic(t1) * (2 * fullRotation);
-    } else {
-      // druga faza (wolniejsza)
-      const t2 = (t - phaseSplit) / (1 - phaseSplit);
-      eased = (2 * fullRotation) + easeOutCubic(t2) * (fullRotation + targetAngle);
-    }
+    const easedProgress = easeOutCubic(t);
+    const currentAngle = (lastAngle + easedProgress * totalRotation) % 360;
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     drawWheel(currentChance);
-    drawPointer((lastAngle + eased) % 360);
+    drawPointer(currentAngle);
 
     if (t < 1) {
       requestAnimationFrame(animate);
