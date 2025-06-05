@@ -233,9 +233,6 @@ let animationFrameId = null;
 
 let lastAngle = 0; // pamięta ostatni kąt trójkąta
 
- function easeOutCubic(t) {
-    return 1 - Math.pow(1 - t, 3);
-  }
 
  
 
@@ -703,10 +700,14 @@ function drawPointer(angleDeg) {
 
 
 
+function easeOutCubic(t) {
+  return 1 - Math.pow(1 - t, 3);
+}
 
 function spinPointer(success, callback) {
-  const spin1Duration = 2000; // czas pierwszych 2 obrotów (ms)
-  const spin2Duration = 1200; // czas ostatniego obrotu (ms)
+  const spin1Duration = 2000; // 2 szybkie obroty
+  const spin2Duration = 1200; // ostatni obrót wolniej
+  const totalDuration = spin1Duration + spin2Duration;
 
   const successAngleDeg = (currentChance / 100) * 360;
 
@@ -718,64 +719,53 @@ function spinPointer(success, callback) {
   }
 
   const fullRotation = 360;
-  const phase1Angle = 2 * fullRotation;       // 720° — 2 szybkie obroty
-  const phase2Angle = fullRotation + targetAngle; // 1 obrót + cel
+  const totalRotation = 2 * fullRotation + fullRotation + targetAngle; // 3 obroty + wynik
 
   let startTime = null;
-  let lastAngleDuringPhase1 = lastAngle;
 
-  function animatePhase1(timestamp) {
+  function animate(timestamp) {
     if (!startTime) startTime = timestamp;
     const elapsed = timestamp - startTime;
-    const t = Math.min(elapsed / spin1Duration, 1);
-    const eased = easeOutCubic(t);
-    const angle = eased * phase1Angle;
+    const t = Math.min(elapsed / totalDuration, 1);
+
+    // Część szybka i wolna – osobne fazy easingowe
+    const phaseSplit = spin1Duration / totalDuration;
+
+    let eased;
+    if (t < phaseSplit) {
+      // pierwsza faza (szybka)
+      const t1 = t / phaseSplit;
+      eased = easeOutCubic(t1) * (2 * fullRotation);
+    } else {
+      // druga faza (wolniejsza)
+      const t2 = (t - phaseSplit) / (1 - phaseSplit);
+      eased = (2 * fullRotation) + easeOutCubic(t2) * (fullRotation + targetAngle);
+    }
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     drawWheel(currentChance);
-    drawPointer((lastAngleDuringPhase1 + angle) % 360);
+    drawPointer((lastAngle + eased) % 360);
 
     if (t < 1) {
-      requestAnimationFrame(animatePhase1);
+      requestAnimationFrame(animate);
     } else {
-      lastAngle = (lastAngleDuringPhase1 + phase1Angle) % 360;
-      startTime = null;
-      animatePhase2Start();
-    }
-  }
-
-  function animatePhase2Start() {
-    // Zaczynamy drugi etap animacji, zachowując płynność
-    let phase2StartTime = null;
-
-    function animatePhase2(timestamp) {
-      if (!phase2StartTime) phase2StartTime = timestamp;
-      const elapsed = timestamp - phase2StartTime;
-      const t = Math.min(elapsed / spin2Duration, 1);
-      const eased = easeOutCubic(t);
-      const angle = eased * phase2Angle;
+      lastAngle = (lastAngle + totalRotation) % 360;
 
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       drawWheel(currentChance);
-      drawPointer((lastAngle + angle) % 360);
+      drawPointer(lastAngle);
 
-      if (t < 1) {
-        requestAnimationFrame(animatePhase2);
-      } else {
-        lastAngle = (lastAngle + phase2Angle) % 360;
-
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        drawWheel(currentChance);
-        drawPointer(lastAngle);
-
-        callback();
-      }
+      callback();
     }
-    requestAnimationFrame(animatePhase2);
   }
 
-  requestAnimationFrame(animatePhase1);
+  requestAnimationFrame(animate);
 }
+
+
+
+
+
 
 
 
