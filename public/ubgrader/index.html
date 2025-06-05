@@ -156,9 +156,9 @@ html, body {
   width: 80%;
   height: 80%;
   display: block;
-  border: 4px solid #dede14;        /* złoty kolor */
+  border: 2px solid #928369;        /* złoty kolor */
   border-radius: 50%;
-  box-shadow: 0 0 20px #f6ff0052,     /* lekka poświata */
+  box-shadow: 0 0 10px #41352b,     /* lekka poświata */
             
 }
 
@@ -625,7 +625,7 @@ function drawWheel(chancePercent) {
   // Zielony łuk
   ctx.beginPath();
   ctx.moveTo(radius, radius);
-  ctx.fillStyle = '#28a745';
+  ctx.fillStyle = '#3d3530';
   ctx.arc(radius, radius, radius, startAngle, startAngle + successAngle);
   ctx.lineTo(radius, radius);
   ctx.fill();
@@ -633,7 +633,7 @@ function drawWheel(chancePercent) {
   // Czerwony łuk
   ctx.beginPath();
   ctx.moveTo(radius, radius);
-  ctx.fillStyle = '#dc3545';
+  ctx.fillStyle = '#212128';
   ctx.arc(radius, radius, radius, startAngle + successAngle, startAngle + 2 * Math.PI);
   ctx.lineTo(radius, radius);
   ctx.fill();
