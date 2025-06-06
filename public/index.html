@@ -4,210 +4,52 @@
   <link rel="stylesheet" href="/index.css" />
   <meta charset="UTF-8" />
   <title>Logowanie Supabase z Balans i Kodem Promocyjnym</title>
-   <title>SkinSpin</title>
   <style>
-    body {
-      margin: 0;
-      font-family: 'Segoe UI', sans-serif;
-      background: #0f0f1a;
-      color: white;
+    #promoSection, #balanceSection {
+      margin-top: 20px;
     }
-
-    header {
-      background: #1a1a2e;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 10px 20px;
-    }
-
-    .logo {
-      font-size: 24px;
-      font-weight: bold;
-      color: #ffd700;
-      text-shadow: 0 0 8px #ffaa00;
-    }
-
-    .top-buttons button {
-      background: #ff9900;
-      border: none;
-      padding: 8px 16px;
-      border-radius: 8px;
-      color: white;
-      font-weight: bold;
-      cursor: pointer;
-      box-shadow: 0 0 8px #ffaa00;
-      margin-left: 10px;
-    }
-
-    #userInfo {
-      display: none;
-      align-items: center;
-      cursor: pointer;
-    }
-
-    #userInfo img {
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      margin-right: 8px;
-    }
-
-    #balanceSection, #kontoBtn, #promoSection {
-      text-align: center;
-      margin: 15px 0;
-    }
-
-    #promoSection input {
-      padding: 6px;
-      border-radius: 4px;
-      border: none;
-      width: 200px;
-    }
-
-    #promoSection button {
-      margin-left: 8px;
-      padding: 6px 12px;
-      border-radius: 4px;
-      background-color: #28a745;
-      border: none;
-      color: white;
-      cursor: pointer;
-    }
-
-    iframe {
-      border: none;
-      width: 100%;
-      height: 135px;
-      margin: 20px 0;
-    }
-
-    .case-grid {
-      display: flex;
-      justify-content: center;
-      gap: 20px;
-      flex-wrap: wrap;
-      padding: 20px;
-    }
-
-    .case {
-      background: #1c1c2c;
-      border-radius: 10px;
-      width: 150px;
-      padding: 10px;
-      text-align: center;
-      box-shadow: 0 0 10px #0ff2ff1c;
-      position: relative;
-    }
-
-    .case .new-tag {
-      position: absolute;
-      top: 5px;
-      left: 5px;
-      background: orange;
-      padding: 2px 6px;
-      border-radius: 5px;
-      font-size: 12px;
-    }
-
-    .case img {
-      width: 100%;
-      border-radius: 8px;
-    }
-
-    .upgrader {
-      text-align: center;
-      margin: 20px;
-    }
-
-    .upgrader a button {
-      padding: 10px 20px;
-      background-color: #007bff;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      box-shadow: 0 0 8px #007bff80;
-    }
-
-    #loginPopup {
-      display: none;
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: #222;
-      padding: 20px;
-      border-radius: 10px;
-      z-index: 1000;
-      box-shadow: 0 0 20px #00ffff88;
-    }
-
   </style>
+  
 </head>
 <body>
+ <!-- LIVE DROP --- -->
 
-<header>
-  <div class="logo">SkinSpin</div>
-  <div class="top-buttons">
-    <button onclick="toggleLogin()">Zaloguj się</button>
-    <div id="userInfo" onclick="document.getElementById('kontoBtn').style.display='block'">
-      <img id="userAvatar" src="avatar.jpg" alt="avatar">
-      <span id="userName">MłodyHubi</span>
-    </div>
+
+
+
+
+  
+
+
+
+
+<!-- LIVE DROP --- -->
+
+
+  <button id="loginBtn">Zaloguj przez Google
+  </button>
+  <button id="logoutBtn" style="display:none;">Wyloguj</button>
+  <div id="userInfo"></div>
+
+  <div id="balanceSection" style="display:none;">
+    <h3>Twój balans: <span id="userBalance">0.00</span> zł</h3>
   </div>
-</header>
+  <p>no dole kody promocyjne </p>
+<p>  SUPER100</p>
+<p>  NOWY50</p>
+  <div id="promoSection" style="display:none;">
+    <input id="promoInput" type="text" placeholder="Wpisz kod promocyjny" />
+    <button id="applyPromoBtn">Zastosuj kod</button>
+    <p id="promoMsg" style="color: green;"></p>
+  </div>
 
-<button id="kontoBtn" style="display:none;">Moje konto</button>
-
-<div id="balanceSection" style="display:none;">
-  <h3>Twój balans: <span id="userBalance">0.00</span> zł</h3>
-</div>
-
-<div id="promoSection" style="display:none;">
-  <input id="promoInput" type="text" placeholder="Wpisz kod promocyjny" />
-  <button id="applyPromoBtn">Zastosuj kod</button>
-  <p id="promoMsg" style="color: green;"></p>
-</div>
-
-<iframe src="/livedrop.html"></iframe>
-
-<section class="case-grid">
-  <a href="#">
-    <div class="case">
-      <div class="new-tag">NEW</div>
-      <img src="case1.png" alt="Losowanie">
-      <div>3,95 PLN</div>
-    </div>
-  </a>
-  <a href="#">
-    <div class="case">
-      <div class="new-tag">NEW</div>
-      <img src="case2.png" alt="Losowanie">
-      <div>59,25 PLN</div>
-    </div>
-  </a>
-</section>
-
-<div class="upgrader">
-  <a href="/ubgrader/index.html">
-    <button>UPGRADER</button>
-  </a>
-</div>
-
-<div id="loginPopup">
-  <p>Zaloguj się przez Google</p>
-  <!-- Tu wstawisz kod do Google Auth -->
-</div>
-
-<script>
-  function toggleLogin() {
-    const popup = document.getElementById('loginPopup');
-    popup.style.display = popup.style.display === 'none' ? 'block' : 'none';
-  }
-</script>
-
-
+<button id="kontoBtn">Moje konto</button>
+<button id="losowanieBtn">Przejdź do losowania</button>
+<a href="/ubgrader/index.html">
+  <button style="padding: 10px 20px; background-color: #007bff; color: white; border: none; border-radius: 6px; cursor: pointer;">
+   UBGRADER
+  </button>
+</a>
 
 
 <!-- Kontener na ładny komunikat -->
@@ -217,9 +59,7 @@
 -->
 
 <!-- Użyj tylko livedrop.js z importem ESM -->
-
-
-
+<iframe src="/livedrop.html" style="width: 100%; height: 135px; border: none;"></iframe>
 
 <script type="module" src="index.js"></script>
 <script type="module" src="main.js"></script>
