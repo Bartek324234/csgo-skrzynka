@@ -125,16 +125,32 @@ function startAnimation(finalImage, containerId, onEnd) {
   requestAnimationFrame(animate);
 }
 
+
+
+
+
 async function loadBalance(userId) {
+  if (!userId) {
+    console.error("Brak userId, nie można załadować balansu");
+    return 0;
+  }
+
   const { data, error } = await supabase
-    .from("users")
+    .from("user_balances")   // tutaj nazwa tabeli
     .select("balance")
-    .eq("id", userId)
+    .eq("user_id", userId)   // kolumna user_id
     .single();
 
-  if (error || !data) return 0;
+  if (error || !data) {
+    console.error("Błąd podczas pobierania balansu:", error);
+    return 0;
+  }
   return data.balance || 0;
 }
+
+
+
+
 
 async function updateUI() {
   const { data: { session } } = await supabase.auth.getSession();
