@@ -13,13 +13,7 @@ const imageBackgroundMap = {
   "/images/p2000oceaniczny.jpg": "bg-gold"
 };
 
-const availableImages = [
-  '/images/deserteagleblue.jpg',
-  '/images/glock18moda.jpg',
-  '/images/mac10bronz.jpg',
-  '/images/p18dzielnia.jpg',
-  '/images/p2000oceaniczny.jpg'
-];
+const availableImages = Object.keys(imageBackgroundMap);
 
 const imageNameMap = {
   "/images/deserteagleblue.jpg": "Desert Eagle - Niebieski",
@@ -35,30 +29,28 @@ document.addEventListener('DOMContentLoaded', () => {
   showStaticSkinsOnce();
 });
 
-// Podświetlenie aktywnego przycisku x1/x2 i obsługa wyboru
 function initQuantityButtons() {
   const btnX1 = document.getElementById('modeX1');
   const btnX2 = document.getElementById('modeX2');
-  
-  // Domyślnie x1 jest aktywne
   let activeCount = 1;
   btnX1.classList.add('active');
 
   btnX1.addEventListener('click', () => {
-    if (activeCount === 1) return;
-    activeCount = 1;
-    btnX1.classList.add('active');
-    btnX2.classList.remove('active');
+    if (activeCount !== 1) {
+      activeCount = 1;
+      btnX1.classList.add('active');
+      btnX2.classList.remove('active');
+    }
   });
 
   btnX2.addEventListener('click', () => {
-    if (activeCount === 2) return;
-    activeCount = 2;
-    btnX2.classList.add('active');
-    btnX1.classList.remove('active');
+    if (activeCount !== 2) {
+      activeCount = 2;
+      btnX2.classList.add('active');
+      btnX1.classList.remove('active');
+    }
   });
 
-  // Udostępniamy getter
   window.getActiveCount = () => activeCount;
 }
 
@@ -67,51 +59,34 @@ let currentSkinList = [];
 let isFirstSpin = true;
 let staticShown = false;
 
-
-
-
-
 function showStaticSkinsOnce() {
   if (staticShown) return;
   staticShown = true;
 
-  const strips = document.querySelectorAll('.imageStripStatic');
-  if (!strips.length) {
-    console.error('Brak elementów .imageStripStatic');
-    return;
-  }
-
-  strips.forEach(strip => {
+  document.querySelectorAll('.imageStripStatic').forEach(strip => {
     strip.innerHTML = '';
     strip.style.display = 'flex';
     strip.style.overflow = 'hidden';
     strip.style.width = `${7 * 120}px`;
     strip.style.whiteSpace = 'nowrap';
 
-    for (let j = 0; j < 7; j++) {
+    for (let i = 0; i < 7; i++) {
       const src = availableImages[Math.floor(Math.random() * availableImages.length)];
       const img = document.createElement('img');
       img.src = src;
-      img.classList.add('skin-img');
-      const bgClass = imageBackgroundMap[src] || '';
-      if (bgClass) img.classList.add(bgClass);
+      img.classList.add('skin-img', imageBackgroundMap[src] || '');
       img.style.display = 'inline-block';
       strip.appendChild(img);
     }
   });
 }
 
-
-
 function startAnimation(finalImage, animationContainerId, onAnimationEnd) {
   const animationContainer = document.getElementById(animationContainerId);
   const imageStrip = animationContainer.querySelector('.imageStrip');
   const staticStrip = animationContainer.querySelector('.imageStripStatic');
 
-  if (staticStrip && staticStrip.style.display !== 'none') {
-    staticStrip.style.display = 'none';
-  }
-
+  if (staticStrip) staticStrip.style.display = 'none';
   animationContainer.style.display = 'block';
   imageStrip.style.display = 'flex';
   imageStrip.style.transform = `translateX(-${lastOffsetX}px)`;
@@ -127,12 +102,9 @@ function startAnimation(finalImage, animationContainerId, onAnimationEnd) {
   const totalItems = winnerIndex + 1 + extraAfter;
 
   const newSkins = [];
-
   for (let i = 0; i < totalItems - currentSkinList.length - 1; i++) {
-    const randomImage = availableImages[Math.floor(Math.random() * availableImages.length)];
-    newSkins.push(randomImage);
+    newSkins.push(availableImages[Math.floor(Math.random() * availableImages.length)]);
   }
-
   newSkins.splice(winnerIndex - currentSkinList.length, 0, finalImage);
 
   if (isFirstSpin) {
@@ -145,9 +117,7 @@ function startAnimation(finalImage, animationContainerId, onAnimationEnd) {
   newSkins.forEach(src => {
     const img = document.createElement('img');
     img.src = src;
-    img.classList.add('skin-img');
-    const bgClass = imageBackgroundMap[src] || '';
-    if (bgClass) img.classList.add(bgClass);
+    img.classList.add('skin-img', imageBackgroundMap[src] || '');
     imageStrip.appendChild(img);
     currentSkinList.push(src);
   });
@@ -167,7 +137,6 @@ function startAnimation(finalImage, animationContainerId, onAnimationEnd) {
     const elapsed = timestamp - startTime;
     const progress = Math.min(elapsed / totalDuration, 1);
     const eased = easeOutCubic(progress);
-
     const currentOffset = lastOffsetX + eased * distanceToMove;
     imageStrip.style.transform = `translateX(-${currentOffset}px)`;
 
@@ -215,11 +184,11 @@ async function updateUI() {
   let balance = await loadBalance(user.id);
   if (balanceEl) balanceEl.textContent = `${balance.toFixed(2)} zł`;
 
-  drawBtn.addEventListener('click', async () => {
+  drawBtn.onclick = async () => {
     drawBtn.disabled = true;
-    resultContainer.innerHTML = ''; // Wyczyść poprzednie wyniki
+    resultContainer.innerHTML = '';
 
-    const activeCount = window.getActiveCount ? window.getActiveCount() : 1;
+    const activeCount = window.getActiveCount?.() || 1;
     const drawCost = 3.5 * activeCount;
 
     if (balance < drawCost) {
@@ -229,15 +198,14 @@ async function updateUI() {
     }
 
     let newBalance = balance;
-    for (let i = 0; i < activeCount; i++) {
-      // Tworzymy unikalne ID dla animacji i wyników
-      const animId = `animationWrapper_${i}`;
-      const resultId = `resultWrapper_${i}`;
 
-      // Dodajemy do kontenera animacje + wynik
+    for (let i = 0; i < activeCount; i++) {
+      const animId = `animationWrapper_${i}`;
+      const stripId = `strip_${i}`;
+
       resultContainer.insertAdjacentHTML('beforeend', `
         <div id="${animId}" class="animationWrapper" style="margin-bottom:30px;">
-          <div id="animationContainer" style="overflow: hidden; border: 1px solid #db4848; width: 840px;">
+          <div id="animationContainer_${i}" style="overflow: hidden; border: 1px solid #db4848; width: 840px;">
             <div class="imageStripStatic" style="display: flex; flex-wrap: nowrap;"></div>
             <div class="imageStrip" style="display: none; flex-wrap: nowrap;"></div>
           </div>
@@ -251,81 +219,62 @@ async function updateUI() {
         </div>
       `);
 
-      showStaticSkinsOnce();
       try {
-        // Wysłanie requestu do backendu
         const response = await fetch('/api/losuj', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ user_id: user.id })
         });
-        const result = await response.json();
 
+        const result = await response.json();
         if (result.error) {
           document.getElementById(`resultMessage_${i}`).textContent = `Błąd losowania: ${result.error}`;
           continue;
         }
 
         const finalImage = result.image;
-        const finalName = imageNameMap[finalImage] || "Nieznany skórka";
+        const finalName = imageNameMap[finalImage] || "Nieznany skin";
 
-        // Uruchamiamy animację
         startAnimation(finalImage, animId, () => {
-          // Po animacji pokazujemy wynik
-          const imgEl = document.getElementById(`resultImage_${i}`);
-          imgEl.src = finalImage;
-          imgEl.style.display = 'block';
-
+          document.getElementById(`resultImage_${i}`).src = finalImage;
+          document.getElementById(`resultImage_${i}`).style.display = 'block';
           document.getElementById(`resultImageName_${i}`).textContent = finalName;
-          const actionButtons = document.getElementById(`actionButtons_${i}`);
-          actionButtons.style.display = 'block';
+          const actions = document.getElementById(`actionButtons_${i}`);
+          actions.style.display = 'block';
 
-          // Przycisk Sprzedaj
           document.getElementById(`sellBtn_${i}`).onclick = async () => {
-            try {
-              const sellResponse = await fetch('/api/sell', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ user_id: user.id, image: finalImage })
-              });
-              const sellResult = await sellResponse.json();
-              if (sellResult.error) {
-                alert(`Błąd sprzedaży: ${sellResult.error}`);
-                return;
-              }
-              alert(`Sprzedano ${finalName} za ${sellResult.amount} zł`);
-              actionButtons.style.display = 'none';
-              updateUI(); // Odśwież saldo i UI
-            } catch (e) {
-              alert('Błąd podczas sprzedaży.');
-              console.error(e);
+            const res = await fetch('/api/sell', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ user_id: user.id, image: finalImage })
+            });
+            const data = await res.json();
+            if (!data.error) {
+              alert(`Sprzedano ${finalName} za ${data.amount} zł`);
+              actions.style.display = 'none';
+              updateUI();
+            } else {
+              alert(`Błąd sprzedaży: ${data.error}`);
             }
           };
 
-          // Przycisk Dodaj do ekwipunku
           document.getElementById(`keepBtn_${i}`).onclick = async () => {
-            try {
-              const keepResponse = await fetch('/api/keep', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ user_id: user.id, image: finalImage })
-              });
-              const keepResult = await keepResponse.json();
-              if (keepResult.error) {
-                alert(`Błąd dodania do ekwipunku: ${keepResult.error}`);
-                return;
-              }
+            const res = await fetch('/api/keep', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ user_id: user.id, image: finalImage })
+            });
+            const data = await res.json();
+            if (!data.error) {
               alert(`Dodano ${finalName} do ekwipunku`);
-              actionButtons.style.display = 'none';
-              updateUI(); // Odśwież saldo i UI
-            } catch (e) {
-              alert('Błąd podczas dodawania do ekwipunku.');
-              console.error(e);
+              actions.style.display = 'none';
+              updateUI();
+            } else {
+              alert(`Błąd dodania: ${data.error}`);
             }
           };
         });
 
-        // Odejmujemy koszt za każde losowanie
         newBalance -= 3.5;
       } catch (e) {
         console.error('Błąd requestu:', e);
@@ -333,11 +282,8 @@ async function updateUI() {
       }
     }
 
-    // Aktualizujemy saldo po wszystkich losowaniach
-    // Tu możesz wprowadzić mechanizm aktualizacji salda na backendzie
     balance = newBalance;
-    document.getElementById('balance').textContent = `${balance.toFixed(2)} zł`;
-
+    balanceEl.textContent = `${balance.toFixed(2)} zł`;
     drawBtn.disabled = false;
-  });
+  };
 }
