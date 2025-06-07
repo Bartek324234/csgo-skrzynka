@@ -13,8 +13,6 @@ const imageBackgroundMap = {
   "/images/p2000oceaniczny.jpg": "bg-gold"
 };
 
-const availableImages = Object.keys(imageBackgroundMap);
-
 const imageNameMap = {
   "/images/deserteagleblue.jpg": "Desert Eagle - Niebieski",
   "/images/glock18moda.jpg": "Glock 18 - Moda",
@@ -23,129 +21,104 @@ const imageNameMap = {
   "/images/p2000oceaniczny.jpg": "P2000 - Oceaniczny"
 };
 
+const availableImages = Object.keys(imageBackgroundMap);
+
 document.addEventListener('DOMContentLoaded', () => {
   initQuantityButtons();
+  showStaticSkins();
   updateUI();
-  showStaticSkinsOnce();
 });
 
 function initQuantityButtons() {
   const btnX1 = document.getElementById('modeX1');
   const btnX2 = document.getElementById('modeX2');
-  let activeCount = 1;
+
   btnX1.classList.add('active');
 
   btnX1.addEventListener('click', () => {
-    if (activeCount !== 1) {
-      activeCount = 1;
-      btnX1.classList.add('active');
-      btnX2.classList.remove('active');
-    }
+    btnX1.classList.add('active');
+    btnX2.classList.remove('active');
+    document.getElementById('draw2').style.display = 'none';
+    showStaticSkins();
   });
 
   btnX2.addEventListener('click', () => {
-    if (activeCount !== 2) {
-      activeCount = 2;
-      btnX2.classList.add('active');
-      btnX1.classList.remove('active');
-    }
+    btnX2.classList.add('active');
+    btnX1.classList.remove('active');
+    document.getElementById('draw2').style.display = 'block';
+    showStaticSkins();
   });
 
-  window.getActiveCount = () => activeCount;
+  window.getActiveCount = () => btnX2.classList.contains('active') ? 2 : 1;
 }
 
-let lastOffsetX = 0;
-let currentSkinList = [];
-let isFirstSpin = true;
-let staticShown = false;
+function showStaticSkins() {
+  for (let i = 1; i <= 2; i++) {
+    const staticStrip = document.getElementById(`imageStripStatic${i}`);
+    if (!staticStrip) continue;
 
-function showStaticSkinsOnce() {
-  if (staticShown) return;
-  staticShown = true;
+    staticStrip.innerHTML = '';
+    staticStrip.style.display = 'flex';
+    staticStrip.style.overflow = 'hidden';
+    staticStrip.style.width = `${7 * 120}px`;
+    staticStrip.style.whiteSpace = 'nowrap';
 
-  document.querySelectorAll('.imageStripStatic').forEach(strip => {
-    strip.innerHTML = '';
-    strip.style.display = 'flex';
-    strip.style.overflow = 'hidden';
-    strip.style.width = `${7 * 120}px`;
-    strip.style.whiteSpace = 'nowrap';
-
-    for (let i = 0; i < 7; i++) {
+    for (let j = 0; j < 7; j++) {
       const src = availableImages[Math.floor(Math.random() * availableImages.length)];
       const img = document.createElement('img');
       img.src = src;
       img.classList.add('skin-img', imageBackgroundMap[src] || '');
-      img.style.display = 'inline-block';
-      strip.appendChild(img);
+      staticStrip.appendChild(img);
     }
-  });
+  }
 }
 
-function startAnimation(finalImage, animationContainerId, onAnimationEnd) {
-  const animationContainer = document.getElementById(animationContainerId);
-  const imageStrip = animationContainer.querySelector('.imageStrip');
-  const staticStrip = animationContainer.querySelector('.imageStripStatic');
+function startAnimation(finalImage, containerId, onEnd) {
+  const imageStrip = document.getElementById(`imageStrip${containerId}`);
+  const staticStrip = document.getElementById(`imageStripStatic${containerId}`);
+  const animationContainer = document.getElementById(`animationContainer${containerId}`);
 
-  if (staticStrip) staticStrip.style.display = 'none';
-  animationContainer.style.display = 'block';
+  staticStrip.style.display = 'none';
   imageStrip.style.display = 'flex';
-  imageStrip.style.transform = `translateX(-${lastOffsetX}px)`;
+  animationContainer.style.width = `${7 * 120}px`;
 
-  const visibleItems = 7;
-  const itemWidth = 120;
-  animationContainer.style.width = `${visibleItems * itemWidth}px`;
+  imageStrip.innerHTML = '';
 
-  const itemsBeforeWinner = Math.floor(visibleItems / 2);
-  const extraBefore = 40;
-  const extraAfter = 10;
-  const winnerIndex = currentSkinList.length + extraBefore + itemsBeforeWinner;
-  const totalItems = winnerIndex + 1 + extraAfter;
-
-  const newSkins = [];
-  for (let i = 0; i < totalItems - currentSkinList.length - 1; i++) {
-    newSkins.push(availableImages[Math.floor(Math.random() * availableImages.length)]);
-  }
-  newSkins.splice(winnerIndex - currentSkinList.length, 0, finalImage);
-
-  if (isFirstSpin) {
-    imageStrip.innerHTML = '';
-    currentSkinList = [];
-    lastOffsetX = 0;
-    isFirstSpin = false;
+  const images = [];
+  for (let i = 0; i < 40; i++) {
+    images.push(availableImages[Math.floor(Math.random() * availableImages.length)]);
   }
 
-  newSkins.forEach(src => {
+  images.splice(20, 0, finalImage);
+
+  images.forEach(src => {
     const img = document.createElement('img');
     img.src = src;
     img.classList.add('skin-img', imageBackgroundMap[src] || '');
     imageStrip.appendChild(img);
-    currentSkinList.push(src);
   });
 
-  const distanceToMove = (winnerIndex - itemsBeforeWinner) * itemWidth - lastOffsetX;
-  const newOffsetX = lastOffsetX + distanceToMove;
-  const totalDuration = 6000;
+  const distance = (20 * 120);
+  imageStrip.style.transform = `translateX(0px)`;
 
-  function easeOutCubic(t) {
+  let start = null;
+  const duration = 5000;
+
+  function easeOut(t) {
     return 1 - Math.pow(1 - t, 3);
   }
 
-  let startTime = null;
-
-  function animate(timestamp) {
-    if (!startTime) startTime = timestamp;
-    const elapsed = timestamp - startTime;
-    const progress = Math.min(elapsed / totalDuration, 1);
-    const eased = easeOutCubic(progress);
-    const currentOffset = lastOffsetX + eased * distanceToMove;
-    imageStrip.style.transform = `translateX(-${currentOffset}px)`;
+  function animate(time) {
+    if (!start) start = time;
+    const elapsed = time - start;
+    const progress = Math.min(elapsed / duration, 1);
+    const eased = easeOut(progress);
+    imageStrip.style.transform = `translateX(-${distance * eased}px)`;
 
     if (progress < 1) {
       requestAnimationFrame(animate);
     } else {
-      imageStrip.style.transform = `translateX(-${newOffsetX}px)`;
-      lastOffsetX = newOffsetX;
-      if (onAnimationEnd) onAnimationEnd();
+      if (onEnd) onEnd();
     }
   }
 
@@ -154,17 +127,13 @@ function startAnimation(finalImage, animationContainerId, onAnimationEnd) {
 
 async function loadBalance(userId) {
   const { data, error } = await supabase
-    .from('user_balances')
-    .select('balance')
-    .eq('user_id', userId)
+    .from("users")
+    .select("balance")
+    .eq("id", userId)
     .single();
 
-  if (error) {
-    console.error('Błąd ładowania salda:', error);
-    return 0;
-  }
-
-  return data?.balance ?? 0;
+  if (error || !data) return 0;
+  return data.balance || 0;
 }
 
 async function updateUI() {
@@ -177,113 +146,79 @@ async function updateUI() {
     return;
   }
 
+  const drawButton = document.getElementById('drawButton');
   const balanceEl = document.getElementById('balance');
-  const drawBtn = document.getElementById('drawBtn');
-  const resultContainer = document.getElementById('resultsContainer');
 
   let balance = await loadBalance(user.id);
   if (balanceEl) balanceEl.textContent = `${balance.toFixed(2)} zł`;
 
-  drawBtn.onclick = async () => {
-    drawBtn.disabled = true;
-    resultContainer.innerHTML = '';
-
-    const activeCount = window.getActiveCount?.() || 1;
-    const drawCost = 3.5 * activeCount;
-
-    if (balance < drawCost) {
-      alert(`Za mało środków na ${activeCount} losowanie(-ń).`);
-      drawBtn.disabled = false;
+  drawButton.onclick = async () => {
+    const count = getActiveCount();
+    if (balance < count * 3.5) {
+      alert('Za mało środków');
       return;
     }
 
-    let newBalance = balance;
+    for (let i = 1; i <= count; i++) {
+      const resultImg = document.getElementById(`resultImage${i}`);
+      const resultName = document.getElementById(`resultImageName${i}`);
+      const actions = document.getElementById(`actionButtons${i}`);
 
-    for (let i = 0; i < activeCount; i++) {
-      const animId = `animationWrapper_${i}`;
-      const stripId = `strip_${i}`;
+      const response = await fetch('/api/losuj', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: user.id })
+      });
 
-      resultContainer.insertAdjacentHTML('beforeend', `
-        <div id="${animId}" class="animationWrapper" style="margin-bottom:30px;">
-          <div id="animationContainer_${i}" style="overflow: hidden; border: 1px solid #db4848; width: 840px;">
-            <div class="imageStripStatic" style="display: flex; flex-wrap: nowrap;"></div>
-            <div class="imageStrip" style="display: none; flex-wrap: nowrap;"></div>
-          </div>
-          <img id="resultImage_${i}" style="max-width: 200px; display:none; margin-top:10px;" />
-          <p id="resultImageName_${i}" style="font-weight: bold; font-size: 20px; color: #d75d11;"></p>
-          <p id="resultMessage_${i}"></p>
-          <div id="actionButtons_${i}" style="display:none;">
-            <button id="sellBtn_${i}">Sprzedaj</button>
-            <button id="keepBtn_${i}">Dodaj do ekwipunku</button>
-          </div>
-        </div>
-      `);
+      const result = await response.json();
+      const image = result.image;
+      const name = imageNameMap[image] || 'Nieznany skin';
 
-      try {
-        const response = await fetch('/api/losuj', {
+      startAnimation(image, i, () => {
+        resultImg.src = image;
+        resultImg.style.display = 'block';
+        resultName.textContent = name;
+        actions.style.display = 'block';
+      });
+
+      document.getElementById(`sellBtn${i}`).onclick = async () => {
+        const res = await fetch('/api/sell', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ user_id: user.id })
+          body: JSON.stringify({ user_id: user.id, image })
         });
-
-        const result = await response.json();
-        if (result.error) {
-          document.getElementById(`resultMessage_${i}`).textContent = `Błąd losowania: ${result.error}`;
-          continue;
+        const data = await res.json();
+        if (data.success) {
+          alert("Sprzedano przedmiot!");
+          resultImg.style.display = 'none';
+          resultName.textContent = '';
+          actions.style.display = 'none';
+          balance += data.amount || 0;
+          if (balanceEl) balanceEl.textContent = `${balance.toFixed(2)} zł`;
+        } else {
+          alert("Błąd przy sprzedaży.");
         }
+      };
 
-        const finalImage = result.image;
-        const finalName = imageNameMap[finalImage] || "Nieznany skin";
-
-        startAnimation(finalImage, animId, () => {
-          document.getElementById(`resultImage_${i}`).src = finalImage;
-          document.getElementById(`resultImage_${i}`).style.display = 'block';
-          document.getElementById(`resultImageName_${i}`).textContent = finalName;
-          const actions = document.getElementById(`actionButtons_${i}`);
-          actions.style.display = 'block';
-
-          document.getElementById(`sellBtn_${i}`).onclick = async () => {
-            const res = await fetch('/api/sell', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ user_id: user.id, image: finalImage })
-            });
-            const data = await res.json();
-            if (!data.error) {
-              alert(`Sprzedano ${finalName} za ${data.amount} zł`);
-              actions.style.display = 'none';
-              updateUI();
-            } else {
-              alert(`Błąd sprzedaży: ${data.error}`);
-            }
-          };
-
-          document.getElementById(`keepBtn_${i}`).onclick = async () => {
-            const res = await fetch('/api/keep', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ user_id: user.id, image: finalImage })
-            });
-            const data = await res.json();
-            if (!data.error) {
-              alert(`Dodano ${finalName} do ekwipunku`);
-              actions.style.display = 'none';
-              updateUI();
-            } else {
-              alert(`Błąd dodania: ${data.error}`);
-            }
-          };
+      document.getElementById(`keepBtn${i}`).onclick = async () => {
+        const res = await fetch('/api/keep', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ user_id: user.id, image })
         });
-
-        newBalance -= 3.5;
-      } catch (e) {
-        console.error('Błąd requestu:', e);
-        document.getElementById(`resultMessage_${i}`).textContent = "Błąd podczas losowania.";
-      }
+        const data = await res.json();
+        if (data.success) {
+          alert("Dodano do ekwipunku!");
+          resultImg.style.display = 'none';
+          resultName.textContent = '';
+          actions.style.display = 'none';
+        } else {
+          alert("Błąd przy dodawaniu.");
+        }
+      };
     }
 
-    balance = newBalance;
-    balanceEl.textContent = `${balance.toFixed(2)} zł`;
-    drawBtn.disabled = false;
+    balance -= count * 3.5;
+    if (balanceEl) balanceEl.textContent = `${balance.toFixed(2)} zł`;
   };
 }
