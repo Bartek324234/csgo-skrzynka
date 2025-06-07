@@ -5,13 +5,6 @@ const supabase = createClient(
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpvdGRuYmtmZ3F0em5qd2Jmam5vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc1MTMwODAsImV4cCI6MjA2MzA4OTA4MH0.mQrwJS9exVIMoSl_XwRT2WhE8DMTbdUM996kJIVA4kM"
 );
 
-const availableImages = [
-  '/images/deserteagleblue.jpg',
-  '/images/glock18moda.jpg',
-  '/images/mac10bronz.jpg',
-  '/images/p18dzielnia.jpg',
-  '/images/p2000oceaniczny.jpg'
-];
 
 const imageBackgroundMap = {
   "/images/deserteagleblue.jpg": "bg-blue",
@@ -21,249 +14,318 @@ const imageBackgroundMap = {
   "/images/p2000oceaniczny.jpg": "bg-gold"
 };
 
-const imageNameMap = {
-  "/images/deserteagleblue.jpg": "Desert Eagle - Niebieski",
-  "/images/glock18moda.jpg": "Glock 18 - Moda",
-  "/images/mac10bronz.jpg": "MAC-10 - Brązowy",
-  "/images/p18dzielnia.jpg": "P18 - Dzielnia",
-  "/images/p2000oceaniczny.jpg": "P2000 - Oceaniczny"
-};
 
-let selectedCount = 1; // domyślnie x1
+
 
 document.addEventListener('DOMContentLoaded', () => {
-  const countButtons = document.querySelectorAll('.draw-option');
-  const drawBtn = document.getElementById('drawBtn');
-  const balanceEl = document.getElementById('balance');
-  const animationsWrapper = document.getElementById('animationsWrapper');
+  showStaticSkinsOnce();
+});
 
-  countButtons.forEach(btn => {
-    btn.addEventListener('click', () => {
-      selectedCount = parseInt(btn.dataset.count);
-      countButtons.forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-    });
+async function loadBalance(userId) {
+  const { data, error } = await supabase
+    .from('user_balances')
+    .select('balance')
+    .eq('user_id', userId)
+    .single();
+
+  if (error) {
+    console.error('Błąd ładowania salda:', error);
+    return 0;
+  }
+
+  return data?.balance ?? 0;
+}
+
+
+
+
+
+
+
+
+// Funkcja animacji paska obrazków
+let lastOffsetX = 0;
+let currentSkinList = [];
+let isFirstSpin = true;
+let staticShown = false;
+
+const availableImages = [
+  '/images/deserteagleblue.jpg',
+  '/images/glock18moda.jpg',
+  '/images/mac10bronz.jpg',
+  '/images/p18dzielnia.jpg',
+  '/images/p2000oceaniczny.jpg'
+];
+
+
+
+
+
+
+
+
+
+
+
+// Funkcja pokazująca statyczny pasek skinów tylko raz, przy wejściu na stronę
+function showStaticSkinsOnce() {
+  if (staticShown) return;
+  staticShown = true;
+
+  const strip = document.getElementById('imageStripStatic');
+  strip.innerHTML = '';
+  strip.style.display = 'flex';
+  strip.style.overflow = 'hidden';
+  strip.style.width = `${7 * 120}px`; // 7 widocznych elementów * 120px (100px + 20px margin)
+  strip.style.whiteSpace = 'nowrap'; // wymusz liniowe ułożenie
+
+  for (let i = 0; i < 7; i++) {  // tylko 7 elementów, tak jak w animacji
+    const src = availableImages[Math.floor(Math.random() * availableImages.length)];
+    const img = document.createElement('img');
+    img.src = src;
+    img.classList.add('skin-img');
+const bgClass = imageBackgroundMap[src] || '';
+if (bgClass) img.classList.add(bgClass);
+
+    img.style.display = 'inline-block';
+    strip.appendChild(img);
+  }
+}
+
+
+
+
+
+
+ 
+function startAnimation(finalImage, onAnimationEnd) {
+  console.log('startAnimation wywołane');
+
+  const animationContainer = document.getElementById('animationContainer');
+  const imageStrip = document.getElementById('imageStrip');
+  const staticStrip = document.getElementById('imageStripStatic');
+
+  if (staticStrip && staticStrip.style.display !== 'none') {
+    staticStrip.style.display = 'none';
+  }
+
+  animationContainer.style.display = 'block';
+  imageStrip.style.display = 'flex';
+  imageStrip.style.transform = `translateX(-${lastOffsetX}px)`; // startowa pozycja
+
+  const visibleItems = 7;
+  const itemWidth = 120; // 100px + 20px margin
+  animationContainer.style.width = `${visibleItems * itemWidth}px`;
+
+  const itemsBeforeWinner = Math.floor(visibleItems / 2);
+  const extraBefore = 40;
+  const extraAfter = 10;
+  const winnerIndex = currentSkinList.length + extraBefore + itemsBeforeWinner;
+  const totalItems = winnerIndex + 1 + extraAfter;
+
+  const newSkins = [];
+
+  for (let i = 0; i < totalItems - currentSkinList.length - 1; i++) {
+    const randomImage = availableImages[Math.floor(Math.random() * availableImages.length)];
+    newSkins.push(randomImage);
+  }
+
+  newSkins.splice(winnerIndex - currentSkinList.length, 0, finalImage);
+
+  if (isFirstSpin) {
+    imageStrip.innerHTML = '';
+    currentSkinList = [];
+    lastOffsetX = 0;
+    isFirstSpin = false;
+  }
+
+  newSkins.forEach(src => {
+    const img = document.createElement('img');
+    img.src = src;
+   img.classList.add('skin-img');
+const bgClass = imageBackgroundMap[src] || '';
+if (bgClass) img.classList.add(bgClass);
+
+    imageStrip.appendChild(img);
+    currentSkinList.push(src);
   });
 
-  async function loadBalance(userId) {
-    const { data, error } = await supabase
-      .from('user_balances')
-      .select('balance')
-      .eq('user_id', userId)
-      .single();
+  console.log('Nowe obrazy do animacji:', newSkins);
 
-    if (error) {
-      console.error('Błąd ładowania salda:', error);
-      return 0;
-    }
+  const distanceToMove = (winnerIndex - itemsBeforeWinner) * itemWidth - lastOffsetX;
+  const newOffsetX = lastOffsetX + distanceToMove;
 
-    return data?.balance ?? 0;
-  }
-
-  function createAnimationContainer(index) {
-    // Tworzymy kontener na animację i UI pod nią
-    const container = document.createElement('div');
-    container.classList.add('animation-block');
-    container.style.border = '1px solid #ccc';
-    container.style.marginBottom = '20px';
-    container.style.padding = '10px';
-    container.style.position = 'relative';
-
-    // Pasek animacji
-    const animStrip = document.createElement('div');
-    animStrip.classList.add('imageStrip');
-    animStrip.style.display = 'flex';
-    animStrip.style.overflow = 'hidden';
-    animStrip.style.width = '840px'; // 7 elementów * 120px (100+20 margin)
-    animStrip.style.height = '120px';
-    animStrip.style.marginBottom = '10px';
-    container.appendChild(animStrip);
-
-    // Wynik
-    const resultEl = document.createElement('div');
-    resultEl.classList.add('result-text');
-    container.appendChild(resultEl);
-
-    // Obrazek wyniku
-    const imgResult = document.createElement('img');
-    imgResult.style.display = 'none';
-    imgResult.style.maxHeight = '120px';
-    imgResult.style.marginRight = '10px';
-    container.appendChild(imgResult);
-
-    // Nazwa obrazka
-    const imgName = document.createElement('div');
-    imgName.style.fontWeight = 'bold';
-    container.appendChild(imgName);
-
-    // Przyciski akcji
-    const actionButtons = document.createElement('div');
-    actionButtons.style.marginTop = '10px';
-    actionButtons.style.display = 'none';
-
-    const sellBtn = document.createElement('button');
-    sellBtn.textContent = 'Sprzedaj';
-    sellBtn.style.marginRight = '10px';
-
-    const keepBtn = document.createElement('button');
-    keepBtn.textContent = 'Zachowaj';
-
-    actionButtons.appendChild(sellBtn);
-    actionButtons.appendChild(keepBtn);
-    container.appendChild(actionButtons);
-
-    return {
-      container,
-      animStrip,
-      resultEl,
-      imgResult,
-      imgName,
-      actionButtons,
-      sellBtn,
-      keepBtn
-    };
-  }
+  const totalDuration = 6000;
 
   function easeOutCubic(t) {
     return 1 - Math.pow(1 - t, 3);
   }
 
-  function startAnimation(finalImage, animStrip) {
-    return new Promise((resolve) => {
-      const visibleItems = 7;
-      const itemWidth = 120;
+  let startTime = null;
 
-      // Przygotowanie listy animowanych obrazków - random + finalImage w środku
-      const itemsBeforeWinner = Math.floor(visibleItems / 2);
-      const extraBefore = 40;
-      const extraAfter = 10;
-      const winnerIndex = extraBefore + itemsBeforeWinner;
-      const totalItems = winnerIndex + 1 + extraAfter;
+  function animate(timestamp) {
+    if (!startTime) startTime = timestamp;
+    const elapsed = timestamp - startTime;
+    const progress = Math.min(elapsed / totalDuration, 1);
+    const eased = easeOutCubic(progress);
 
-      const newSkins = [];
-      for (let i = 0; i < totalItems; i++) {
-        const randomImage = availableImages[Math.floor(Math.random() * availableImages.length)];
-        newSkins.push(randomImage);
-      }
-      // Wstawiamy finalImage na winnerIndex
-      newSkins.splice(winnerIndex, 1, finalImage);
+    const currentOffset = lastOffsetX + eased * distanceToMove;
+    imageStrip.style.transform = `translateX(-${currentOffset}px)`;
 
-      animStrip.innerHTML = ''; // wyczyść poprzednie
-
-      newSkins.forEach(src => {
-        const img = document.createElement('img');
-        img.src = src;
-        img.classList.add('skin-img');
-        const bgClass = imageBackgroundMap[src] || '';
-        if (bgClass) img.classList.add(bgClass);
-        img.style.width = '100px';
-        img.style.marginRight = '20px';
-        animStrip.appendChild(img);
-      });
-
-      const totalDuration = 6000;
-      const distanceToMove = (winnerIndex - itemsBeforeWinner) * itemWidth;
-
-      let startTime = null;
-      function animate(timestamp) {
-        if (!startTime) startTime = timestamp;
-        const elapsed = timestamp - startTime;
-        const progress = Math.min(elapsed / totalDuration, 1);
-        const eased = easeOutCubic(progress);
-
-        const currentOffset = eased * distanceToMove;
-        animStrip.style.transform = `translateX(-${currentOffset}px)`;
-
-        if (progress < 1) {
-          requestAnimationFrame(animate);
-        } else {
-          animStrip.style.transform = `translateX(-${distanceToMove}px)`;
-          resolve();
-        }
-      }
+    if (progress < 1) {
       requestAnimationFrame(animate);
-    });
+    } else {
+      imageStrip.style.transform = `translateX(-${newOffsetX}px)`;
+      lastOffsetX = newOffsetX;
+      if (onAnimationEnd) onAnimationEnd();
+    }
   }
 
-  drawBtn.addEventListener('click', async () => {
-    const user = supabase.auth.getUser();
-    if (!user) {
-      alert('Musisz się zalogować.');
-      window.location.href = '/index.html';
-      return;
-    }
-    drawBtn.disabled = true;
-    animationsWrapper.innerHTML = ''; // wyczyść wszystkie animacje
+  requestAnimationFrame(animate);
+}
 
-    const balance = await loadBalance(user.id);
-    if (balance < 3.5 * selectedCount) {
-      alert('Masz za mało środków!');
-      drawBtn.disabled = false;
-      return;
-    }
 
-    for (let i = 0; i < selectedCount; i++) {
-      // Tworzymy UI i kontener animacji dla każdego losowania
-      const { container, animStrip, resultEl, imgResult, imgName, actionButtons, sellBtn, keepBtn } = createAnimationContainer(i);
-      animationsWrapper.appendChild(container);
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+async function updateUI() {
+  const { data: { session } } = await supabase.auth.getSession();
+  const user = session?.user;
+
+  if (!user) {
+    alert("Musisz się zalogować.");
+    window.location.href = "/index.html";
+    return;
+  }
+
+  const balanceEl = document.getElementById('balance');
+  const resultEl = document.getElementById('result');
+  const imageEl = document.getElementById('resultImage');
+  const imageNameEl = document.getElementById('resultImageName');
+  const drawBtn = document.getElementById('drawBtn');
+  const actionButtons = document.getElementById('actionButtons');
+  const sellBtn = document.getElementById('sellBtn');
+  const keepBtn = document.getElementById('keepBtn');
+
+  let balance = await loadBalance(user.id);
+  if (balanceEl) balanceEl.textContent = `${balance.toFixed(2)} zł`;
+
+  if (resultEl) resultEl.textContent = '';
+  if (imageEl) imageEl.style.display = 'none';
+  if (imageNameEl) imageNameEl.style.display = 'none';
+  if (actionButtons) actionButtons.style.display = 'none';
+
+  // Mapa ścieżek do nazw obrazków:
+  const imageNameMap = {
+    "/images/deserteagleblue.jpg": "Desert Eagle - Niebieski",
+    "/images/glock18moda.jpg": "Glock 18 - Moda",
+    "/images/mac10bronz.jpg": "MAC-10 - Brązowy",
+    "/images/p18dzielnia.jpg": "P18 - Dzielnia",
+    "/images/p2000oceaniczny.jpg": "P2000 - Oceaniczny"
+  };
+
+  if (drawBtn) {
+    drawBtn.addEventListener('click', async () => {
       try {
-        // Wywołanie backendu na losowanie (pojedyncze)
+        drawBtn.disabled = true;
+        resultEl.textContent = '';
+        imageEl.style.display = 'none';
+        imageNameEl.style.display = 'none';
+        actionButtons.style.display = 'none';
+
+        // Wywołaj backend losowania
         const response = await fetch('/api/losuj', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ user_id: user.id })
         });
+
         const result = await response.json();
 
         if (result.error) {
           resultEl.textContent = result.error;
           drawBtn.disabled = false;
-          continue;
+          return;
         }
 
-        // Uruchom animację z otrzymanym obrazkiem
-        await startAnimation(result.image, animStrip);
+        // Uruchom animację i po niej pokaż wynik
+        startAnimation(result.image, () => {
+          resultEl.textContent = result.message;
+          imageEl.src = result.image;
+          imageEl.style.display = 'block';
+          imageNameEl.textContent = imageNameMap[result.image] || 'Nieznana nazwa';
+          imageNameEl.style.display = 'block';
+          actionButtons.style.display = 'block';
 
-        // Po animacji pokaż wyniki i przyciski
-        resultEl.textContent = result.message || 'Wylosowano przedmiot!';
-        imgResult.src = result.image;
-        imgResult.style.display = 'inline-block';
-        imgName.textContent = imageNameMap[result.image] || 'Nieznana nazwa';
-        actionButtons.style.display = 'block';
-
-        sellBtn.onclick = async () => {
-          try {
-            const sellResponse = await fetch('/api/sell-item', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                user_id: user.id,
-                item_id: result.item_id
-              })
-            });
-            const sellResult = await sellResponse.json();
-            if (sellResult.success) {
-              alert('Przedmiot sprzedany!');
-              container.remove();
-            } else {
-              alert('Błąd podczas sprzedaży.');
-            }
-          } catch {
-            alert('Błąd podczas sprzedaży.');
+          if (typeof result.newBalance === 'number' && balanceEl) {
+            balance = result.newBalance;
+            balanceEl.textContent = `${balance.toFixed(2)} zł`;
           }
-        };
 
-        keepBtn.onclick = () => {
-          alert('Przedmiot zachowany!');
-          actionButtons.style.display = 'none';
-        };
+          const itemId = result.item_id;
 
-      } catch (e) {
-        resultEl.textContent = 'Błąd losowania.';
-        console.error(e);
+          sellBtn.onclick = async () => {
+            try {
+              const sellResponse = await fetch('/api/sell-item', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  user_id: user.id,
+                  item_id: itemId,
+                  value: result.value
+                })
+              });
+
+              const sellData = await sellResponse.json();
+
+              if (sellData.newBalance !== undefined && balanceEl) {
+                balance = sellData.newBalance;
+                balanceEl.textContent = `${balance.toFixed(2)} zł`;
+              }
+
+              resultEl.textContent = 'Przedmiot sprzedany!';
+              imageEl.style.display = 'none';
+              imageNameEl.style.display = 'none';
+              actionButtons.style.display = 'none';
+            } catch (err) {
+              console.error("Błąd sprzedaży:", err);
+              resultEl.textContent = 'Błąd sprzedaży przedmiotu.';
+            }
+          };
+
+          keepBtn.onclick = async () => {
+            try {
+              resultEl.textContent = 'Przedmiot jest już w ekwipunku.';
+              actionButtons.style.display = 'none';
+            } catch (err) {
+              console.error("Błąd dodania do ekwipunku:", err);
+              resultEl.textContent = 'Błąd dodania do ekwipunku.';
+            }
+          };
+          
+          drawBtn.disabled = false; // Odblokuj przycisk po animacji
+        });
+
+      } catch (error) {
+        console.error('Błąd losowania:', error);
+        resultEl.textContent = 'Coś poszło nie tak podczas losowania.';
+        drawBtn.disabled = false;
       }
-    }
-    drawBtn.disabled = false;
-  });
-});
+    });
+  }
+}
+
+updateUI();
