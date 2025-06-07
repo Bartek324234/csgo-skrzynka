@@ -67,28 +67,41 @@ let currentSkinList = [];
 let isFirstSpin = true;
 let staticShown = false;
 
+
+
+
+
 function showStaticSkinsOnce() {
   if (staticShown) return;
   staticShown = true;
 
-  const strip = document.getElementById('imageStripStatic');
-  strip.innerHTML = '';
-  strip.style.display = 'flex';
-  strip.style.overflow = 'hidden';
-  strip.style.width = `${7 * 120}px`;
-  strip.style.whiteSpace = 'nowrap';
-
-  for (let i = 0; i < 7; i++) {
-    const src = availableImages[Math.floor(Math.random() * availableImages.length)];
-    const img = document.createElement('img');
-    img.src = src;
-    img.classList.add('skin-img');
-    const bgClass = imageBackgroundMap[src] || '';
-    if (bgClass) img.classList.add(bgClass);
-    img.style.display = 'inline-block';
-    strip.appendChild(img);
+  const strips = document.querySelectorAll('.imageStripStatic');
+  if (!strips.length) {
+    console.error('Brak elementów .imageStripStatic');
+    return;
   }
+
+  strips.forEach(strip => {
+    strip.innerHTML = '';
+    strip.style.display = 'flex';
+    strip.style.overflow = 'hidden';
+    strip.style.width = `${7 * 120}px`;
+    strip.style.whiteSpace = 'nowrap';
+
+    for (let j = 0; j < 7; j++) {
+      const src = availableImages[Math.floor(Math.random() * availableImages.length)];
+      const img = document.createElement('img');
+      img.src = src;
+      img.classList.add('skin-img');
+      const bgClass = imageBackgroundMap[src] || '';
+      if (bgClass) img.classList.add(bgClass);
+      img.style.display = 'inline-block';
+      strip.appendChild(img);
+    }
+  });
 }
+
+
 
 function startAnimation(finalImage, animationContainerId, onAnimationEnd) {
   const animationContainer = document.getElementById(animationContainerId);
@@ -238,6 +251,7 @@ async function updateUI() {
         </div>
       `);
 
+      showStaticSkinsOnce();
       try {
         // Wysłanie requestu do backendu
         const response = await fetch('/api/losuj', {
