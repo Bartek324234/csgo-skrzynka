@@ -37,8 +37,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Podświetlenie aktywnego przycisku x1/x2 i obsługa wyboru
 function initQuantityButtons() {
-  const btnX1 = document.getElementById('btn-x1');
-  const btnX2 = document.getElementById('btn-x2');
+  const btnX1 = document.getElementById('modeX1');
+  const btnX2 = document.getElementById('modeX2');
   
   // Domyślnie x1 jest aktywne
   let activeCount = 1;
