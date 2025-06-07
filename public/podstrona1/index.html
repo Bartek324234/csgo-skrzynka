@@ -241,10 +241,53 @@ body {
 
 
 
+
+
+
+
+button.active {
+  background-color: #d75d11;
+  color: white;
+  border: none;
+}
+
+
+  .mode-btn {
+    padding: 8px 16px;
+    margin-right: 10px;
+    border: 1px solid #aaa;
+    background-color: #eee;
+    cursor: pointer;
+    border-radius: 5px;
+  }
+
+  .mode-btn.active {
+    background-color: #db4848;
+    color: white;
+    font-weight: bold;
+  }
+
+  .draw-container {
+    margin-bottom: 20px;
+  }
+
 </style>
 </head>
 
 <body>
+
+
+
+
+<div id="drawModeSelector" style="margin-bottom: 15px;">
+  <button id="modeX1" class="mode-btn active">x1</button>
+  <button id="modeX2" class="mode-btn">x2</button>
+</div>
+
+
+
+
+
 
 
 
@@ -281,48 +324,72 @@ body {
 
 
 
-<div id="animationWrapper" style="position: relative; width: fit-content; margin: 20px auto;">
-  <div class="indicator top-indicator"></div>
-  <div class="indicator bottom-indicator"></div>
 
 
 
 
 
-  <div id="animationContainer" style="overflow: hidden; border: 1px solid #db4848;">
-    <div id="imageStripStatic" style="display: none; flex-wrap: nowrap;"></div>
-    <div id="imageStrip" style="display: none; flex-wrap: nowrap;"></div>
+
+
+  <!-- Wybór trybu x1 / x2 -->
+  <div id="modeButtons">
+    <button id="modeX1" class="draw-button active">x1</button>
+    <button id="modeX2" class="draw-button">x2</button>
   </div>
-</div>
+
+  <!-- Losowanie 1 -->
+  <div id="draw1" class="draw-container">
+    <div id="animationWrapper1" style="position: relative; width: fit-content; margin: 20px auto;">
+      <div class="indicator top-indicator"></div>
+      <div id="animationContainer1" style="overflow: hidden; border: 1px solid #db4848;">
+        <div id="imageStripStatic1" style="display: none; flex-wrap: nowrap;"></div>
+        <div id="imageStrip1" style="display: none; flex-wrap: nowrap;"></div>
+      </div>
+      <div class="indicator bottom-indicator"></div>
+    </div>
+
+    <img id="resultImage1" style="max-width: 200px; display: none;" />
+    <p id="resultImageName1" style="font-weight: bold; font-size: 20px; color: #d75d11;"></p>
+
+    <div id="actionButtons1" style="display: none;">
+      <button id="sellBtn1">Sprzedaj</button>
+      <button id="keepBtn1">Dodaj do ekwipunku</button>
+    </div>
+  </div>
+
+  <!-- Losowanie 2 (ukryte domyślnie) -->
+  <div id="draw2" class="draw-container" style="display: none;">
+    <div id="animationWrapper2" style="position: relative; width: fit-content; margin: 20px auto;">
+      <div class="indicator top-indicator"></div>
+      <div id="animationContainer2" style="overflow: hidden; border: 1px solid #db4848;">
+        <div id="imageStripStatic2" style="display: none; flex-wrap: nowrap;"></div>
+        <div id="imageStrip2" style="display: none; flex-wrap: nowrap;"></div>
+      </div>
+      <div class="indicator bottom-indicator"></div>
+    </div>
+
+    <img id="resultImage2" style="max-width: 200px; display: none;" />
+    <p id="resultImageName2" style="font-weight: bold; font-size: 20px; color: #d75d11;"></p>
+
+    <div id="actionButtons2" style="display: none;">
+      <button id="sellBtn2">Sprzedaj</button>
+      <button id="keepBtn2">Dodaj do ekwipunku</button>
+    </div>
+  </div>
+
+  <!-- Przycisk Losuj -->
+  <div style="text-align: center; margin-top: 20px;">
+    <button id="drawButton" class="draw-button">Losuj</button>
+  </div>
 
 
 
 
-<img id="resultImage" style="max-width: 200px; display:none;" />
-<p id="resultImageName" style="font-weight: bold; font-size: 20px; color: #d75d11;"></p>
 
 
 
 
 
-
-
-
-<p id="result"></p>
-
-
-<div id="multiDrawButtons">
-  <button data-count="1" class="draw-option active">x1</button>
-  <button data-count="2" class="draw-option">x2</button>
-  <button data-count="3" class="draw-option">x3</button>
-  <button data-count="4" class="draw-option">x4</button>
-</div>
-
-<!-- Nowe przyciski -->
-<div id="actionButtons" style="display:none;">
-  <button id="sellBtn">Sprzedaj</button>
-  <button id="keepBtn">Dodaj do ekwipunku</button>
-</div>
 
 <button id="kontoBtn">Moje konto</button>
 
@@ -381,19 +448,6 @@ function showToast(message) {
     toast.classList.add("hidden");
   }, 3000);
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
 document.addEventListener("DOMContentLoaded", () => {
   const loader = document.getElementById("loader");
   const knife = document.getElementById("knife");
