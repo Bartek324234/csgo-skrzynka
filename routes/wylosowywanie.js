@@ -18,15 +18,17 @@ function weightedRandom(items) {
 }
 
 router.post('/', async (req, res) => {
-  const { user_id } = req.body;
+  const { user_id, count = 1 } = req.body; // domyślnie 1 losowanie
 
   if (!user_id) {
     return res.status(400).json({ error: 'Brak ID użytkownika' });
   }
 
   const drawCost = 3.5;
+  const totalCost = drawCost * count;
 
   try {
+    // Pobierz balans użytkownika
     const { data: current, error: errGet } = await supabase
       .from('user_balances')
       .select('balance')
@@ -37,11 +39,12 @@ router.post('/', async (req, res) => {
 
     const balance = current?.balance || 0;
 
-    if (balance < drawCost) {
+    if (balance < totalCost) {
       return res.json({ error: 'Za mało środków na losowanie.', currentBalance: balance });
     }
 
-    const newBalance = balance - drawCost;
+    // Aktualizacja salda
+    const newBalance = balance - totalCost;
 
     const { error: errUpdate } = await supabase
       .from('user_balances')
@@ -58,30 +61,41 @@ router.post('/', async (req, res) => {
       { id: 5, item: "2.1zł", value: 2.1, chance: 0.01, image: "/images/p2000oceaniczny.jpg" }
     ];
 
-    const result = weightedRandom(outcomes);
+    const results = [];
 
-    const { data: insertedItem, error: errInsert } = await supabase
-      .from('user_inventory')
-      .insert({
-        user_id: user_id,
-        item_name: result.item,
-        image_url: result.image,
-        value: result.value
-      })
-      .select('id')
-      .single();
+    // Multi losowanie
+    for (let i = 0; i < count; i++) {
+      const result = weightedRandom(outcomes);
 
-    if (errInsert) {
-      console.error('Błąd dodawania przedmiotu do ekwipunku:', errInsert);
-      return res.status(500).json({ error: 'Błąd dodawania przedmiotu do ekwipunku' });
+      const { data: insertedItem, error: errInsert } = await supabase
+        .from('user_inventory')
+        .insert({
+          user_id,
+          item_name: result.item,
+          image_url: result.image,
+          value: result.value
+        })
+        .select('id')
+        .single();
+
+      if (errInsert) {
+        console.error('Błąd dodawania przedmiotu do ekwipunku:', errInsert);
+        return res.status(500).json({ error: 'Błąd dodawania przedmiotu do ekwipunku' });
+      }
+
+      results.push({
+        item: result.item,
+        image: result.image,
+        value: result.value,
+        item_id: insertedItem.id
+      });
     }
 
+    // Zwróć wszystkie wylosowane przedmioty i nowy balans
     res.json({
-      message: `Wylosowano: ${result.item}`,
-      image: result.image,
-      value: result.value,
-      newBalance,
-      item_id: insertedItem.id
+      message: `Wylosowano ${count} przedmiot(y)`,
+      results,
+      newBalance
     });
   } catch (err) {
     console.error('Błąd w losowaniu:', err);
