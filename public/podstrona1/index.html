@@ -332,61 +332,59 @@ body {
 
 
   <!-- Wybór trybu x1 / x2 -->
-  <div id="modeButtons">
-    <button id="modeX1" class="draw-button active">x1</button>
-    <button id="modeX2" class="draw-button">x2</button>
+  <!-- Wybór trybu x1 / x2 -->
+<div id="modeButtons">
+  <button id="modeX1" class="draw-button active">x1</button>
+  <button id="modeX2" class="draw-button">x2</button>
+</div>
+
+<!-- Losowanie 1 -->
+<div id="draw1" class="draw-container">
+  <div id="animationWrapper1" style="position: relative; width: fit-content; margin: 20px auto;">
+    <div class="indicator top-indicator"></div>
+    <div id="animationContainer1" style="overflow: hidden; border: 1px solid #db4848;">
+      <div id="imageStripStatic1" class="imageStripStatic" style="display: none; flex-wrap: nowrap;"></div>
+      <div id="imageStrip1" style="display: none; flex-wrap: nowrap;"></div>
+    </div>
+    <div class="indicator bottom-indicator"></div>
   </div>
 
-  <!-- Losowanie 1 -->
-  <div id="draw1" class="draw-container">
-    <div id="animationWrapper1" style="position: relative; width: fit-content; margin: 20px auto;">
-      <div class="indicator top-indicator"></div>
-      <div id="animationContainer1" style="overflow: hidden; border: 1px solid #db4848;">
-        <div id="imageStripStatic1" style="display: none; flex-wrap: nowrap;"></div>
-        <div id="imageStrip1" style="display: none; flex-wrap: nowrap;"></div>
-      </div>
-      <div class="indicator bottom-indicator"></div>
-    </div>
+  <img id="resultImage1" style="max-width: 200px; display: none;" />
+  <p id="resultImageName1" style="font-weight: bold; font-size: 20px; color: #d75d11;"></p>
 
-    <img id="resultImage1" style="max-width: 200px; display: none;" />
-    <p id="resultImageName1" style="font-weight: bold; font-size: 20px; color: #d75d11;"></p>
+  <div id="actionButtons1" style="display: none;">
+    <button id="sellBtn1">Sprzedaj</button>
+    <button id="keepBtn1">Dodaj do ekwipunku</button>
+  </div>
+</div>
 
-    <div id="actionButtons1" style="display: none;">
-      <button id="sellBtn1">Sprzedaj</button>
-      <button id="keepBtn1">Dodaj do ekwipunku</button>
+<!-- Losowanie 2 (ukryte domyślnie) -->
+<div id="draw2" class="draw-container" style="display: none;">
+  <div id="animationWrapper2" style="position: relative; width: fit-content; margin: 20px auto;">
+    <div class="indicator top-indicator"></div>
+    <div id="animationContainer2" style="overflow: hidden; border: 1px solid #db4848;">
+      <div id="imageStripStatic2" class="imageStripStatic" style="display: none; flex-wrap: nowrap;"></div>
+      <div id="imageStrip2" style="display: none; flex-wrap: nowrap;"></div>
     </div>
+    <div class="indicator bottom-indicator"></div>
   </div>
 
-  <!-- Losowanie 2 (ukryte domyślnie) -->
-  <div id="draw2" class="draw-container" style="display: none;">
-    <div id="animationWrapper2" style="position: relative; width: fit-content; margin: 20px auto;">
-      <div class="indicator top-indicator"></div>
-      <div id="animationContainer2" style="overflow: hidden; border: 1px solid #db4848;">
-        <div id="imageStripStatic2" style="display: none; flex-wrap: nowrap;"></div>
-        <div id="imageStrip2" style="display: none; flex-wrap: nowrap;"></div>
-      </div>
-      <div class="indicator bottom-indicator"></div>
-    </div>
+  <img id="resultImage2" style="max-width: 200px; display: none;" />
+  <p id="resultImageName2" style="font-weight: bold; font-size: 20px; color: #d75d11;"></p>
 
-    <img id="resultImage2" style="max-width: 200px; display: none;" />
-    <p id="resultImageName2" style="font-weight: bold; font-size: 20px; color: #d75d11;"></p>
-
-    <div id="actionButtons2" style="display: none;">
-      <button id="sellBtn2">Sprzedaj</button>
-      <button id="keepBtn2">Dodaj do ekwipunku</button>
-    </div>
+  <div id="actionButtons2" style="display: none;">
+    <button id="sellBtn2">Sprzedaj</button>
+    <button id="keepBtn2">Dodaj do ekwipunku</button>
   </div>
+</div>
+
+
+
 
   <!-- Przycisk Losuj -->
   <div style="text-align: center; margin-top: 20px;">
     <button id="drawButton" class="draw-button">Losuj</button>
   </div>
-
-
-
-
-
-
 
 
 
