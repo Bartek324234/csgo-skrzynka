@@ -311,11 +311,10 @@ body {
 <p id="result"></p>
 
 
-<div id="multiDrawButtons">
-  <button data-count="1" class="draw-option active">x1</button>
-  <button data-count="2" class="draw-option">x2</button>
-  <button data-count="3" class="draw-option">x3</button>
-  <button data-count="4" class="draw-option">x4</button>
+<div>
+  <button class="draw-option active" data-count="1">x1</button>
+  <button class="draw-option" data-count="2">x2</button>
+  <button class="draw-option" data-count="3">x3</button>
 </div>
 
 <!-- Nowe przyciski -->
@@ -336,7 +335,7 @@ body {
 
 
 
-<script src="multiDraw.js"></script>
+
 
 <script src="animation.js"></script>
 
@@ -382,19 +381,6 @@ function showToast(message) {
     toast.classList.add("hidden");
   }, 3000);
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
 document.addEventListener("DOMContentLoaded", () => {
   const loader = document.getElementById("loader");
   const knife = document.getElementById("knife");
