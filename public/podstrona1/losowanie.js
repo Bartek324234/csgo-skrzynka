@@ -73,6 +73,10 @@ function showStaticSkins() {
   }
 }
 
+
+
+
+
 function startAnimation(finalImage, containerId, onEnd) {
   const imageStrip = document.getElementById(`imageStrip${containerId}`);
   const staticStrip = document.getElementById(`imageStripStatic${containerId}`);
@@ -129,6 +133,10 @@ function startAnimation(finalImage, containerId, onEnd) {
 
 
 
+
+
+
+
 async function loadBalance(userId) {
   if (!userId) {
     console.error("Brak userId, nie można załadować balansu");
@@ -152,6 +160,7 @@ async function loadBalance(userId) {
 
 
 
+
 async function updateUI() {
   const { data: { session } } = await supabase.auth.getSession();
   const user = session?.user;
@@ -168,73 +177,79 @@ async function updateUI() {
   let balance = await loadBalance(user.id);
   if (balanceEl) balanceEl.textContent = `${balance.toFixed(2)} zł`;
 
-  drawButton.onclick = async () => {
-    const count = getActiveCount();
-    if (balance < count * 3.5) {
-      alert('Za mało środków');
-      return;
-    }
 
-    for (let i = 1; i <= count; i++) {
-      const resultImg = document.getElementById(`resultImage${i}`);
-      const resultName = document.getElementById(`resultImageName${i}`);
-      const actions = document.getElementById(`actionButtons${i}`);
 
+drawButton.onclick = async () => {
+  const count = getActiveCount();
+  if (balance < count * 3.5) {
+    alert('Za mało środków');
+    return;
+  }
+
+  const results = await Promise.all(
+    Array.from({ length: count }, async (_, i) => {
       const response = await fetch('/api/losuj', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ user_id: user.id })
       });
-
       const result = await response.json();
-      const image = result.image;
-      const name = imageNameMap[image] || 'Nieznany skin';
+      return { ...result, index: i + 1 };
+    })
+  );
 
-      startAnimation(image, i, () => {
-        resultImg.src = image;
-        resultImg.style.display = 'block';
-        resultName.textContent = name;
-        actions.style.display = 'block';
+  results.forEach(({ image, index }) => {
+    const name = imageNameMap[image] || 'Nieznany skin';
+    const resultImg = document.getElementById(`resultImage${index}`);
+    const resultName = document.getElementById(`resultImageName${index}`);
+    const actions = document.getElementById(`actionButtons${index}`);
+
+    startAnimation(image, index, () => {
+      resultImg.src = image;
+      resultImg.style.display = 'block';
+      resultName.textContent = name;
+      actions.style.display = 'block';
+    });
+
+    document.getElementById(`sellBtn${index}`).onclick = async () => {
+      const res = await fetch('/api/sell', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: user.id, image })
       });
+      const data = await res.json();
+      if (data.success) {
+        alert("Sprzedano przedmiot!");
+        resultImg.style.display = 'none';
+        resultName.textContent = '';
+        actions.style.display = 'none';
+        balance += data.amount || 0;
+        if (balanceEl) balanceEl.textContent = `${balance.toFixed(2)} zł`;
+      } else {
+        alert("Błąd przy sprzedaży.");
+      }
+    };
 
-      document.getElementById(`sellBtn${i}`).onclick = async () => {
-        const res = await fetch('/api/sell', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ user_id: user.id, image })
-        });
-        const data = await res.json();
-        if (data.success) {
-          alert("Sprzedano przedmiot!");
-          resultImg.style.display = 'none';
-          resultName.textContent = '';
-          actions.style.display = 'none';
-          balance += data.amount || 0;
-          if (balanceEl) balanceEl.textContent = `${balance.toFixed(2)} zł`;
-        } else {
-          alert("Błąd przy sprzedaży.");
-        }
-      };
+    document.getElementById(`keepBtn${index}`).onclick = async () => {
+      const res = await fetch('/api/keep', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: user.id, image })
+      });
+      const data = await res.json();
+      if (data.success) {
+        alert("Dodano do ekwipunku!");
+        resultImg.style.display = 'none';
+        resultName.textContent = '';
+        actions.style.display = 'none';
+      } else {
+        alert("Błąd przy dodawaniu.");
+      }
+    };
+  });
 
-      document.getElementById(`keepBtn${i}`).onclick = async () => {
-        const res = await fetch('/api/keep', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ user_id: user.id, image })
-        });
-        const data = await res.json();
-        if (data.success) {
-          alert("Dodano do ekwipunku!");
-          resultImg.style.display = 'none';
-          resultName.textContent = '';
-          actions.style.display = 'none';
-        } else {
-          alert("Błąd przy dodawaniu.");
-        }
-      };
-    }
-
-    balance -= count * 3.5;
-    if (balanceEl) balanceEl.textContent = `${balance.toFixed(2)} zł`;
-  };
+  balance -= count * 3.5;
+  if (balanceEl) balanceEl.textContent = `${balance.toFixed(2)} zł`;
+};
 }
+updateUI();
