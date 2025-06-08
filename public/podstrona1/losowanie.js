@@ -23,9 +23,14 @@ const imageNameMap = {
 
 const availableImages = Object.keys(imageBackgroundMap);
 
+
+
+
+
+
 document.addEventListener('DOMContentLoaded', () => {
   initQuantityButtons();
-  showStaticSkins();
+   showStaticSkins(getActiveCount()); 
   updateUI();
 });
 
@@ -39,21 +44,37 @@ function initQuantityButtons() {
     btnX1.classList.add('active');
     btnX2.classList.remove('active');
     document.getElementById('draw2').style.display = 'none';
-    showStaticSkins();
+    showStaticSkins(getActiveCount());
   });
 
   btnX2.addEventListener('click', () => {
     btnX2.classList.add('active');
     btnX1.classList.remove('active');
     document.getElementById('draw2').style.display = 'block';
-    showStaticSkins();
+    showStaticSkins(getActiveCount());
   });
 
   window.getActiveCount = () => btnX2.classList.contains('active') ? 2 : 1;
 }
 
-function showStaticSkins() {
-  for (let i = 1; i <= 2; i++) {
+
+
+
+
+
+function showStaticSkins(count) {
+  // Najpierw ukryj/wyczyść wszystkie paski (np. do x5)
+  console.log("Rysuję pasków:", count); // ✔ test
+  for (let i = 1; i <= 5; i++) {
+    const staticStrip = document.getElementById(`imageStripStatic${i}`);
+    if (staticStrip) {
+      staticStrip.innerHTML = '';
+      staticStrip.style.display = 'none';
+    }
+  }
+
+  // Teraz pokaż tyle pasków, ile odpowiada aktualnemu count
+  for (let i = 1; i <= count; i++) {
     const staticStrip = document.getElementById(`imageStripStatic${i}`);
     if (!staticStrip) continue;
 
@@ -72,6 +93,7 @@ function showStaticSkins() {
     }
   }
 }
+
 
 
 
