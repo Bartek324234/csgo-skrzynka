@@ -121,58 +121,107 @@ function showStaticSkins(count) {
 
 
 
+const animationStates = {};  // stan animacji na kontenerId
 
-function startAnimation(finalImage, containerId, onEnd) {
-  const imageStrip = document.getElementById(`imageStrip${containerId}`);
-  const staticStrip = document.getElementById(`imageStripStatic${containerId}`);
-  const animationContainer = document.getElementById(`animationContainer${containerId}`);
-
-  staticStrip.style.display = 'none';
-  imageStrip.style.display = 'flex';
-  animationContainer.style.width = `${7 * 120}px`;
-
-  imageStrip.innerHTML = '';
-
-  const images = [];
-  for (let i = 0; i < 40; i++) {
-    images.push(availableImages[Math.floor(Math.random() * availableImages.length)]);
+function startAnimation(finalImage, containerId, onAnimationEnd) {
+  if (!animationStates[containerId]) {
+    animationStates[containerId] = {
+      lastOffsetX: 0,
+      currentSkinList: [],
+      isFirstSpin: true,
+    };
   }
 
-  images.splice(20, 0, finalImage);
+  const state = animationStates[containerId];
 
-  images.forEach(src => {
+  const animationContainer = document.getElementById(`animationContainer${containerId}`);
+  const imageStrip = document.getElementById(`imageStrip${containerId}`);
+  const staticStrip = document.getElementById(`imageStripStatic${containerId}`);
+
+  if (staticStrip && staticStrip.style.display !== 'none') {
+    staticStrip.style.display = 'none';
+  }
+
+  animationContainer.style.display = 'block';
+  imageStrip.style.display = 'flex';
+  imageStrip.style.transform = `translateX(-${state.lastOffsetX}px)`; // startowa pozycja
+
+  const visibleItems = 7;
+  const itemWidth = 120;
+  animationContainer.style.width = `${visibleItems * itemWidth}px`;
+
+  const itemsBeforeWinner = Math.floor(visibleItems / 2);
+  const extraBefore = 40;
+  const extraAfter = 10;
+
+  const winnerIndex = state.currentSkinList.length + extraBefore + itemsBeforeWinner;
+  const totalItems = winnerIndex + 1 + extraAfter;
+
+  const newSkins = [];
+
+  for (let i = 0; i < totalItems - state.currentSkinList.length - 1; i++) {
+    const randomImage = availableImages[Math.floor(Math.random() * availableImages.length)];
+    newSkins.push(randomImage);
+  }
+
+  newSkins.splice(winnerIndex - state.currentSkinList.length, 0, finalImage);
+
+  if (state.isFirstSpin) {
+    imageStrip.innerHTML = '';
+    state.currentSkinList = [];
+    state.lastOffsetX = 0;
+    state.isFirstSpin = false;
+  }
+
+  newSkins.forEach(src => {
     const img = document.createElement('img');
     img.src = src;
-    img.classList.add('skin-img', imageBackgroundMap[src] || '');
+    img.classList.add('skin-img');
+    const bgClass = imageBackgroundMap[src] || '';
+    if (bgClass) img.classList.add(bgClass);
+
     imageStrip.appendChild(img);
+    state.currentSkinList.push(src);
   });
 
-  const distance = (20 * 120);
-  imageStrip.style.transform = `translateX(0px)`;
+  const distanceToMove = (winnerIndex - itemsBeforeWinner) * itemWidth - state.lastOffsetX;
+  const newOffsetX = state.lastOffsetX + distanceToMove;
 
-  let start = null;
-  const duration = 5000;
+  const totalDuration = 6000;
 
-  function easeOut(t) {
+  function easeOutCubic(t) {
     return 1 - Math.pow(1 - t, 3);
   }
 
-  function animate(time) {
-    if (!start) start = time;
-    const elapsed = time - start;
-    const progress = Math.min(elapsed / duration, 1);
-    const eased = easeOut(progress);
-    imageStrip.style.transform = `translateX(-${distance * eased}px)`;
+  let startTime = null;
+
+  function animate(timestamp) {
+    if (!startTime) startTime = timestamp;
+    const elapsed = timestamp - startTime;
+    const progress = Math.min(elapsed / totalDuration, 1);
+    const eased = easeOutCubic(progress);
+
+    const currentOffset = state.lastOffsetX + eased * distanceToMove;
+    imageStrip.style.transform = `translateX(-${currentOffset}px)`;
 
     if (progress < 1) {
       requestAnimationFrame(animate);
     } else {
-      if (onEnd) onEnd();
+      imageStrip.style.transform = `translateX(-${newOffsetX}px)`;
+      state.lastOffsetX = newOffsetX;
+      if (onAnimationEnd) onAnimationEnd();
     }
   }
 
   requestAnimationFrame(animate);
 }
+
+
+
+
+
+
+
 
 
 
