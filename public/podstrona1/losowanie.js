@@ -61,10 +61,10 @@ function initQuantityButtons() {
     resetAnimationStates();
     showStaticSkins(drawCount);
   });
+  
+ // Dodaj tutaj na końcu:
+  showStaticSkins(drawCount);  // pokaże 1 pasek od razu po załadowaniu
 }
-
-
-
 
 
 
