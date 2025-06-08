@@ -1,5 +1,6 @@
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
+
 const supabase = createClient(
   "https://jotdnbkfgqtznjwbfjno.supabase.co",
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpvdGRuYmtmZ3F0em5qd2Jmam5vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc1MTMwODAsImV4cCI6MjA2MzA4OTA4MH0.mQrwJS9exVIMoSl_XwRT2WhE8DMTbdUM996kJIVA4kM"
@@ -25,6 +26,8 @@ const availableImages = Object.keys(imageBackgroundMap);
 
 
 
+let drawCount = 1;
+
 
 
 
@@ -39,25 +42,41 @@ function initQuantityButtons() {
   const btnX2 = document.getElementById('modeX2');
 
   btnX1.classList.add('active');
+  drawCount = 1; // Domyślnie
 
   btnX1.addEventListener('click', () => {
+    drawCount = 1;
     btnX1.classList.add('active');
     btnX2.classList.remove('active');
     document.getElementById('draw2').style.display = 'none';
-    showStaticSkins(getActiveCount());
+    resetAnimationStates();
+    showStaticSkins(drawCount);
   });
 
   btnX2.addEventListener('click', () => {
+    drawCount = 2;
     btnX2.classList.add('active');
     btnX1.classList.remove('active');
     document.getElementById('draw2').style.display = 'block';
-    showStaticSkins(getActiveCount());
+    resetAnimationStates();
+    showStaticSkins(drawCount);
   });
-
-  window.getActiveCount = () => btnX2.classList.contains('active') ? 2 : 1;
 }
 
 
+
+
+
+
+function resetAnimationStates() {
+  for (let i = 1; i <= 5; i++) {
+    if (animationStates[i]) {
+      animationStates[i].isFirstSpin = true;
+      animationStates[i].currentSkinList = [];
+      animationStates[i].lastOffsetX = 0;
+    }
+  }
+}
 
 
 
@@ -122,6 +141,7 @@ function showStaticSkins(count) {
 
 
 const animationStates = {};  // stan animacji na kontenerId
+
 
 function startAnimation(finalImage, containerId, onAnimationEnd) {
   if (!animationStates[containerId]) {
@@ -273,8 +293,18 @@ async function updateUI() {
 
 
 
+
+
+
+
+
+
+
+
+
+
 drawButton.onclick = async () => {
-  const count = getActiveCount();
+  const count = drawCount;
   if (balance < count * 3.5) {
     alert('Za mało środków');
     return;
@@ -345,5 +375,6 @@ drawButton.onclick = async () => {
   balance -= count * 3.5;
   if (balanceEl) balanceEl.textContent = `${balance.toFixed(2)} zł`;
 };
+
 }
 updateUI();
