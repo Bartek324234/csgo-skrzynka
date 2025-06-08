@@ -63,17 +63,35 @@ function initQuantityButtons() {
 
 
 function showStaticSkins(count) {
-  // Najpierw ukryj/wyczyść wszystkie paski (np. do x5)
-  console.log("Rysuję pasków:", count); // ✔ test
+  // Najpierw ukryj/wyczyść WSZYSTKO od 1 do 5 (niezależnie od count)
   for (let i = 1; i <= 5; i++) {
     const staticStrip = document.getElementById(`imageStripStatic${i}`);
+    const animatedStrip = document.getElementById(`imageStrip${i}`);
+    const resultImg = document.getElementById(`resultImage${i}`);
+    const resultName = document.getElementById(`resultImageName${i}`);
+    const actions = document.getElementById(`actionButtons${i}`);
+
     if (staticStrip) {
       staticStrip.innerHTML = '';
       staticStrip.style.display = 'none';
     }
+
+    if (animatedStrip) {
+      animatedStrip.innerHTML = '';
+      animatedStrip.style.display = 'none';
+    }
+
+    if (resultImg) {
+      resultImg.src = '';
+      resultImg.style.display = 'none';
+    }
+
+    if (resultName) resultName.textContent = '';
+
+    if (actions) actions.style.display = 'none';
   }
 
-  // Teraz pokaż tyle pasków, ile odpowiada aktualnemu count
+  // Teraz narysuj odpowiednią liczbę pasków statycznych
   for (let i = 1; i <= count; i++) {
     const staticStrip = document.getElementById(`imageStripStatic${i}`);
     if (!staticStrip) continue;
@@ -93,6 +111,11 @@ function showStaticSkins(count) {
     }
   }
 }
+
+
+
+
+
 
 
 
