@@ -46,7 +46,7 @@ function initQuantityButtons() {
 
   btnX1.addEventListener('click', () => {
     drawCount = 1;
-    btnX1.classList.add('active');
+    if (btnX1) btnX1.classList.add('active');
     btnX2.classList.remove('active');
     document.getElementById('draw2').style.display = 'none';
     resetAnimationStates();
