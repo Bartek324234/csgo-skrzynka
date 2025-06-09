@@ -1,5 +1,6 @@
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
+
 const supabase = createClient(
   "https://jotdnbkfgqtznjwbfjno.supabase.co",
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpvdGRuYmtmZ3F0em5qd2Jmam5vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc1MTMwODAsImV4cCI6MjA2MzA4OTA4MH0.mQrwJS9exVIMoSl_XwRT2WhE8DMTbdUM996kJIVA4kM"
@@ -13,14 +14,6 @@ const imageBackgroundMap = {
   "/images/p2000oceaniczny.jpg": "bg-gold"
 };
 
-const availableImages = [
-  '/images/deserteagleblue.jpg',
-  '/images/glock18moda.jpg',
-  '/images/mac10bronz.jpg',
-  '/images/p18dzielnia.jpg',
-  '/images/p2000oceaniczny.jpg'
-];
-
 const imageNameMap = {
   "/images/deserteagleblue.jpg": "Desert Eagle - Niebieski",
   "/images/glock18moda.jpg": "Glock 18 - Moda",
@@ -29,71 +22,147 @@ const imageNameMap = {
   "/images/p2000oceaniczny.jpg": "P2000 - Oceaniczny"
 };
 
+const availableImages = Object.keys(imageBackgroundMap);
+
+let drawCount = 1; // domyślnie 1 pasek
+
+
 document.addEventListener('DOMContentLoaded', () => {
   initQuantityButtons();
   updateUI();
-  showStaticSkinsOnce();
 });
 
-// Podświetlenie aktywnego przycisku x1/x2 i obsługa wyboru
 function initQuantityButtons() {
   const btnX1 = document.getElementById('modeX1');
   const btnX2 = document.getElementById('modeX2');
-  
-  // Domyślnie x1 jest aktywne
-  let activeCount = 1;
-  btnX1.classList.add('active');
+  const draw2 = document.getElementById('draw2');
 
+  btnX1.classList.add('active');
+  
   btnX1.addEventListener('click', () => {
-    if (activeCount === 1) return;
-    activeCount = 1;
     btnX1.classList.add('active');
     btnX2.classList.remove('active');
+    drawCount = 1;
+    if(draw2) draw2.style.display = 'none';
+    showStaticSkins(drawCount);
   });
 
   btnX2.addEventListener('click', () => {
-    if (activeCount === 2) return;
-    activeCount = 2;
     btnX2.classList.add('active');
     btnX1.classList.remove('active');
+    drawCount = 2;
+    if(draw2) draw2.style.display = 'block';
+    showStaticSkins(drawCount);
   });
 
-  // Udostępniamy getter
-  window.getActiveCount = () => activeCount;
+  window.getActiveCount = () => drawCount;
+
+  // Dodaj tutaj na końcu:
+  showStaticSkins(drawCount);  // pokaże 1 pasek od razu po załadowaniu
 }
 
-let lastOffsetX = 0;
-let currentSkinList = [];
-let isFirstSpin = true;
-let staticShown = false;
 
-function showStaticSkinsOnce() {
-  if (staticShown) return;
-  staticShown = true;
-
-  const strip = document.getElementById('imageStripStatic');
-  strip.innerHTML = '';
-  strip.style.display = 'flex';
-  strip.style.overflow = 'hidden';
-  strip.style.width = `${7 * 120}px`;
-  strip.style.whiteSpace = 'nowrap';
-
-  for (let i = 0; i < 7; i++) {
-    const src = availableImages[Math.floor(Math.random() * availableImages.length)];
-    const img = document.createElement('img');
-    img.src = src;
-    img.classList.add('skin-img');
-    const bgClass = imageBackgroundMap[src] || '';
-    if (bgClass) img.classList.add(bgClass);
-    img.style.display = 'inline-block';
-    strip.appendChild(img);
+function resetAnimationStates() {
+  for (let i = 1; i <= 5; i++) {
+    if (animationStates[i]) {
+      animationStates[i].isFirstSpin = true;
+      animationStates[i].currentSkinList = [];
+      animationStates[i].lastOffsetX = 0;
+    }
   }
 }
 
-function startAnimation(finalImage, animationContainerId, onAnimationEnd) {
-  const animationContainer = document.getElementById(animationContainerId);
-  const imageStrip = animationContainer.querySelector('.imageStrip');
-  const staticStrip = animationContainer.querySelector('.imageStripStatic');
+
+
+
+
+
+
+
+
+
+
+
+
+function showStaticSkins(count) {
+  // Najpierw ukryj/wyczyść WSZYSTKO od 1 do 5 (niezależnie od count)
+  for (let i = 1; i <= 5; i++) {
+    const staticStrip = document.getElementById(`imageStripStatic${i}`);
+    const animatedStrip = document.getElementById(`imageStrip${i}`);
+    const resultImg = document.getElementById(`resultImage${i}`);
+    const resultName = document.getElementById(`resultImageName${i}`);
+    const actions = document.getElementById(`actionButtons${i}`);
+
+    if (staticStrip) {
+      staticStrip.innerHTML = '';
+      staticStrip.style.display = 'none';
+    }
+
+    if (animatedStrip) {
+      animatedStrip.innerHTML = '';
+      animatedStrip.style.display = 'none';
+    }
+
+    if (resultImg) {
+      resultImg.src = '';
+      resultImg.style.display = 'none';
+    }
+
+    if (resultName) resultName.textContent = '';
+
+    if (actions) actions.style.display = 'none';
+  }
+
+  // Teraz narysuj odpowiednią liczbę pasków statycznych
+  for (let i = 1; i <= count; i++) {
+    const staticStrip = document.getElementById(`imageStripStatic${i}`);
+    if (!staticStrip) continue;
+
+    staticStrip.innerHTML = '';
+    staticStrip.style.display = 'flex';
+    staticStrip.style.overflow = 'hidden';
+    staticStrip.style.width = `${7 * 120}px`;
+    staticStrip.style.whiteSpace = 'nowrap';
+
+    for (let j = 0; j < 7; j++) {
+      const src = availableImages[Math.floor(Math.random() * availableImages.length)];
+      const img = document.createElement('img');
+      img.src = src;
+      img.classList.add('skin-img', imageBackgroundMap[src] || '');
+      staticStrip.appendChild(img);
+    }
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+const animationStates = {};  // stan animacji na kontenerId
+
+function startAnimation(finalImage, containerId, onAnimationEnd) {
+  if (!animationStates[containerId]) {
+    animationStates[containerId] = {
+      lastOffsetX: 0,
+      currentSkinList: [],
+      isFirstSpin: true,
+    };
+  }
+
+  const state = animationStates[containerId];
+
+  const animationContainer = document.getElementById(`animationContainer${containerId}`);
+  const imageStrip = document.getElementById(`imageStrip${containerId}`);
+  const staticStrip = document.getElementById(`imageStripStatic${containerId}`);
 
   if (staticStrip && staticStrip.style.display !== 'none') {
     staticStrip.style.display = 'none';
@@ -101,7 +170,7 @@ function startAnimation(finalImage, animationContainerId, onAnimationEnd) {
 
   animationContainer.style.display = 'block';
   imageStrip.style.display = 'flex';
-  imageStrip.style.transform = `translateX(-${lastOffsetX}px)`;
+  imageStrip.style.transform = `translateX(-${state.lastOffsetX}px)`; // startowa pozycja
 
   const visibleItems = 7;
   const itemWidth = 120;
@@ -110,23 +179,24 @@ function startAnimation(finalImage, animationContainerId, onAnimationEnd) {
   const itemsBeforeWinner = Math.floor(visibleItems / 2);
   const extraBefore = 40;
   const extraAfter = 10;
-  const winnerIndex = currentSkinList.length + extraBefore + itemsBeforeWinner;
+
+  const winnerIndex = state.currentSkinList.length + extraBefore + itemsBeforeWinner;
   const totalItems = winnerIndex + 1 + extraAfter;
 
   const newSkins = [];
 
-  for (let i = 0; i < totalItems - currentSkinList.length - 1; i++) {
+  for (let i = 0; i < totalItems - state.currentSkinList.length - 1; i++) {
     const randomImage = availableImages[Math.floor(Math.random() * availableImages.length)];
     newSkins.push(randomImage);
   }
 
-  newSkins.splice(winnerIndex - currentSkinList.length, 0, finalImage);
+  newSkins.splice(winnerIndex - state.currentSkinList.length, 0, finalImage);
 
-  if (isFirstSpin) {
+  if (state.isFirstSpin) {
     imageStrip.innerHTML = '';
-    currentSkinList = [];
-    lastOffsetX = 0;
-    isFirstSpin = false;
+    state.currentSkinList = [];
+    state.lastOffsetX = 0;
+    state.isFirstSpin = false;
   }
 
   newSkins.forEach(src => {
@@ -135,12 +205,14 @@ function startAnimation(finalImage, animationContainerId, onAnimationEnd) {
     img.classList.add('skin-img');
     const bgClass = imageBackgroundMap[src] || '';
     if (bgClass) img.classList.add(bgClass);
+
     imageStrip.appendChild(img);
-    currentSkinList.push(src);
+    state.currentSkinList.push(src);
   });
 
-  const distanceToMove = (winnerIndex - itemsBeforeWinner) * itemWidth - lastOffsetX;
-  const newOffsetX = lastOffsetX + distanceToMove;
+  const distanceToMove = (winnerIndex - itemsBeforeWinner) * itemWidth - state.lastOffsetX;
+  const newOffsetX = state.lastOffsetX + distanceToMove;
+
   const totalDuration = 6000;
 
   function easeOutCubic(t) {
@@ -155,14 +227,14 @@ function startAnimation(finalImage, animationContainerId, onAnimationEnd) {
     const progress = Math.min(elapsed / totalDuration, 1);
     const eased = easeOutCubic(progress);
 
-    const currentOffset = lastOffsetX + eased * distanceToMove;
+    const currentOffset = state.lastOffsetX + eased * distanceToMove;
     imageStrip.style.transform = `translateX(-${currentOffset}px)`;
 
     if (progress < 1) {
       requestAnimationFrame(animate);
     } else {
       imageStrip.style.transform = `translateX(-${newOffsetX}px)`;
-      lastOffsetX = newOffsetX;
+      state.lastOffsetX = newOffsetX;
       if (onAnimationEnd) onAnimationEnd();
     }
   }
@@ -170,20 +242,47 @@ function startAnimation(finalImage, animationContainerId, onAnimationEnd) {
   requestAnimationFrame(animate);
 }
 
-async function loadBalance(userId) {
-  const { data, error } = await supabase
-    .from('user_balances')
-    .select('balance')
-    .eq('user_id', userId)
-    .single();
 
-  if (error) {
-    console.error('Błąd ładowania salda:', error);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+async function loadBalance(userId) {
+  if (!userId) {
+    console.error("Brak userId, nie można załadować balansu");
     return 0;
   }
 
-  return data?.balance ?? 0;
+  const { data, error } = await supabase
+    .from("user_balances")   // tutaj nazwa tabeli
+    .select("balance")
+    .eq("user_id", userId)   // kolumna user_id
+    .single();
+
+  if (error || !data) {
+    console.error("Błąd podczas pobierania balansu:", error);
+    return 0;
+  }
+  return data.balance || 0;
 }
+
+
+
+
+
 
 async function updateUI() {
   const { data: { session } } = await supabase.auth.getSession();
@@ -195,135 +294,95 @@ async function updateUI() {
     return;
   }
 
+  const drawButton = document.getElementById('drawButton');
   const balanceEl = document.getElementById('balance');
-  const drawBtn = document.getElementById('drawBtn');
-  const resultContainer = document.getElementById('resultsContainer');
 
   let balance = await loadBalance(user.id);
-  if (balanceEl) balanceEl.textContent = `${balance.toFixed(2)} zł`;
+if (balanceEl) balanceEl.textContent = `${balance.toFixed(2)} zł`;
 
-  drawBtn.addEventListener('click', async () => {
-    drawBtn.disabled = true;
-    resultContainer.innerHTML = ''; // Wyczyść poprzednie wyniki
 
-    const activeCount = window.getActiveCount ? window.getActiveCount() : 1;
-    const drawCost = 3.5 * activeCount;
 
-    if (balance < drawCost) {
-      alert(`Za mało środków na ${activeCount} losowanie(-ń).`);
-      drawBtn.disabled = false;
-      return;
-    }
 
-    let newBalance = balance;
-    for (let i = 0; i < activeCount; i++) {
-      // Tworzymy unikalne ID dla animacji i wyników
-      const animId = `animationWrapper_${i}`;
-      const resultId = `resultWrapper_${i}`;
 
-      // Dodajemy do kontenera animacje + wynik
-      resultContainer.insertAdjacentHTML('beforeend', `
-        <div id="${animId}" class="animationWrapper" style="margin-bottom:30px;">
-          <div id="animationContainer" style="overflow: hidden; border: 1px solid #db4848; width: 840px;">
-            <div class="imageStripStatic" style="display: flex; flex-wrap: nowrap;"></div>
-            <div class="imageStrip" style="display: none; flex-wrap: nowrap;"></div>
-          </div>
-          <img id="resultImage_${i}" style="max-width: 200px; display:none; margin-top:10px;" />
-          <p id="resultImageName_${i}" style="font-weight: bold; font-size: 20px; color: #d75d11;"></p>
-          <p id="resultMessage_${i}"></p>
-          <div id="actionButtons_${i}" style="display:none;">
-            <button id="sellBtn_${i}">Sprzedaj</button>
-            <button id="keepBtn_${i}">Dodaj do ekwipunku</button>
-          </div>
-        </div>
-      `);
 
-      try {
-        // Wysłanie requestu do backendu
-        const response = await fetch('/api/losuj', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ user_id: user.id })
-        });
-        const result = await response.json();
 
-        if (result.error) {
-          document.getElementById(`resultMessage_${i}`).textContent = `Błąd losowania: ${result.error}`;
-          continue;
-        }
 
-        const finalImage = result.image;
-        const finalName = imageNameMap[finalImage] || "Nieznany skórka";
 
-        // Uruchamiamy animację
-        startAnimation(finalImage, animId, () => {
-          // Po animacji pokazujemy wynik
-          const imgEl = document.getElementById(`resultImage_${i}`);
-          imgEl.src = finalImage;
-          imgEl.style.display = 'block';
 
-          document.getElementById(`resultImageName_${i}`).textContent = finalName;
-          const actionButtons = document.getElementById(`actionButtons_${i}`);
-          actionButtons.style.display = 'block';
 
-          // Przycisk Sprzedaj
-          document.getElementById(`sellBtn_${i}`).onclick = async () => {
-            try {
-              const sellResponse = await fetch('/api/sell', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ user_id: user.id, image: finalImage })
-              });
-              const sellResult = await sellResponse.json();
-              if (sellResult.error) {
-                alert(`Błąd sprzedaży: ${sellResult.error}`);
-                return;
-              }
-              alert(`Sprzedano ${finalName} za ${sellResult.amount} zł`);
-              actionButtons.style.display = 'none';
-              updateUI(); // Odśwież saldo i UI
-            } catch (e) {
-              alert('Błąd podczas sprzedaży.');
-              console.error(e);
-            }
-          };
 
-          // Przycisk Dodaj do ekwipunku
-          document.getElementById(`keepBtn_${i}`).onclick = async () => {
-            try {
-              const keepResponse = await fetch('/api/keep', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ user_id: user.id, image: finalImage })
-              });
-              const keepResult = await keepResponse.json();
-              if (keepResult.error) {
-                alert(`Błąd dodania do ekwipunku: ${keepResult.error}`);
-                return;
-              }
-              alert(`Dodano ${finalName} do ekwipunku`);
-              actionButtons.style.display = 'none';
-              updateUI(); // Odśwież saldo i UI
-            } catch (e) {
-              alert('Błąd podczas dodawania do ekwipunku.');
-              console.error(e);
-            }
-          };
-        });
+  drawButton.onclick = async () => {
+  const count = drawCount;
+  if (balance < count * 3.5) {
+    alert('Za mało środków');
+    return;
+  }
 
-        // Odejmujemy koszt za każde losowanie
-        newBalance -= 3.5;
-      } catch (e) {
-        console.error('Błąd requestu:', e);
-        document.getElementById(`resultMessage_${i}`).textContent = "Błąd podczas losowania.";
+  const results = await Promise.all(
+    Array.from({ length: count }, async (_, i) => {
+      const response = await fetch('/api/losuj', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: user.id })
+      });
+      const result = await response.json();
+      return { ...result, index: i + 1 };
+    })
+  );
+
+  results.forEach(({ image, index }) => {
+    const name = imageNameMap[image] || 'Nieznany skin';
+    const resultImg = document.getElementById(`resultImage${index}`);
+    const resultName = document.getElementById(`resultImageName${index}`);
+    const actions = document.getElementById(`actionButtons${index}`);
+
+    startAnimation(image, index, () => {
+      resultImg.src = image;
+      resultImg.style.display = 'block';
+      resultName.textContent = name;
+      actions.style.display = 'block';
+    });
+
+    document.getElementById(`sellBtn${index}`).onclick = async () => {
+      const res = await fetch('/api/sell', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: user.id, image })
+      });
+      const data = await res.json();
+      if (data.success) {
+        alert("Sprzedano przedmiot!");
+        resultImg.style.display = 'none';
+        resultName.textContent = '';
+        actions.style.display = 'none';
+        balance += data.amount || 0;
+        if (balanceEl) balanceEl.textContent = `${balance.toFixed(2)} zł`;
+      } else {
+        alert("Błąd przy sprzedaży.");
       }
-    }
+    };
 
-    // Aktualizujemy saldo po wszystkich losowaniach
-    // Tu możesz wprowadzić mechanizm aktualizacji salda na backendzie
-    balance = newBalance;
-    document.getElementById('balance').textContent = `${balance.toFixed(2)} zł`;
-
-    drawBtn.disabled = false;
+    document.getElementById(`keepBtn${index}`).onclick = async () => {
+      const res = await fetch('/api/keep', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: user.id, image })
+      });
+      const data = await res.json();
+      if (data.success) {
+        alert("Dodano do ekwipunku!");
+        resultImg.style.display = 'none';
+        resultName.textContent = '';
+        actions.style.display = 'none';
+      } else {
+        alert("Błąd przy dodawaniu.");
+      }
+    };
   });
+
+  balance -= count * 3.5;
+  if (balanceEl) balanceEl.textContent = `${balance.toFixed(2)} zł`;
+};
+
 }
+updateUI();
