@@ -295,7 +295,15 @@ if (balanceEl) balanceEl.textContent = `${balance.toFixed(2)} zł`;
     })
   );
 
-  results.forEach(({ image, index }) => {
+
+
+
+
+
+
+
+
+  results.forEach(({ image, index, id: itemId, value }) => {
     const name = imageNameMap[image] || 'Nieznany skin';
     const resultImg = document.getElementById(`resultImage${index}`);
     const resultName = document.getElementById(`resultImageName${index}`);
@@ -322,9 +330,9 @@ document.getElementById(`sellBtn${index}`).onclick = async () => {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      user_id: item.user_id,
-      item_id: item.id,
-      value: item.value
+      user_id: user.id,
+      item_id: itemId,
+      value: value
     })
   });
 
@@ -335,12 +343,14 @@ document.getElementById(`sellBtn${index}`).onclick = async () => {
     resultImg.style.display = 'none';
     resultName.textContent = '';
     actions.style.display = 'none';
-    balance += item.value;
+    balance += value;
     if (balanceEl) balanceEl.textContent = `${balance.toFixed(2)} zł`;
   } else {
     alert("Błąd przy sprzedaży.");
   }
 };
+
+
 
 
     document.getElementById(`keepBtn${index}`).onclick = async () => {
