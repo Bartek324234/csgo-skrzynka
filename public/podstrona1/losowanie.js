@@ -328,32 +328,42 @@ async function updateUI() {
   }
 }
 
+
+
+
+
+
+
+
 function setupButtons(index, result, user, balance, balanceEl, resultImg, resultName, actions) {
   document.getElementById(`sellBtn${index}`).onclick = async () => {
     try {
-      const res = await fetch('/api/sell', {
+      const res = await fetch('/api/sell-item', {  // zmiana tutaj!
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ user_id: user.id, image: result.image, value: result.value, item_id: result.id })
       });
 
-      const data = await res.json();
-      if (data.success) {
-        alert("Sprzedano przedmiot!");
-        resultImg.style.display = 'none';
-        resultName.textContent = '';
-        actions.style.display = 'none';
-        balance += data.newBalance ? data.newBalance - balance : 0;
+        const data = await res.json();
+    if (data.success) {
+      alert("Sprzedano przedmiot!");
+      resultImg.style.display = 'none';
+      resultName.textContent = '';
+      actions.style.display = 'none';
+      // update balance localnie na podstawie nowego balansu z backendu
+      if (data.newBalance !== undefined) {
+        balance = data.newBalance;
         if (balanceEl) balanceEl.textContent = `${balance.toFixed(2)} zł`;
-        updateUI();
-      } else {
-        alert("Błąd przy sprzedaży.");
       }
-    } catch (e) {
-      alert("Błąd sieci przy sprzedaży.");
-      console.error(e);
+      updateUI();
+    } else {
+      alert("Błąd przy sprzedaży.");
     }
-  };
+  } catch (e) {
+    alert("Błąd sieci przy sprzedaży.");
+    console.error(e);
+  }
+};
 
   document.getElementById(`keepBtn${index}`).onclick = async () => {
     try {
