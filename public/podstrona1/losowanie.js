@@ -272,9 +272,6 @@ async function loadBalance(userId) {
 
 
 
-
-
-
 async function updateUI() {
   const { data: { session } } = await supabase.auth.getSession();
   const user = session?.user;
@@ -291,90 +288,99 @@ async function updateUI() {
   let balance = await loadBalance(user.id);
   if (balanceEl) balanceEl.textContent = `${balance.toFixed(2)} zł`;
 
+  if (drawButton) {
+    drawButton.onclick = async () => {
+      const count = drawCount;
+      if (balance < count * 3.5) {
+        alert('Za mało środków');
+        return;
+      }
 
+      const results = await Promise.all(
+        Array.from({ length: count }, async (_, i) => {
+          const response = await fetch('/api/losuj', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ user_id: user.id })
+          });
+          const result = await response.json();
+          return { ...result, index: i + 1 };
+        })
+      );
 
+      results.forEach(result => {
+        const { image, index, value, id } = result;
+        const name = imageNameMap[image] || 'Nieznany skin';
+        const resultImg = document.getElementById(`resultImage${index}`);
+        const resultName = document.getElementById(`resultImageName${index}`);
+        const actions = document.getElementById(`actionButtons${index}`);
 
+        startAnimation(image, index, () => {
+          resultImg.src = image;
+          resultImg.style.display = 'block';
+          resultName.textContent = name;
+          actions.style.display = 'block';
+        });
 
-
-
-
-
-
-
-
-
-drawButton.onclick = async () => {
-  const count = drawCount;
-  if (balance < count * 3.5) {
-    alert('Za mało środków');
-    return;
-  }
-
-  const results = await Promise.all(
-    Array.from({ length: count }, async (_, i) => {
-      const response = await fetch('/api/losuj', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ user_id: user.id })
+        setupButtons(index, result, user, balance, balanceEl, resultImg, resultName, actions);
       });
-      const result = await response.json();
-      return { ...result, index: i + 1 };
-    })
-  );
+    };
+  }
+}
 
-  results.forEach(({ image, index }) => {
-    const name = imageNameMap[image] || 'Nieznany skin';
-    const resultImg = document.getElementById(`resultImage${index}`);
-    const resultName = document.getElementById(`resultImageName${index}`);
-    const actions = document.getElementById(`actionButtons${index}`);
-
-    startAnimation(image, index, () => {
-      resultImg.src = image;
-      resultImg.style.display = 'block';
-      resultName.textContent = name;
-      actions.style.display = 'block';
-    });
-
-    document.getElementById(`sellBtn${index}`).onclick = async () => {
+function setupButtons(index, result, user, balance, balanceEl, resultImg, resultName, actions) {
+  document.getElementById(`sellBtn${index}`).onclick = async () => {
+    try {
       const res = await fetch('/api/sell', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ user_id: user.id, image })
+        body: JSON.stringify({ user_id: user.id, image: result.image, value: result.value, item_id: result.id })
       });
+
       const data = await res.json();
       if (data.success) {
         alert("Sprzedano przedmiot!");
         resultImg.style.display = 'none';
         resultName.textContent = '';
         actions.style.display = 'none';
-        balance += data.amount || 0;
+        balance += data.newBalance ? data.newBalance - balance : 0;
         if (balanceEl) balanceEl.textContent = `${balance.toFixed(2)} zł`;
+        updateUI();
       } else {
         alert("Błąd przy sprzedaży.");
       }
-    };
+    } catch (e) {
+      alert("Błąd sieci przy sprzedaży.");
+      console.error(e);
+    }
+  };
 
-    document.getElementById(`keepBtn${index}`).onclick = async () => {
+  document.getElementById(`keepBtn${index}`).onclick = async () => {
+    try {
       const res = await fetch('/api/keep', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ user_id: user.id, image })
+        body: JSON.stringify({
+          user_id: user.id,
+          value: result.value,
+          image: result.image,
+          name: result.item || resultName.textContent
+        })
       });
+
       const data = await res.json();
       if (data.success) {
         alert("Dodano do ekwipunku!");
         resultImg.style.display = 'none';
         resultName.textContent = '';
         actions.style.display = 'none';
+        updateUI();
       } else {
         alert("Błąd przy dodawaniu.");
       }
-    };
-  });
-
-  balance -= count * 3.5;
-  if (balanceEl) balanceEl.textContent = `${balance.toFixed(2)} zł`;
-};
-
+    } catch (e) {
+      alert("Błąd sieci przy dodawaniu do ekwipunku.");
+      console.error(e);
+    }
+  };
 }
-updateUI();

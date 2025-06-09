@@ -60,21 +60,16 @@ router.post('/', async (req, res) => {
 
     const result = weightedRandom(outcomes);
 
-    const { data: insertedItem, error: errInsert } = await supabase
-      .from('user_inventory')
-      .insert({
-        user_id: user_id,
-        item_name: result.item,
-        image_url: result.image,
-        value: result.value
-      })
-      .select('id')
-      .single();
 
-    if (errInsert) {
-      console.error('Błąd dodawania przedmiotu do ekwipunku:', errInsert);
-      return res.status(500).json({ error: 'Błąd dodawania przedmiotu do ekwipunku' });
-    }
+
+
+
+
+
+
+
+
+
 
     res.json({
       message: `Wylosowano: ${result.item}`,
