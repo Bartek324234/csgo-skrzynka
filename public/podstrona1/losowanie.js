@@ -308,24 +308,40 @@ if (balanceEl) balanceEl.textContent = `${balance.toFixed(2)} zł`;
       actions.style.display = 'block';
     });
 
-    document.getElementById(`sellBtn${index}`).onclick = async () => {
-      const res = await fetch('/api/sell', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ user_id: user.id, image })
-      });
-      const data = await res.json();
-      if (data.success) {
-        alert("Sprzedano przedmiot!");
-        resultImg.style.display = 'none';
-        resultName.textContent = '';
-        actions.style.display = 'none';
-        balance += data.amount || 0;
-        if (balanceEl) balanceEl.textContent = `${balance.toFixed(2)} zł`;
-      } else {
-        alert("Błąd przy sprzedaży.");
-      }
-    };
+
+
+
+
+
+
+
+
+
+document.getElementById(`sellBtn${index}`).onclick = async () => {
+  const res = await fetch('/api/sell', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      user_id: item.user_id,
+      item_id: item.id,
+      value: item.value
+    })
+  });
+
+  const data = await res.json();
+
+  if (data.success) {
+    alert("Sprzedano przedmiot!");
+    resultImg.style.display = 'none';
+    resultName.textContent = '';
+    actions.style.display = 'none';
+    balance += item.value;
+    if (balanceEl) balanceEl.textContent = `${balance.toFixed(2)} zł`;
+  } else {
+    alert("Błąd przy sprzedaży.");
+  }
+};
+
 
     document.getElementById(`keepBtn${index}`).onclick = async () => {
       const res = await fetch('/api/keep', {
