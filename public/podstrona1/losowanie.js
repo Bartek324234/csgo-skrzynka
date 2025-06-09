@@ -71,19 +71,6 @@ function resetAnimationStates() {
     }
   }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
 function showStaticSkins(count) {
   // Najpierw ukryj/wyczyść WSZYSTKO od 1 do 5 (niezależnie od count)
   for (let i = 1; i <= 5; i++) {
@@ -135,19 +122,17 @@ function showStaticSkins(count) {
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
 const animationStates = {};  // stan animacji na kontenerId
+
+
+
+
+
+
+
+
+
+
 
 function startAnimation(finalImage, containerId, onAnimationEnd) {
   if (!animationStates[containerId]) {
@@ -164,13 +149,25 @@ function startAnimation(finalImage, containerId, onAnimationEnd) {
   const imageStrip = document.getElementById(`imageStrip${containerId}`);
   const staticStrip = document.getElementById(`imageStripStatic${containerId}`);
 
+  if (!animationContainer || !imageStrip) {
+    console.error(`Brak elementów dla containerId=${containerId}`);
+    return;
+  }
+
   if (staticStrip && staticStrip.style.display !== 'none') {
     staticStrip.style.display = 'none';
   }
 
   animationContainer.style.display = 'block';
   imageStrip.style.display = 'flex';
-  imageStrip.style.transform = `translateX(-${state.lastOffsetX}px)`; // startowa pozycja
+
+  // Reset stanu na nową animację - ważne przy zmianie trybu (x1, x2)
+  imageStrip.innerHTML = '';
+  state.currentSkinList = [];
+  state.lastOffsetX = 0;
+  state.isFirstSpin = false;
+
+  imageStrip.style.transform = `translateX(0px)`; // startowa pozycja
 
   const visibleItems = 7;
   const itemWidth = 120;
@@ -180,39 +177,32 @@ function startAnimation(finalImage, containerId, onAnimationEnd) {
   const extraBefore = 40;
   const extraAfter = 10;
 
-  const winnerIndex = state.currentSkinList.length + extraBefore + itemsBeforeWinner;
+  const winnerIndex = extraBefore + itemsBeforeWinner;
   const totalItems = winnerIndex + 1 + extraAfter;
 
   const newSkins = [];
 
-  for (let i = 0; i < totalItems - state.currentSkinList.length - 1; i++) {
+  // Dodajemy losowe obrazki przed zwycięzcą
+  for (let i = 0; i < totalItems - 1; i++) {
     const randomImage = availableImages[Math.floor(Math.random() * availableImages.length)];
     newSkins.push(randomImage);
   }
 
-  newSkins.splice(winnerIndex - state.currentSkinList.length, 0, finalImage);
+  // Wstawiamy finalImage na właściwe miejsce (zwycięzca)
+  newSkins.splice(winnerIndex, 0, finalImage);
 
-  if (state.isFirstSpin) {
-    imageStrip.innerHTML = '';
-    state.currentSkinList = [];
-    state.lastOffsetX = 0;
-    state.isFirstSpin = false;
-  }
-
+  // Dodajemy obrazki do paska animacji
   newSkins.forEach(src => {
     const img = document.createElement('img');
     img.src = src;
     img.classList.add('skin-img');
     const bgClass = imageBackgroundMap[src] || '';
     if (bgClass) img.classList.add(bgClass);
-
     imageStrip.appendChild(img);
     state.currentSkinList.push(src);
   });
 
-  const distanceToMove = (winnerIndex - itemsBeforeWinner) * itemWidth - state.lastOffsetX;
-  const newOffsetX = state.lastOffsetX + distanceToMove;
-
+  const distanceToMove = (winnerIndex - itemsBeforeWinner) * itemWidth;
   const totalDuration = 6000;
 
   function easeOutCubic(t) {
@@ -227,30 +217,20 @@ function startAnimation(finalImage, containerId, onAnimationEnd) {
     const progress = Math.min(elapsed / totalDuration, 1);
     const eased = easeOutCubic(progress);
 
-    const currentOffset = state.lastOffsetX + eased * distanceToMove;
+    const currentOffset = eased * distanceToMove;
     imageStrip.style.transform = `translateX(-${currentOffset}px)`;
 
     if (progress < 1) {
       requestAnimationFrame(animate);
     } else {
-      imageStrip.style.transform = `translateX(-${newOffsetX}px)`;
-      state.lastOffsetX = newOffsetX;
+      imageStrip.style.transform = `translateX(-${distanceToMove}px)`;
+      state.lastOffsetX = distanceToMove;
       if (onAnimationEnd) onAnimationEnd();
     }
   }
 
   requestAnimationFrame(animate);
 }
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -279,11 +259,6 @@ async function loadBalance(userId) {
   return data.balance || 0;
 }
 
-
-
-
-
-
 async function updateUI() {
   const { data: { session } } = await supabase.auth.getSession();
   const user = session?.user;
@@ -299,16 +274,6 @@ async function updateUI() {
 
   let balance = await loadBalance(user.id);
 if (balanceEl) balanceEl.textContent = `${balance.toFixed(2)} zł`;
-
-
-
-
-
-
-
-
-
-
 
 
   drawButton.onclick = async () => {
