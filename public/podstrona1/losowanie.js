@@ -276,109 +276,117 @@ async function updateUI() {
 if (balanceEl) balanceEl.textContent = `${balance.toFixed(2)} zł`;
 
 
-  drawButton.onclick = async () => {
+
+
+
+
+
+
+drawButton.onclick = async () => {
+  drawButton.disabled = true; // blokada przycisku
   const count = drawCount;
   if (balance < count * 3.5) {
     alert('Za mało środków');
+    drawButton.disabled = false;
     return;
   }
 
-  const results = await Promise.all(
-    Array.from({ length: count }, async (_, i) => {
-      const response = await fetch('/api/losuj', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ user_id: user.id })
-      });
-      const result = await response.json();
-      return { ...result, index: i + 1 };
-    })
-  );
-
-
-
-
-
-
-
-
-
- results.forEach(({ image, index, id: itemId, value }) => {
-  const name = imageNameMap[image] || 'Nieznany skin';
-  const resultImg = document.getElementById(`resultImage${index}`);
-  const resultName = document.getElementById(`resultImageName${index}`);
-  const actions = document.getElementById(`actionButtons${index}`);
-
-  startAnimation(image, index, () => {
-    resultImg.src = image;
-    resultImg.style.display = 'block';
-    resultName.textContent = name;
-    actions.style.display = 'block';
-  });
-
-
-
-
-
-
-
-
-
- // SELL BUTTON
-  document.getElementById(`sellBtn${index}`).onclick = async () => {
-    const res = await fetch('/api/sell-item', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        user_id: user.id,
-        item_id: itemId,
-        value: value
-      })
-    });
-
-    if (!res.ok) {
-      console.error('Sprzedaż nie powiodła się:', await res.text());
-      alert("Błąd serwera. Sprzedaż nieudana.");
-      return;
-    }
-
-    const data = await res.json();
-
-    if (data.success) {
-      alert("Sprzedano przedmiot!");
-      resultImg.style.display = 'none';
-      resultName.textContent = '';
-      actions.style.display = 'none';
-      balance += value;
-      if (balanceEl) balanceEl.textContent = `${balance.toFixed(2)} zł`;
-    } else {
-      alert("Błąd przy sprzedaży.");
-    }
-  };
- // KEEP BUTTON
-      document.getElementById(`keepBtn${index}`).onclick = async () => {
-        const res = await fetch('/api/keep', {
+  try {
+    const results = await Promise.all(
+      Array.from({ length: count }, async (_, i) => {
+        const response = await fetch('/api/losuj', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ user_id: user.id, item_id: itemId }) // lepiej wysłać item_id
+          body: JSON.stringify({ user_id: user.id }),
         });
+        const result = await response.json();
+        return { ...result, index: i + 1 };
+      })
+    );
 
-        const data = await res.json();
+    results.forEach(({ image, index, id: itemId, value }) => {
+      const name = imageNameMap[image] || 'Nieznany skin';
+      const resultImg = document.getElementById(`resultImage${index}`);
+      const resultName = document.getElementById(`resultImageName${index}`);
+      const actions = document.getElementById(`actionButtons${index}`);
 
-        if (data.success) {
-          alert("Dodano do ekwipunku!");
-          resultImg.style.display = 'none';
-          resultName.textContent = '';
-          actions.style.display = 'none';
-          // tutaj możesz też odświeżyć saldo lub stan użytkownika jeśli chcesz
-        } else {
-          alert("Błąd przy dodawaniu.");
+      startAnimation(image, index, () => {
+        resultImg.src = image;
+        resultImg.style.display = 'block';
+        resultName.textContent = name;
+        actions.style.display = 'block';
+      });
+
+      // SELL BUTTON
+      document.getElementById(`sellBtn${index}`).onclick = async () => {
+        try {
+          const res = await fetch('/api/sell-item', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              user_id: user.id,
+              item_id: itemId,
+              value: value,
+            }),
+          });
+
+          if (!res.ok) {
+            console.error('Sprzedaż nie powiodła się:', await res.text());
+            alert("Błąd serwera. Sprzedaż nieudana.");
+            return;
+          }
+
+          const data = await res.json();
+
+          if (data.success) {
+            alert("Sprzedano przedmiot!");
+            const container = document.getElementById(`resultContainer${index}`);
+            if (container) container.remove();
+            balance += value;
+            if (balanceEl) balanceEl.textContent = `${balance.toFixed(2)} zł`;
+          } else {
+            alert("Błąd przy sprzedaży.");
+          }
+        } catch (error) {
+          console.error('Błąd przy sprzedaży:', error);
+          alert("Wystąpił nieoczekiwany błąd.");
+        }
+      };
+
+      // KEEP BUTTON
+      document.getElementById(`keepBtn${index}`).onclick = async () => {
+        try {
+          const res = await fetch('/api/keep', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              user_id: user.id,
+              item_id: itemId,
+            }),
+          });
+
+          const data = await res.json();
+
+          if (data.success) {
+            alert("Dodano do ekwipunku!");
+            const container = document.getElementById(`resultContainer${index}`);
+            if (container) container.remove();
+          } else {
+            alert("Błąd przy dodawaniu.");
+          }
+        } catch (error) {
+          console.error('Błąd przy dodawaniu:', error);
+          alert("Wystąpił nieoczekiwany błąd.");
         }
       };
     });
 
-    // Uaktualnienie salda po losowaniu
     balance -= count * 3.5;
     if (balanceEl) balanceEl.textContent = `${balance.toFixed(2)} zł`;
-  };
-}  // <-- tu zamykasz funkcję updateUI
+  } catch (err) {
+    alert(err.message || 'Błąd podczas losowania');
+  } finally {
+    drawButton.disabled = false;
+  }
+}; // <-- tutaj średnik
+}
