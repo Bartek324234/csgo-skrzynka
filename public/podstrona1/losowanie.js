@@ -1,6 +1,5 @@
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-
 const supabase = createClient(
   "https://jotdnbkfgqtznjwbfjno.supabase.co",
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpvdGRuYmtmZ3F0em5qd2Jmam5vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc1MTMwODAsImV4cCI6MjA2MzA4OTA4MH0.mQrwJS9exVIMoSl_XwRT2WhE8DMTbdUM996kJIVA4kM"
@@ -25,7 +24,7 @@ const imageNameMap = {
 const availableImages = Object.keys(imageBackgroundMap);
 
 let drawCount = 1; // domyślnie 1 pasek
-
+let isAnimating = false; // flaga blokująca przycisk podczas animacji
 
 document.addEventListener('DOMContentLoaded', () => {
   initQuantityButtons();
@@ -57,22 +56,10 @@ function initQuantityButtons() {
 
   window.getActiveCount = () => drawCount;
 
-  // Dodaj tutaj na końcu:
   showStaticSkins(drawCount);  // pokaże 1 pasek od razu po załadowaniu
 }
 
-
-function resetAnimationStates() {
-  for (let i = 1; i <= 5; i++) {
-    if (animationStates[i]) {
-      animationStates[i].isFirstSpin = true;
-      animationStates[i].currentSkinList = [];
-      animationStates[i].lastOffsetX = 0;
-    }
-  }
-}
 function showStaticSkins(count) {
-  // Najpierw ukryj/wyczyść WSZYSTKO od 1 do 5 (niezależnie od count)
   for (let i = 1; i <= 5; i++) {
     const staticStrip = document.getElementById(`imageStripStatic${i}`);
     const animatedStrip = document.getElementById(`imageStrip${i}`);
@@ -100,7 +87,6 @@ function showStaticSkins(count) {
     if (actions) actions.style.display = 'none';
   }
 
-  // Teraz narysuj odpowiednią liczbę pasków statycznych
   for (let i = 1; i <= count; i++) {
     const staticStrip = document.getElementById(`imageStripStatic${i}`);
     if (!staticStrip) continue;
@@ -121,18 +107,7 @@ function showStaticSkins(count) {
   }
 }
 
-
-const animationStates = {};  // stan animacji na kontenerId
-
-
-
-
-
-
-
-
-
-
+const animationStates = {};
 
 function startAnimation(finalImage, containerId, onAnimationEnd) {
   if (!animationStates[containerId]) {
@@ -161,13 +136,12 @@ function startAnimation(finalImage, containerId, onAnimationEnd) {
   animationContainer.style.display = 'block';
   imageStrip.style.display = 'flex';
 
-  // Reset stanu na nową animację - ważne przy zmianie trybu (x1, x2)
   imageStrip.innerHTML = '';
   state.currentSkinList = [];
   state.lastOffsetX = 0;
   state.isFirstSpin = false;
 
-  imageStrip.style.transform = `translateX(0px)`; // startowa pozycja
+  imageStrip.style.transform = `translateX(0px)`;
 
   const visibleItems = 7;
   const itemWidth = 120;
@@ -182,16 +156,13 @@ function startAnimation(finalImage, containerId, onAnimationEnd) {
 
   const newSkins = [];
 
-  // Dodajemy losowe obrazki przed zwycięzcą
   for (let i = 0; i < totalItems - 1; i++) {
     const randomImage = availableImages[Math.floor(Math.random() * availableImages.length)];
     newSkins.push(randomImage);
   }
 
-  // Wstawiamy finalImage na właściwe miejsce (zwycięzca)
   newSkins.splice(winnerIndex, 0, finalImage);
 
-  // Dodajemy obrazki do paska animacji
   newSkins.forEach(src => {
     const img = document.createElement('img');
     img.src = src;
@@ -232,14 +203,6 @@ function startAnimation(finalImage, containerId, onAnimationEnd) {
   requestAnimationFrame(animate);
 }
 
-
-
-
-
-
-
-
-
 async function loadBalance(userId) {
   if (!userId) {
     console.error("Brak userId, nie można załadować balansu");
@@ -247,9 +210,9 @@ async function loadBalance(userId) {
   }
 
   const { data, error } = await supabase
-    .from("user_balances")   // tutaj nazwa tabeli
+    .from("user_balances")
     .select("balance")
-    .eq("user_id", userId)   // kolumna user_id
+    .eq("user_id", userId)
     .single();
 
   if (error || !data) {
@@ -273,120 +236,92 @@ async function updateUI() {
   const balanceEl = document.getElementById('balance');
 
   let balance = await loadBalance(user.id);
-if (balanceEl) balanceEl.textContent = `${balance.toFixed(2)} zł`;
+  if (balanceEl) balanceEl.textContent = `${balance.toFixed(2)} zł`;
 
+  drawButton.onclick = async () => {
+    if (isAnimating) return;  // blokada, jeśli animacja w trakcie
+    isAnimating = true;
+    drawButton.disabled = true;
+    drawButton.textContent = "Losuję...";
 
+    const skinsCount = getActiveCount();
 
+    for (let i = 1; i <= skinsCount; i++) {
+      const randomSkin = availableImages[Math.floor(Math.random() * availableImages.length)];
 
-
-
-
-
-drawButton.onclick = async () => {
-  drawButton.disabled = true; // blokada przycisku
-  const count = drawCount;
-  if (balance < count * 3.5) {
-    alert('Za mało środków');
-    drawButton.disabled = false;
-    return;
-  }
-
-  try {
-    const results = await Promise.all(
-      Array.from({ length: count }, async (_, i) => {
-        const response = await fetch('/api/losuj', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ user_id: user.id }),
-        });
-        const result = await response.json();
-        return { ...result, index: i + 1 };
-      })
-    );
-
-    results.forEach(({ image, index, id: itemId, value }) => {
-      const name = imageNameMap[image] || 'Nieznany skin';
-      const resultImg = document.getElementById(`resultImage${index}`);
-      const resultName = document.getElementById(`resultImageName${index}`);
-      const actions = document.getElementById(`actionButtons${index}`);
-
-      startAnimation(image, index, () => {
-        resultImg.src = image;
-        resultImg.style.display = 'block';
-        resultName.textContent = name;
-        actions.style.display = 'block';
+      await new Promise(resolve => {
+        startAnimation(randomSkin, i, resolve);
       });
 
-      // SELL BUTTON
-      document.getElementById(`sellBtn${index}`).onclick = async () => {
-        try {
-          const res = await fetch('/api/sell-item', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              user_id: user.id,
-              item_id: itemId,
-              value: value,
-            }),
-          });
+      // Po animacji pokaż wynik i przyciski akcji
+      const resultImg = document.getElementById(`resultImage${i}`);
+      const resultName = document.getElementById(`resultImageName${i}`);
+      const actionBtns = document.getElementById(`actionButtons${i}`);
 
-          if (!res.ok) {
-            console.error('Sprzedaż nie powiodła się:', await res.text());
-            alert("Błąd serwera. Sprzedaż nieudana.");
-            return;
-          }
+      if (resultImg) {
+        resultImg.src = randomSkin;
+        resultImg.style.display = "block";
+      }
+      if (resultName) {
+        resultName.textContent = imageNameMap[randomSkin] || "";
+      }
+      if (actionBtns) {
+        actionBtns.style.display = "flex";
+        actionBtns.dataset.skin = randomSkin; // zapamiętaj, który skin jest dla akcji
+      }
+    }
 
-          const data = await res.json();
-
-          if (data.success) {
-            alert("Sprzedano przedmiot!");
-            const container = document.getElementById(`resultContainer${index}`);
-            if (container) container.remove();
-            balance += value;
-            if (balanceEl) balanceEl.textContent = `${balance.toFixed(2)} zł`;
-          } else {
-            alert("Błąd przy sprzedaży.");
-          }
-        } catch (error) {
-          console.error('Błąd przy sprzedaży:', error);
-          alert("Wystąpił nieoczekiwany błąd.");
-        }
-      };
-
-      // KEEP BUTTON
-      document.getElementById(`keepBtn${index}`).onclick = async () => {
-        try {
-          const res = await fetch('/api/keep', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              user_id: user.id,
-              item_id: itemId,
-            }),
-          });
-
-          const data = await res.json();
-
-          if (data.success) {
-            alert("Dodano do ekwipunku!");
-            const container = document.getElementById(`resultContainer${index}`);
-            if (container) container.remove();
-          } else {
-            alert("Błąd przy dodawaniu.");
-          }
-        } catch (error) {
-          console.error('Błąd przy dodawaniu:', error);
-          alert("Wystąpił nieoczekiwany błąd.");
-        }
-      };
-    });
-
-    balance -= count * 3.5;
-    if (balanceEl) balanceEl.textContent = `${balance.toFixed(2)} zł`;
-  } catch (err) {
-    alert(err.message || 'Błąd podczas losowania');
-  } finally {
+    isAnimating = false;
     drawButton.disabled = false;
-  }
-}; // <-- tutaj średnik
+    drawButton.textContent = "Losuj";
+  };
+
+  // Obsługa sprzedaży skórek
+  document.querySelectorAll('.sell-button').forEach(button => {
+    button.onclick = async (e) => {
+      if (isAnimating) return;
+
+      const container = e.target.closest('.animation-container-wrapper');
+      if (!container) return;
+
+      const idx = container.dataset.index;
+      const actionBtns = document.getElementById(`actionButtons${idx}`);
+      if (!actionBtns) return;
+
+      const skinToSell = actionBtns.dataset.skin;
+      if (!skinToSell) return;
+
+      // Dodaj saldo do użytkownika w bazie
+      const price = 1.00; // przykładowa cena skóry
+
+      const { data, error } = await supabase.rpc('add_balance', {
+        user_id_in: user.id,
+        amount_in: price
+      });
+
+      if (error) {
+        alert("Błąd przy dodawaniu salda: " + error.message);
+        return;
+      }
+
+      alert(`Sprzedano skin ${imageNameMap[skinToSell]} za ${price.toFixed(2)} zł`);
+      
+      // Ukryj przyciski i obrazek wyniku po sprzedaży
+      const resultImg = document.getElementById(`resultImage${idx}`);
+      const resultName = document.getElementById(`resultImageName${idx}`);
+
+      if (resultImg) {
+        resultImg.src = '';
+        resultImg.style.display = 'none';
+      }
+      if (resultName) {
+        resultName.textContent = '';
+      }
+      actionBtns.style.display = 'none';
+
+      // Odśwież saldo
+      const newBalance = await loadBalance(user.id);
+      if (balanceEl) balanceEl.textContent = `${newBalance.toFixed(2)} zł`;
+    };
+  });
 }
