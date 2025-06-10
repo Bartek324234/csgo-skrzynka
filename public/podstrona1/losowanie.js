@@ -303,77 +303,82 @@ if (balanceEl) balanceEl.textContent = `${balance.toFixed(2)} zł`;
 
 
 
-  results.forEach(({ image, index, id: itemId, value }) => {
-    const name = imageNameMap[image] || 'Nieznany skin';
-    const resultImg = document.getElementById(`resultImage${index}`);
-    const resultName = document.getElementById(`resultImageName${index}`);
-    const actions = document.getElementById(`actionButtons${index}`);
+ results.forEach(({ image, index, id: itemId, value }) => {
+  const name = imageNameMap[image] || 'Nieznany skin';
+  const resultImg = document.getElementById(`resultImage${index}`);
+  const resultName = document.getElementById(`resultImageName${index}`);
+  const actions = document.getElementById(`actionButtons${index}`);
 
-    startAnimation(image, index, () => {
-      resultImg.src = image;
-      resultImg.style.display = 'block';
-      resultName.textContent = name;
-      actions.style.display = 'block';
+  startAnimation(image, index, () => {
+    resultImg.src = image;
+    resultImg.style.display = 'block';
+    resultName.textContent = name;
+    actions.style.display = 'block';
+  });
+
+
+
+
+
+
+
+
+
+ // SELL BUTTON
+  document.getElementById(`sellBtn${index}`).onclick = async () => {
+    const res = await fetch('/api/sell-item', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        user_id: user.id,
+        item_id: itemId,
+        value: value
+      })
     });
 
+    if (!res.ok) {
+      console.error('Sprzedaż nie powiodła się:', await res.text());
+      alert("Błąd serwera. Sprzedaż nieudana.");
+      return;
+    }
 
+    const data = await res.json();
 
+    if (data.success) {
+      alert("Sprzedano przedmiot!");
+      resultImg.style.display = 'none';
+      resultName.textContent = '';
+      actions.style.display = 'none';
+      balance += value;
+      if (balanceEl) balanceEl.textContent = `${balance.toFixed(2)} zł`;
+    } else {
+      alert("Błąd przy sprzedaży.");
+    }
+  };
 
+// KEEP BUTTON
+  document.getElementById(`keepBtn${index}`).onclick = async () => {
+    const res = await fetch('/api/keep', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ user_id: user.id, image })
+    });
 
+    const data = await res.json();
 
+    if (data.success) {
+      alert("Dodano do ekwipunku!");
+      resultImg.style.display = 'none';
+      resultName.textContent = '';
+      actions.style.display = 'none';
+    } else {
+      alert("Błąd przy dodawaniu.");
+    }
+  };
+});
 
-
-
-
-document.getElementById(`sellBtn${index}`).onclick = async () => {
-  const res = await fetch('/api/sell', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      user_id: user.id,
-      item_id: itemId,
-      value: value
-    })
-  });
-
-  const data = await res.json();
-
-  if (data.success) {
-    alert("Sprzedano przedmiot!");
-    resultImg.style.display = 'none';
-    resultName.textContent = '';
-    actions.style.display = 'none';
-    balance += value;
-    if (balanceEl) balanceEl.textContent = `${balance.toFixed(2)} zł`;
-  } else {
-    alert("Błąd przy sprzedaży.");
-  }
-};
-
-
-
-
-    document.getElementById(`keepBtn${index}`).onclick = async () => {
-      const res = await fetch('/api/keep', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ user_id: user.id, image })
-      });
-      const data = await res.json();
-      if (data.success) {
-        alert("Dodano do ekwipunku!");
-        resultImg.style.display = 'none';
-        resultName.textContent = '';
-        actions.style.display = 'none';
-      } else {
-        alert("Błąd przy dodawaniu.");
-      }
-    };
-  });
-
-  balance -= count * 3.5;
-  if (balanceEl) balanceEl.textContent = `${balance.toFixed(2)} zł`;
-};
-
+// Uaktualnienie salda po losowaniu
+balance -= count * 3.5;
+if (balanceEl) balanceEl.textContent = `${balance.toFixed(2)} zł`;
+  };
 }
-updateUI();
