@@ -355,30 +355,30 @@ if (balanceEl) balanceEl.textContent = `${balance.toFixed(2)} zł`;
       alert("Błąd przy sprzedaży.");
     }
   };
+ // KEEP BUTTON
+      document.getElementById(`keepBtn${index}`).onclick = async () => {
+        const res = await fetch('/api/keep', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ user_id: user.id, item_id: itemId }) // lepiej wysłać item_id
+        });
 
-// KEEP BUTTON
-  document.getElementById(`keepBtn${index}`).onclick = async () => {
-    const res = await fetch('/api/keep', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ user_id: user.id, image })
+        const data = await res.json();
+
+        if (data.success) {
+          alert("Dodano do ekwipunku!");
+          resultImg.style.display = 'none';
+          resultName.textContent = '';
+          actions.style.display = 'none';
+          // tutaj możesz też odświeżyć saldo lub stan użytkownika jeśli chcesz
+        } else {
+          alert("Błąd przy dodawaniu.");
+        }
+      };
     });
 
-    const data = await res.json();
-
-    if (data.success) {
-      alert("Dodano do ekwipunku!");
-      resultImg.style.display = 'none';
-      resultName.textContent = '';
-      actions.style.display = 'none';
-    } else {
-      alert("Błąd przy dodawaniu.");
-    }
+    // Uaktualnienie salda po losowaniu
+    balance -= count * 3.5;
+    if (balanceEl) balanceEl.textContent = `${balance.toFixed(2)} zł`;
   };
-});
-
-// Uaktualnienie salda po losowaniu
-balance -= count * 3.5;
-if (balanceEl) balanceEl.textContent = `${balance.toFixed(2)} zł`;
-  };
-}
+}  // <-- tu zamykasz funkcję updateUI

@@ -27,6 +27,7 @@ router.post('/', async (req, res) => {
   const drawCost = 3.5;
 
   try {
+    // Pobierz aktualne saldo
     const { data: current, error: errGet } = await supabase
       .from('user_balances')
       .select('balance')
@@ -41,6 +42,7 @@ router.post('/', async (req, res) => {
       return res.json({ error: 'Za mało środków na losowanie.', currentBalance: balance });
     }
 
+    // Odejmij koszt losowania
     const newBalance = balance - drawCost;
 
     const { error: errUpdate } = await supabase
@@ -50,6 +52,7 @@ router.post('/', async (req, res) => {
 
     if (errUpdate) throw errUpdate;
 
+    // Definicja możliwych wyników
     const outcomes = [
       { id: 1, item: "2zł", value: 2, chance: 0.7, image: "/images/deserteagleblue.jpg" },
       { id: 2, item: "20 zł", value: 20, chance: 0.1, image: "/images/glock18moda.jpg" },
@@ -58,34 +61,47 @@ router.post('/', async (req, res) => {
       { id: 5, item: "2.1zł", value: 2.1, chance: 0.01, image: "/images/p2000oceaniczny.jpg" }
     ];
 
+    // Losowanie przedmiotu
     const result = weightedRandom(outcomes);
 
-    const { data: insertedItem, error: errInsert } = await supabase
-      .from('user_inventory')
-      .insert({
-        user_id: user_id,
-        item_name: result.item,
-        image_url: result.image,
-        value: result.value
-      })
-      .select('id')
-      .single();
-
-    if (errInsert) {
-      console.error('Błąd dodawania przedmiotu do ekwipunku:', errInsert);
-      return res.status(500).json({ error: 'Błąd dodawania przedmiotu do ekwipunku' });
-    }
+    // **Nie wstawiamy do user_inventory od razu!**
 
     res.json({
       message: `Wylosowano: ${result.item}`,
       image: result.image,
       value: result.value,
-      newBalance,
-      item_id: insertedItem.id
+      newBalance
     });
   } catch (err) {
     console.error('Błąd w losowaniu:', err);
     res.status(500).json({ error: 'Wewnętrzny błąd serwera' });
+  }
+});
+
+// Endpoint do zapisywania przedmiotu do ekwipunku po kliknięciu "Keep"
+router.post('/keep', async (req, res) => {
+  const { user_id, item_name, image_url, value } = req.body;
+
+  if (!user_id || !item_name || !image_url || !value) {
+    return res.status(400).json({ error: 'Brak wymaganych danych do dodania do ekwipunku.' });
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from('user_inventory')
+      .insert({
+        user_id,
+        item_name,
+        image_url,
+        value
+      });
+
+    if (error) throw error;
+
+    res.json({ success: true, message: 'Przedmiot dodany do ekwipunku.' });
+  } catch (err) {
+    console.error('Błąd dodawania do ekwipunku:', err);
+    res.status(500).json({ error: 'Błąd serwera podczas dodawania do ekwipunku.' });
   }
 });
 
