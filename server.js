@@ -20,6 +20,11 @@ app.use('/api/inventory', inventoryRoute);
 const sellItemRouter = require('./routes/sell-item');
 app.use('/api/sell-item', sellItemRouter);
 
+
+const keepRouter = require('./routes/keep');  // albo inna nazwa pliku
+app.use('/api/keep', keepRouter);
+
+
 // 🔹 Trasa z danymi użytkownika (user-info.js)
 const userInfoRouter = require('./routes/user-info');
 app.use('/api/user-info', userInfoRouter);
