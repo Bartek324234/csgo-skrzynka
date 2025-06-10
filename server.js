@@ -7,7 +7,7 @@ const PORT = process.env.PORT || 3000;
 // Middleware do parsowania JSON w ciele requestów
 app.use(express.json());
 
-// Statyczne pliki z folderu public
+// Statyczne pliki z folderu publicc
 app.use(express.static(path.join(__dirname, 'public')));
 
 // 🔹 Trasa losowania (wylosowywanie.js)
