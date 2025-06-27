@@ -123,6 +123,7 @@
     }
 
     function addDrop(drop) {
+      console.log('Dodaję drop:', drop)
       const el = createDropElement(drop)
       dropContainer.insertBefore(el, dropContainer.firstChild)
 
@@ -138,6 +139,7 @@
           dropContainer.removeChild(removed.el)
           currentShift += removed.width
 
+          // Natychmiast usuń transition, przesuń i przywróć transition
           dropContainer.style.transition = 'none'
           dropContainer.style.transform = `translateX(${currentShift}px)`
           requestAnimationFrame(() => {
@@ -154,7 +156,10 @@
         .order('created_at', { ascending: false })
         .limit(maxDrops)
 
-      if (error) return console.error('❌ Błąd:', error)
+      if (error) {
+        console.error('❌ Błąd:', error)
+        return
+      }
 
       dropContainer.innerHTML = ''
       drops.length = 0
@@ -170,7 +175,7 @@
     }
 
     // Inicjalizacja kanału Supabase do realtime
-    const channel = supabase.channel('realtime:public:live_drops');
+    const channel = supabase.channel('realtime:public:live_drops')
 
     async function subscribeToDrops() {
       channel
@@ -178,20 +183,20 @@
           'postgres_changes',
           { event: 'INSERT', schema: 'public', table: 'live_drops' },
           (payload) => {
-            console.log('Nowy drop:', payload.new);
-            addDrop(payload.new);
+            console.log('Nowy drop:', payload.new)
+            addDrop(payload.new)
           }
         )
         .subscribe((status) => {
           if (status === 'SUBSCRIBED') {
-            console.log('✅ Subskrypcja działa');
+            console.log('✅ Subskrypcja działa')
           } else {
-            console.error('❌ Subskrypcja problem:', status);
+            console.error('❌ Subskrypcja problem:', status)
           }
-        });
+        })
     }
 
-    // Opcjonalne logi dla obecności
+    // Log obecności (opcjonalne)
     channel.on('presence', { event: 'sync' }, () => {
       console.log('📡 Połączono z kanałem live_drops_channel')
     })
