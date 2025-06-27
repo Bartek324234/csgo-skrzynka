@@ -10,76 +10,73 @@
       overflow: hidden;
     }
 
-  
-/* Podstawowy reset */
-* {
-  box-sizing: border-box;
-  margin-left: 0;
- 
-  padding: 0;
-}
+    /* Podstawowy reset */
+    * {
+      box-sizing: border-box;
+      margin-left: 0;
+      padding: 0;
+    }
 
-/* Styl kontenera całego live drop */
-#live-drops-wrapper {
-  margin-left: 10%;
-  width: 100%;
-  max-width: 100%;
-  overflow: hidden; /* Ukryj nadmiar — żadnego scrolla */
-  padding: 10px 0;
-  background: #111;
-  border-top: 2px solid #444;
-  border-bottom: 2px solid #444;
-  height: 135px;
-  position: absolute;
-}
+    /* Styl kontenera całego live drop */
+    #live-drops-wrapper {
+      margin-left: 10%;
+      width: 100%;
+      max-width: 100%;
+      overflow: hidden; /* Ukryj nadmiar — żadnego scrolla */
+      padding: 10px 0;
+      background: #111;
+      border-top: 2px solid #444;
+      border-bottom: 2px solid #444;
+      height: 135px;
+      position: absolute;
+    }
 
-/* Kontener na wszystkie dropy (będzie przesuwany) */
-#live-drops {
-  position: absolute;
-  display: flex;
-  flex-direction: row;
-  gap: 15px;
-  transition: transform 0.5s ease;
-  will-change: transform;
-}
+    /* Kontener na wszystkie dropy (będzie przesuwany) */
+    #live-drops {
+      position: absolute;
+      display: flex;
+      flex-direction: row;
+      gap: 15px;
+      transition: transform 0.5s ease;
+      will-change: transform;
+    }
 
-/* Pojedynczy drop */
-.drop {
-  flex: 0 0 auto; /* Nie pozwala dropowi się rozciągać */
-  width: 160px;
-  min-width: 160px;
-  max-width: 160px;
-  height: 100%;
+    /* Pojedynczy drop */
+    .drop {
+      flex: 0 0 auto; /* Nie pozwala dropowi się rozciągać */
+      width: 160px;
+      min-width: 160px;
+      max-width: 160px;
+      height: 100%;
 
-  background: #1e1e1e;
-  border: 1px solid #333;
-  border-radius: 10px;
-  padding: 10px;
-  color: #fff;
-  font-size: 14px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  box-shadow: 0 0 5px rgba(255, 255, 255, 0.05);
-  transition: transform 0.3s ease;
-}
+      background: #1e1e1e;
+      border: 1px solid #333;
+      border-radius: 10px;
+      padding: 10px;
+      color: #fff;
+      font-size: 14px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      box-shadow: 0 0 5px rgba(255, 255, 255, 0.05);
+      transition: transform 0.3s ease;
+    }
 
-/* Zdjęcie przedmiotu */
-.drop img {
-  width: 75px;
-  height: 75px;
-  object-fit: contain;
-  margin-bottom: 6px;
-  border-radius: 4px;
-  background: #222;
-}
+    /* Zdjęcie przedmiotu */
+    .drop img {
+      width: 75px;
+      height: 75px;
+      object-fit: contain;
+      margin-bottom: 6px;
+      border-radius: 4px;
+      background: #222;
+    }
 
-/* Tekst w dropie */
-.drop div {
-  text-align: center;
-  line-height: 1.4;
-}
-
+    /* Tekst w dropie */
+    .drop div {
+      text-align: center;
+      line-height: 1.4;
+    }
   </style>
 </head>
 <body>
@@ -87,134 +84,128 @@
     <div id="live-drops"></div>
   </div>
 
-  <!-- Twój skrypt z subskrypcją Supabase -->
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
 
-   
+    const supabase = createClient(
+      'https://jotdnbkfgqtznjwbfjno.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpvdGRuYmtmZ3F0em5qd2Jmam5vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc1MTMwODAsImV4cCI6MjA2MzA4OTA4MH0.mQrwJS9exVIMoSl_XwRT2WhE8DMTbdUM996kJIVA4kM'
+    )
 
+    const maxDrops = 10
+    const drops = []
+    let currentShift = 0
+    let dropContainer = null
 
-<script type="module">
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+    function getImageUrl(path) {
+      if (!path || typeof path !== 'string') return 'https://via.placeholder.com/40?text=?'
+      const filename = path.split('/').pop()
+      return `/images/${filename}`
+    }
 
-const supabase = createClient(
-  'https://jotdnbkfgqtznjwbfjno.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpvdGRuYmtmZ3F0em5qd2Jmam5vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc1MTMwODAsImV4cCI6MjA2MzA4OTA4MH0.mQrwJS9exVIMoSl_XwRT2WhE8DMTbdUM996kJIVA4kM'
-)
+    function createDropElement(drop) {
+      const el = document.createElement('div')
+      el.classList.add('drop')
 
-const maxDrops = 10
-const drops = []
-let currentShift = 0
-let dropContainer = null
+      const name = drop.item_name ?? 'Nieznany przedmiot'
+      const image = getImageUrl(drop.image_url)
+      const value = typeof drop.value === 'number' ? drop.value.toFixed(2) : '0.00'
 
-function getImageUrl(path) {
-  if (!path || typeof path !== 'string') return 'https://via.placeholder.com/40?text=?'
-  const filename = path.split('/').pop()
-  return `/images/${filename}`
-}
+      el.innerHTML = `
+        <img src="${image}" alt="${name}" />
+        <div>🎯 <b>${name}</b> za <b>${value} zł</b></div>
+      `
+      return el
+    }
 
-function createDropElement(drop) {
-  const el = document.createElement('div')
-  el.classList.add('drop')
+    function updatePosition(shift) {
+      dropContainer.style.transform = `translateX(${shift}px)`
+    }
 
-  const name = drop.item_name ?? 'Nieznany przedmiot'
-  const image = getImageUrl(drop.image_url)
-  const value = typeof drop.value === 'number' ? drop.value.toFixed(2) : '0.00'
+    function addDrop(drop) {
+      const el = createDropElement(drop)
+      dropContainer.insertBefore(el, dropContainer.firstChild)
 
-  el.innerHTML = `
-    <img src="${image}" alt="${name}" />
-    <div>🎯 <b>${name}</b> za <b>${value} zł</b></div>
-  `
-  return el
-}
-
-function updatePosition(shift) {
-  dropContainer.style.transform = `translateX(${shift}px)`
-}
-
-function addDrop(drop) {
-  const el = createDropElement(drop)
-  dropContainer.insertBefore(el, dropContainer.firstChild)
-
-  requestAnimationFrame(() => {
-    const elWidth = el.offsetWidth + 15
-    drops.unshift({ el, width: elWidth })
-
-    currentShift -= elWidth
-    updatePosition(currentShift)
-
-    if (drops.length > maxDrops) {
-      const removed = drops.pop()
-      dropContainer.removeChild(removed.el)
-      currentShift += removed.width
-
-      dropContainer.style.transition = 'none'
-      dropContainer.style.transform = `translateX(${currentShift}px)`
       requestAnimationFrame(() => {
-        dropContainer.style.transition = 'transform 0.5s ease'
+        const elWidth = el.offsetWidth + 15
+        drops.unshift({ el, width: elWidth })
+
+        currentShift -= elWidth
+        updatePosition(currentShift)
+
+        if (drops.length > maxDrops) {
+          const removed = drops.pop()
+          dropContainer.removeChild(removed.el)
+          currentShift += removed.width
+
+          dropContainer.style.transition = 'none'
+          dropContainer.style.transform = `translateX(${currentShift}px)`
+          requestAnimationFrame(() => {
+            dropContainer.style.transition = 'transform 0.5s ease'
+          })
+        }
       })
     }
-  })
-}
 
-async function fetchInitialDrops() {
-  const { data, error } = await supabase
-    .from('live_drops')
-    .select('*')
-    .order('created_at', { ascending: false })
-    .limit(maxDrops)
+    async function fetchInitialDrops() {
+      const { data, error } = await supabase
+        .from('live_drops')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(maxDrops)
 
-  if (error) return console.error('❌ Błąd:', error)
+      if (error) return console.error('❌ Błąd:', error)
 
-  dropContainer.innerHTML = ''
-  drops.length = 0
-  currentShift = 0
-  dropContainer.style.transition = 'none'
-  dropContainer.style.transform = 'translateX(0)'
+      dropContainer.innerHTML = ''
+      drops.length = 0
+      currentShift = 0
+      dropContainer.style.transition = 'none'
+      dropContainer.style.transform = 'translateX(0)'
 
-  for (const drop of data.reverse()) {
-    const el = createDropElement(drop)
-    dropContainer.appendChild(el)
-    drops.push({ el, width: el.offsetWidth + 15 })
-  }
-}
-
-// **channel zadeklarowany globalnie**
-const channel = supabase.channel('realtime:public:live_drops');
-
-async function subscribeToDrops() {
-  channel
-    .on(
-      'postgres_changes',
-      { event: 'INSERT', schema: 'public', table: 'live_drops' },
-      (payload) => {
-        console.log('Nowy drop:', payload.new);
-        addDrop(payload.new);
+      for (const drop of data.reverse()) {
+        const el = createDropElement(drop)
+        dropContainer.appendChild(el)
+        drops.push({ el, width: el.offsetWidth + 15 })
       }
-    )
-    .subscribe((status) => {
-      if (status === 'SUBSCRIBED') {
-        console.log('✅ Subskrypcja działa');
-      } else {
-        console.error('❌ Subskrypcja problem:', status);
+    }
+
+    // Inicjalizacja kanału Supabase do realtime
+    const channel = supabase.channel('realtime:public:live_drops');
+
+    async function subscribeToDrops() {
+      channel
+        .on(
+          'postgres_changes',
+          { event: 'INSERT', schema: 'public', table: 'live_drops' },
+          (payload) => {
+            console.log('Nowy drop:', payload.new);
+            addDrop(payload.new);
+          }
+        )
+        .subscribe((status) => {
+          if (status === 'SUBSCRIBED') {
+            console.log('✅ Subskrypcja działa');
+          } else {
+            console.error('❌ Subskrypcja problem:', status);
+          }
+        });
+    }
+
+    // Opcjonalne logi dla obecności
+    channel.on('presence', { event: 'sync' }, () => {
+      console.log('📡 Połączono z kanałem live_drops_channel')
+    })
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      dropContainer = document.getElementById('live-drops')
+      if (!dropContainer) {
+        console.error('❌ Nie znaleziono #live-drops w DOM')
+        return
       }
-    });
-}
 
-// Teraz można bez problemu użyć channel tutaj:
-channel.on('presence', { event: 'sync' }, () => {
-  console.log('📡 Połączono z kanałem live_drops_channel')
-})
-
-document.addEventListener('DOMContentLoaded', async () => {
-  dropContainer = document.getElementById('live-drops')
-  if (!dropContainer) {
-    console.error('❌ Nie znaleziono #live-drops w DOM')
-    return
-  }
-
-  await fetchInitialDrops()
-  await subscribeToDrops()
-})
-</script>
-
+      await fetchInitialDrops()
+      await subscribeToDrops()
+    })
+  </script>
 </body>
 </html>
