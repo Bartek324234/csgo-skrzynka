@@ -175,23 +175,19 @@
     async function subscribeToDrops() {
   const channel = supabase.channel('realtime:public:live_drops')
 
-  channel
-    .on(
-      'postgres_changes',
-      { event: 'INSERT', schema: 'public', table: 'live_drops' },
-      (payload) => {
-        console.log('Nowy drop:', payload.new)
-        addDrop(payload.new)
-      }
-    )
-    .subscribe((status) => {
-      if (status === 'SUBSCRIBED') {
-        console.log('✅ Subskrypcja aktywna')
-      } else {
-        console.error('❌ Subskrypcja nie działa:', status)
-      }
-    })
-}
+channel
+  .on(
+    'postgres_changes',
+    { event: 'INSERT', schema: 'public', table: 'live_drops' },
+    (payload) => {
+      console.log('Nowy drop:', payload.new)
+      addDrop(payload.new)
+    }
+  )
+  .subscribe((status) => {
+    console.log('Subskrypcja status:', status)
+  })
+    }
   </script>
 </body>
 </html>
