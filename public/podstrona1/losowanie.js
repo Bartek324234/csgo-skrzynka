@@ -30,7 +30,6 @@ document.addEventListener('DOMContentLoaded', () => {
   initQuantityButtons();
   updateUI();
 });
-
 function initQuantityButtons() {
   const btnX1 = document.getElementById('modeX1');
   const btnX2 = document.getElementById('modeX2');
@@ -58,6 +57,11 @@ function initQuantityButtons() {
 
   showStaticSkins(drawCount);  // pokaże 1 pasek od razu po załadowaniu
 }
+
+
+
+
+
 
 function showStaticSkins(count) {
   for (let i = 1; i <= 5; i++) {
@@ -108,6 +112,15 @@ function showStaticSkins(count) {
 }
 
 const animationStates = {};
+
+
+
+
+
+
+
+
+
 
 function startAnimation(finalImage, containerId, onAnimationEnd) {
   if (!animationStates[containerId]) {
@@ -203,6 +216,12 @@ function startAnimation(finalImage, containerId, onAnimationEnd) {
   requestAnimationFrame(animate);
 }
 
+
+
+
+
+
+
 async function loadBalance(userId) {
   if (!userId) {
     console.error("Brak userId, nie można załadować balansu");
@@ -222,6 +241,9 @@ async function loadBalance(userId) {
   return data.balance || 0;
 }
 
+
+
+
 async function updateUI() {
   const { data: { session } } = await supabase.auth.getSession();
   const user = session?.user;
@@ -239,21 +261,33 @@ async function updateUI() {
   if (balanceEl) balanceEl.textContent = `${balance.toFixed(2)} zł`;
 
   drawButton.onclick = async () => {
-    if (isAnimating) return;  // blokada, jeśli animacja w trakcie
+    if (isAnimating) return;
     isAnimating = true;
     drawButton.disabled = true;
     drawButton.textContent = "Losuję...";
 
     const skinsCount = getActiveCount();
+    const promises = [];
+
+    const drawnSkins = [];
 
     for (let i = 1; i <= skinsCount; i++) {
       const randomSkin = availableImages[Math.floor(Math.random() * availableImages.length)];
+      drawnSkins.push(randomSkin);
 
-      await new Promise(resolve => {
+      const promise = new Promise(resolve => {
         startAnimation(randomSkin, i, resolve);
       });
 
-      // Po animacji pokaż wynik i przyciski akcji
+      promises.push(promise);
+    }
+
+    await Promise.all(promises);
+
+    // Pokaż wyniki po zakończeniu WSZYSTKICH animacji
+    for (let i = 1; i <= skinsCount; i++) {
+      const randomSkin = drawnSkins[i - 1];
+
       const resultImg = document.getElementById(`resultImage${i}`);
       const resultName = document.getElementById(`resultImageName${i}`);
       const actionBtns = document.getElementById(`actionButtons${i}`);
@@ -267,7 +301,7 @@ async function updateUI() {
       }
       if (actionBtns) {
         actionBtns.style.display = "flex";
-        actionBtns.dataset.skin = randomSkin; // zapamiętaj, który skin jest dla akcji
+        actionBtns.dataset.skin = randomSkin;
       }
     }
 
@@ -275,6 +309,16 @@ async function updateUI() {
     drawButton.disabled = false;
     drawButton.textContent = "Losuj";
   };
+
+
+
+
+
+
+
+
+
+
 
   // Obsługa sprzedaży skórek
   document.querySelectorAll('.sell-button').forEach(button => {
