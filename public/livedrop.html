@@ -10,73 +10,76 @@
       overflow: hidden;
     }
 
-    /* Podstawowy reset */
-    * {
-      box-sizing: border-box;
-      margin-left: 0;
-      padding: 0;
-    }
+  
+/* Podstawowy reset */
+* {
+  box-sizing: border-box;
+  margin-left: 0;
+ 
+  padding: 0;
+}
 
-    /* Styl kontenera całego live drop */
-    #live-drops-wrapper {
-      margin-left: 10%;
-      width: 100%;
-      max-width: 100%;
-      overflow: hidden; /* Ukryj nadmiar — żadnego scrolla */
-      padding: 10px 0;
-      background: #111;
-      border-top: 2px solid #444;
-      border-bottom: 2px solid #444;
-      height: 135px;
-      position: absolute;
-    }
+/* Styl kontenera całego live drop */
+#live-drops-wrapper {
+  margin-left: 10%;
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden; /* Ukryj nadmiar — żadnego scrolla */
+  padding: 10px 0;
+  background: #111;
+  border-top: 2px solid #444;
+  border-bottom: 2px solid #444;
+  height: 135px;
+  position: absolute;
+}
 
-    /* Kontener na wszystkie dropy (będzie przesuwany) */
-    #live-drops {
-      position: absolute;
-      display: flex;
-      flex-direction: row;
-      gap: 15px;
-      transition: transform 0.5s ease;
-      will-change: transform;
-    }
+/* Kontener na wszystkie dropy (będzie przesuwany) */
+#live-drops {
+  position: absolute;
+  display: flex;
+  flex-direction: row;
+  gap: 15px;
+  transition: transform 0.5s ease;
+  will-change: transform;
+}
 
-    /* Pojedynczy drop */
-    .drop {
-      flex: 0 0 auto; /* Nie pozwala dropowi się rozciągać */
-      width: 160px;
-      min-width: 160px;
-      max-width: 160px;
-      height: 100%;
+/* Pojedynczy drop */
+.drop {
+  flex: 0 0 auto; /* Nie pozwala dropowi się rozciągać */
+  width: 160px;
+  min-width: 160px;
+  max-width: 160px;
+  height: 100%;
 
-      background: #1e1e1e;
-      border: 1px solid #333;
-      border-radius: 10px;
-      padding: 10px;
-      color: #fff;
-      font-size: 14px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      box-shadow: 0 0 5px rgba(255, 255, 255, 0.05);
-      transition: transform 0.3s ease;
-    }
+  background: #1e1e1e;
+  border: 1px solid #333;
+  border-radius: 10px;
+  padding: 10px;
+  color: #fff;
+  font-size: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-shadow: 0 0 5px rgba(255, 255, 255, 0.05);
+  transition: transform 0.3s ease;
+}
 
-    /* Zdjęcie przedmiotu */
-    .drop img {
-      width: 75px;
-      height: 75px;
-      object-fit: contain;
-      margin-bottom: 6px;
-      border-radius: 4px;
-      background: #222;
-    }
+/* Zdjęcie przedmiotu */
+.drop img {
+  width: 75px;
+  height: 75px;
+  object-fit: contain;
+  margin-bottom: 6px;
+  border-radius: 4px;
+  background: #222;
+}
 
-    /* Tekst w dropie */
-    .drop div {
-      text-align: center;
-      line-height: 1.4;
-    }
+/* Tekst w dropie */
+.drop div {
+  text-align: center;
+  line-height: 1.4;
+}
+
   </style>
 </head>
 <body>
@@ -92,10 +95,10 @@
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpvdGRuYmtmZ3F0em5qd2Jmam5vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc1MTMwODAsImV4cCI6MjA2MzA4OTA4MH0.mQrwJS9exVIMoSl_XwRT2WhE8DMTbdUM996kJIVA4kM'
     )
 
+    const dropContainer = document.getElementById('live-drops')
     const maxDrops = 10
     const drops = []
     let currentShift = 0
-    let dropContainer = null
 
     function getImageUrl(path) {
       if (!path || typeof path !== 'string') return 'https://via.placeholder.com/40?text=?'
@@ -123,7 +126,6 @@
     }
 
     function addDrop(drop) {
-      console.log('Dodaję drop:', drop)
       const el = createDropElement(drop)
       dropContainer.insertBefore(el, dropContainer.firstChild)
 
@@ -139,7 +141,6 @@
           dropContainer.removeChild(removed.el)
           currentShift += removed.width
 
-          // Natychmiast usuń transition, przesuń i przywróć transition
           dropContainer.style.transition = 'none'
           dropContainer.style.transform = `translateX(${currentShift}px)`
           requestAnimationFrame(() => {
@@ -156,10 +157,7 @@
         .order('created_at', { ascending: false })
         .limit(maxDrops)
 
-      if (error) {
-        console.error('❌ Błąd:', error)
-        return
-      }
+      if (error) return console.error('❌ Błąd:', error)
 
       dropContainer.innerHTML = ''
       drops.length = 0
@@ -174,10 +172,9 @@
       }
     }
 
-    // Inicjalizacja kanału Supabase do realtime
-    const channel = supabase.channel('realtime:public:live_drops')
-
     async function subscribeToDrops() {
+      const channel = supabase.channel('drops')
+
       channel
         .on(
           'postgres_changes',
@@ -189,28 +186,17 @@
         )
         .subscribe((status) => {
           if (status === 'SUBSCRIBED') {
-            console.log('✅ Subskrypcja działa')
+            console.log('✅ Subskrypcja aktywna')
           } else {
-            console.error('❌ Subskrypcja problem:', status)
+            console.error('❌ Subskrypcja nie działa:', status)
           }
         })
     }
 
-    // Log obecności (opcjonalne)
-    channel.on('presence', { event: 'sync' }, () => {
-      console.log('📡 Połączono z kanałem live_drops_channel')
-    })
-
-    document.addEventListener('DOMContentLoaded', async () => {
-      dropContainer = document.getElementById('live-drops')
-      if (!dropContainer) {
-        console.error('❌ Nie znaleziono #live-drops w DOM')
-        return
-      }
-
+    ;(async () => {
       await fetchInitialDrops()
       await subscribeToDrops()
-    })
+    })()
   </script>
 </body>
 </html>
