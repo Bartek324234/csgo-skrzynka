@@ -242,8 +242,6 @@ async function loadBalance(userId) {
 }
 
 
-
-
 async function updateUI() {
   const { data: { session } } = await supabase.auth.getSession();
   const user = session?.user;
@@ -268,9 +266,9 @@ async function updateUI() {
 
     const skinsCount = getActiveCount();
     const promises = [];
-
     const drawnSkins = [];
 
+    // Losowanie i uruchamianie animacji
     for (let i = 1; i <= skinsCount; i++) {
       const randomSkin = availableImages[Math.floor(Math.random() * availableImages.length)];
       drawnSkins.push(randomSkin);
@@ -284,7 +282,7 @@ async function updateUI() {
 
     await Promise.all(promises);
 
-    // Pokaż wyniki po zakończeniu WSZYSTKICH animacji
+    // Pokazywanie wyników
     for (let i = 1; i <= skinsCount; i++) {
       const randomSkin = drawnSkins[i - 1];
 
@@ -293,13 +291,16 @@ async function updateUI() {
       const resultPrice = document.getElementById(`resultImagePrice${i}`);
       const actionBtns = document.getElementById(`actionButtons${i}`);
 
+      // Sprawdzenie, czy elementy istnieją
       if (resultImg) {
         resultImg.src = randomSkin;
         resultImg.style.display = "block";
       }
+
       if (resultName) {
         resultName.textContent = imageNameMap[randomSkin] || "";
       }
+
       if (actionBtns) {
         actionBtns.style.display = "flex";
         actionBtns.dataset.skin = randomSkin;
@@ -310,7 +311,7 @@ async function updateUI() {
     drawButton.disabled = false;
     drawButton.textContent = "Losuj";
   };
-
+}
 
 
 
@@ -369,4 +370,4 @@ async function updateUI() {
       if (balanceEl) balanceEl.textContent = `${newBalance.toFixed(2)} zł`;
     };
   });
-}
+
