@@ -410,14 +410,25 @@ async function updateUI() {
 
 // Dodanie wpisów do live_drops
 for (let i = 0; i < drawnSkins.length; i++) {
-  const skin = drawnSkins[i];
+  const skinImage = drawnSkins[i];
+  const itemName = imageNameMap[skinImage] || "Unknown Skin";
+  const itemValue = getSkinValue ? getSkinValue(skinImage) : 0; // jeśli masz funkcję do wartości
+
   const { error } = await supabase.from('live_drops').insert([
-    { user_id: user.id, skin: skin, created_at: new Date().toISOString() }
+    { 
+      user_id: user.id, 
+      item_name: itemName, 
+      image_url: skinImage,
+      value: itemValue,
+      created_at: new Date().toISOString() 
+    }
   ]);
+
   if (error) {
     console.error("Błąd zapisu live_drop:", error);
   }
 }
+
 
 
     // Pokazywanie wyników
