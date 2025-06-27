@@ -88,114 +88,121 @@
   </div>
 
   <script type="module">
-    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
 
-    const supabase = createClient(
-      'https://jotdnbkfgqtznjwbfjno.supabase.co',
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpvdGRuYmtmZ3F0em5qd2Jmam5vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc1MTMwODAsImV4cCI6MjA2MzA4OTA4MH0.mQrwJS9exVIMoSl_XwRT2WhE8DMTbdUM996kJIVA4kM'
-    )
+  const supabase = createClient(
+    'https://jotdnbkfgqtznjwbfjno.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpvdGRuYmtmZ3F0em5qd2Jmam5vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc1MTMwODAsImV4cCI6MjA2MzA4OTA4MH0.mQrwJS9exVIMoSl_XwRT2WhE8DMTbdUM996kJIVA4kM'
+  )
 
-    const dropContainer = document.getElementById('live-drops')
-    const maxDrops = 10
-    const drops = []
-    let currentShift = 0
+  const maxDrops = 10
+  const drops = []
+  let currentShift = 0
+  let dropContainer = null
 
-    function getImageUrl(path) {
-      if (!path || typeof path !== 'string') return 'https://via.placeholder.com/40?text=?'
-      const filename = path.split('/').pop()
-      return `/images/${filename}`
-    }
+  function getImageUrl(path) {
+    if (!path || typeof path !== 'string') return 'https://via.placeholder.com/40?text=?'
+    const filename = path.split('/').pop()
+    return `/images/${filename}`
+  }
 
-    function createDropElement(drop) {
-      const el = document.createElement('div')
-      el.classList.add('drop')
+  function createDropElement(drop) {
+    const el = document.createElement('div')
+    el.classList.add('drop')
 
-      const name = drop.item_name ?? 'Nieznany przedmiot'
-      const image = getImageUrl(drop.image_url)
-      const value = typeof drop.value === 'number' ? drop.value.toFixed(2) : '0.00'
+    const name = drop.item_name ?? 'Nieznany przedmiot'
+    const image = getImageUrl(drop.image_url)
+    const value = typeof drop.value === 'number' ? drop.value.toFixed(2) : '0.00'
 
-      el.innerHTML = `
-        <img src="${image}" alt="${name}" />
-        <div>🎯 <b>${name}</b> za <b>${value} zł</b></div>
-      `
-      return el
-    }
+    el.innerHTML = `
+      <img src="${image}" alt="${name}" />
+      <div>🎯 <b>${name}</b> za <b>${value} zł</b></div>
+    `
+    return el
+  }
 
-    function updatePosition(shift) {
-      dropContainer.style.transform = `translateX(${shift}px)`
-    }
+  function updatePosition(shift) {
+    dropContainer.style.transform = `translateX(${shift}px)`
+  }
 
-    function addDrop(drop) {
-      const el = createDropElement(drop)
-      dropContainer.insertBefore(el, dropContainer.firstChild)
+  function addDrop(drop) {
+    const el = createDropElement(drop)
+    dropContainer.insertBefore(el, dropContainer.firstChild)
 
-      requestAnimationFrame(() => {
-        const elWidth = el.offsetWidth + 15
-        drops.unshift({ el, width: elWidth })
+    requestAnimationFrame(() => {
+      const elWidth = el.offsetWidth + 15
+      drops.unshift({ el, width: elWidth })
 
-        currentShift -= elWidth
-        updatePosition(currentShift)
+      currentShift -= elWidth
+      updatePosition(currentShift)
 
-        if (drops.length > maxDrops) {
-          const removed = drops.pop()
-          dropContainer.removeChild(removed.el)
-          currentShift += removed.width
+      if (drops.length > maxDrops) {
+        const removed = drops.pop()
+        dropContainer.removeChild(removed.el)
+        currentShift += removed.width
 
-          dropContainer.style.transition = 'none'
-          dropContainer.style.transform = `translateX(${currentShift}px)`
-          requestAnimationFrame(() => {
-            dropContainer.style.transition = 'transform 0.5s ease'
-          })
-        }
-      })
-    }
-
-    async function fetchInitialDrops() {
-      const { data, error } = await supabase
-  .from('live_drops')
-  .select('*')
-  .order('created_at', { ascending: false })
-  .limit(maxDrops)
-
-      if (error) return console.error('❌ Błąd:', error)
-
-      dropContainer.innerHTML = ''
-      drops.length = 0
-      currentShift = 0
-      dropContainer.style.transition = 'none'
-      dropContainer.style.transform = 'translateX(0)'
-
-      for (const drop of data.reverse()) {
-        const el = createDropElement(drop)
-        dropContainer.appendChild(el)
-        drops.push({ el, width: el.offsetWidth + 15 })
-      }
-    }
-
-   async function subscribeToDrops() {
-  const channel = supabase.channel('drops')
-
-  channel
-    .on(
-      'postgres_changes',
-      { event: 'INSERT', schema: 'public', table: 'live_drops' },  // <-- tu zmiana!
-      (payload) => {
-        console.log('Nowy drop:', payload.new)
-        addDrop(payload.new)
-      }
-    )
-    .subscribe((status) => {
-      if (status === 'SUBSCRIBED') {
-        console.log('✅ Subskrypcja aktywna')
-      } else {
-        console.error('❌ Subskrypcja nie działa:', status)
+        dropContainer.style.transition = 'none'
+        dropContainer.style.transform = `translateX(${currentShift}px)`
+        requestAnimationFrame(() => {
+          dropContainer.style.transition = 'transform 0.5s ease'
+        })
       }
     })
-}
-(async () => {
-  await fetchInitialDrops()
-  await subscribeToDrops()
-})()
-  </script>
+  }
+
+  async function fetchInitialDrops() {
+    const { data, error } = await supabase
+      .from('live_drops')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(maxDrops)
+
+    if (error) return console.error('❌ Błąd:', error)
+
+    dropContainer.innerHTML = ''
+    drops.length = 0
+    currentShift = 0
+    dropContainer.style.transition = 'none'
+    dropContainer.style.transform = 'translateX(0)'
+
+    for (const drop of data.reverse()) {
+      const el = createDropElement(drop)
+      dropContainer.appendChild(el)
+      drops.push({ el, width: el.offsetWidth + 15 })
+    }
+  }
+
+  async function subscribeToDrops() {
+    const channel = supabase.channel('drops')
+
+    channel
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'live_drops' },
+        (payload) => {
+          console.log('Nowy drop:', payload.new)
+          addDrop(payload.new)
+        }
+      )
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          console.log('✅ Subskrypcja aktywna')
+        } else {
+          console.error('❌ Subskrypcja nie działa:', status)
+        }
+      })
+  }
+
+  document.addEventListener('DOMContentLoaded', async () => {
+    dropContainer = document.getElementById('live-drops')
+    if (!dropContainer) {
+      console.error('❌ Nie znaleziono #live-drops w DOM')
+      return
+    }
+
+    await fetchInitialDrops()
+    await subscribeToDrops()
+  })
+</script>
 </body>
 </html>
