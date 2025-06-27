@@ -180,25 +180,25 @@
 
 
 
-
 async function subscribeToDrops() {
-  const channel = supabase
-    .channel('realtime:public:live_drops')
+  const channel = supabase.channel('realtime:public:live_drops');
+
+  channel
     .on(
       'postgres_changes',
       { event: 'INSERT', schema: 'public', table: 'live_drops' },
       (payload) => {
-        console.log('Nowy drop:', payload.new)
-        addDrop(payload.new)
+        console.log('Nowy drop:', payload.new);
+        addDrop(payload.new);
       }
     )
     .subscribe((status) => {
       if (status === 'SUBSCRIBED') {
-        console.log('✅ Subskrypcja działa')
+        console.log('✅ Subskrypcja działa');
       } else {
-        console.error('❌ Subskrypcja problem:', status)
+        console.error('❌ Subskrypcja problem:', status);
       }
-    })
+    });
 }
 
 
