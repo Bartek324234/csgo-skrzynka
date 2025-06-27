@@ -152,10 +152,10 @@
 
     async function fetchInitialDrops() {
       const { data, error } = await supabase
-        .from('user_inventory')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(maxDrops)
+  .from('live_drops')
+  .select('*')
+  .order('created_at', { ascending: false })
+  .limit(maxDrops)
 
       if (error) return console.error('❌ Błąd:', error)
 
@@ -172,31 +172,26 @@
       }
     }
 
-    async function subscribeToDrops() {
-      const channel = supabase.channel('drops')
+   async function subscribeToDrops() {
+  const channel = supabase.channel('drops')
 
-      channel
-        .on(
-          'postgres_changes',
-          { event: 'INSERT', schema: 'public', table: 'user_inventory' },
-          (payload) => {
-            console.log('Nowy drop:', payload.new)
-            addDrop(payload.new)
-          }
-        )
-        .subscribe((status) => {
-          if (status === 'SUBSCRIBED') {
-            console.log('✅ Subskrypcja aktywna')
-          } else {
-            console.error('❌ Subskrypcja nie działa:', status)
-          }
-        })
-    }
-
-    ;(async () => {
-      await fetchInitialDrops()
-      await subscribeToDrops()
-    })()
+  channel
+    .on(
+      'postgres_changes',
+      { event: 'INSERT', schema: 'public', table: 'live_drops' },  // <-- tu zmiana!
+      (payload) => {
+        console.log('Nowy drop:', payload.new)
+        addDrop(payload.new)
+      }
+    )
+    .subscribe((status) => {
+      if (status === 'SUBSCRIBED') {
+        console.log('✅ Subskrypcja aktywna')
+      } else {
+        console.error('❌ Subskrypcja nie działa:', status)
+      }
+    })
+}
   </script>
 </body>
 </html>
