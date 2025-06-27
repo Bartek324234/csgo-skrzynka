@@ -290,6 +290,7 @@ async function updateUI() {
 
       const resultImg = document.getElementById(`resultImage${i}`);
       const resultName = document.getElementById(`resultImageName${i}`);
+      const resultPrice = document.getElementById(`resultImagePrice${i}`);
       const actionBtns = document.getElementById(`actionButtons${i}`);
 
       if (resultImg) {
