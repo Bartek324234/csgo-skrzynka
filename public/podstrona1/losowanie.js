@@ -354,18 +354,6 @@ function attachActionHandlers(user, balanceEl) {
   });
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
 async function updateUI() {
   const { data: { session } } = await supabase.auth.getSession();
   const user = session?.user;
@@ -392,7 +380,6 @@ async function updateUI() {
     const promises = [];
     const drawnSkins = [];
 
-    // Losowanie i uruchamianie animacji
     for (let i = 1; i <= skinsCount; i++) {
       const randomSkin = availableImages[Math.floor(Math.random() * availableImages.length)];
       drawnSkins.push(randomSkin);
@@ -406,41 +393,34 @@ async function updateUI() {
 
     await Promise.all(promises);
 
+    // Dodanie wpisów do live_drops
+    for (let i = 0; i < drawnSkins.length; i++) {
+      const skinImage = drawnSkins[i];
+      const itemName = imageNameMap[skinImage] || "Unknown Skin";
+      const itemValue = getSkinValue ? getSkinValue(skinImage) : 0;
 
+      const { error } = await supabase.from('live_drops').insert([
+        { 
+          user_id: user.id, 
+          item_name: itemName, 
+          image_url: skinImage,
+          value: itemValue,
+          created_at: new Date().toISOString() 
+        }
+      ]);
 
-// Dodanie wpisów do live_drops
-for (let i = 0; i < drawnSkins.length; i++) {
-  const skinImage = drawnSkins[i];
-  const itemName = imageNameMap[skinImage] || "Unknown Skin";
-  const itemValue = getSkinValue ? getSkinValue(skinImage) : 0; // jeśli masz funkcję do wartości
-
-  const { error } = await supabase.from('live_drops').insert([
-    { 
-      user_id: user.id, 
-      item_name: itemName, 
-      image_url: skinImage,
-      value: itemValue,
-      created_at: new Date().toISOString() 
+      if (error) {
+        console.error("Błąd zapisu live_drop:", error);
+      }
     }
-  ]);
 
-  if (error) {
-    console.error("Błąd zapisu live_drop:", error);
-  }
-}
-
-
-
-    // Pokazywanie wyników
     for (let i = 1; i <= skinsCount; i++) {
       const randomSkin = drawnSkins[i - 1];
 
       const resultImg = document.getElementById(`resultImage${i}`);
       const resultName = document.getElementById(`resultImageName${i}`);
-      const resultPrice = document.getElementById(`resultImagePrice${i}`);
       const actionBtns = document.getElementById(`actionButtons${i}`);
 
-      // Sprawdzenie, czy elementy istnieją
       if (resultImg) {
         resultImg.src = randomSkin;
         resultImg.style.display = "block";
@@ -456,71 +436,10 @@ for (let i = 0; i < drawnSkins.length; i++) {
       }
     }
 
-    
-// Podpinamy eventy po wyświetleniu wyników
-attachActionHandlers(user, balanceEl);
+    attachActionHandlers(user, balanceEl);
 
     isAnimating = false;
     drawButton.disabled = false;
     drawButton.textContent = "Losuj";
   };
 }
-
-
-
-
-
-
-
-
-
-
-  // Obsługa sprzedaży skórek
-  document.querySelectorAll('.sell-button').forEach(button => {
-    button.onclick = async (e) => {
-      if (isAnimating) return;
-
-      const container = e.target.closest('.animation-container-wrapper');
-      if (!container) return;
-
-      const idx = container.dataset.index;
-      const actionBtns = document.getElementById(`actionButtons${idx}`);
-      if (!actionBtns) return;
-
-      const skinToSell = actionBtns.dataset.skin;
-      if (!skinToSell) return;
-
-      // Dodaj saldo do użytkownika w bazie
-      const price = 1.00; // przykładowa cena skóry
-
-      const { data, error } = await supabase.rpc('add_balance', {
-        user_id_in: user.id,
-        amount_in: price
-      });
-
-      if (error) {
-        alert("Błąd przy dodawaniu salda: " + error.message);
-        return;
-      }
-
-      alert(`Sprzedano skin ${imageNameMap[skinToSell]} za ${price.toFixed(2)} zł`);
-      
-      // Ukryj przyciski i obrazek wyniku po sprzedaży
-      const resultImg = document.getElementById(`resultImage${idx}`);
-      const resultName = document.getElementById(`resultImageName${idx}`);
-
-      if (resultImg) {
-        resultImg.src = '';
-        resultImg.style.display = 'none';
-      }
-      if (resultName) {
-        resultName.textContent = '';
-      }
-      actionBtns.style.display = 'none';
-
-      // Odśwież saldo
-      const newBalance = await loadBalance(user.id);
-      if (balanceEl) balanceEl.textContent = `${newBalance.toFixed(2)} zł`;
-    };
-  });
-
