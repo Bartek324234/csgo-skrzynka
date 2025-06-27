@@ -242,6 +242,130 @@ async function loadBalance(userId) {
 }
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function attachActionHandlers(user, balanceEl) {
+  document.querySelectorAll('.sell-button').forEach(button => {
+    button.onclick = async (e) => {
+      if (isAnimating) return;
+
+      const container = e.target.closest('.draw-container');
+      if (!container) return;
+
+      const idx = container.dataset.index;
+      if (!idx) return;
+
+      const actionBtns = document.getElementById(`actionButtons${idx}`);
+      if (!actionBtns) return;
+
+      const skinToSell = actionBtns.dataset.skin;
+      if (!skinToSell) return;
+
+      const price = 1.00;
+
+      const { data, error } = await supabase.rpc('add_balance', {
+        user_id_in: user.id,
+        amount_in: price
+      });
+
+      if (error) {
+        alert("Błąd przy dodawaniu salda: " + error.message);
+        return;
+      }
+
+      alert(`Sprzedano skin ${imageNameMap[skinToSell]} za ${price.toFixed(2)} zł`);
+
+      const resultImg = document.getElementById(`resultImage${idx}`);
+      const resultName = document.getElementById(`resultImageName${idx}`);
+
+      if (resultImg) {
+        resultImg.src = '';
+        resultImg.style.display = 'none';
+      }
+      if (resultName) {
+        resultName.textContent = '';
+      }
+      actionBtns.style.display = 'none';
+
+      const newBalance = await loadBalance(user.id);
+      if (balanceEl) balanceEl.textContent = `${newBalance.toFixed(2)} zł`;
+    };
+  });
+
+  document.querySelectorAll('.keep-button').forEach(button => {
+    button.onclick = async (e) => {
+      if (isAnimating) return;
+
+      const container = e.target.closest('.draw-container');
+      if (!container) return;
+
+      const idx = container.dataset.index;
+      if (!idx) return;
+
+      const actionBtns = document.getElementById(`actionButtons${idx}`);
+      if (!actionBtns) return;
+
+      const skinToKeep = actionBtns.dataset.skin;
+      if (!skinToKeep) return;
+
+      const { data, error } = await supabase
+        .from('user_inventory')
+        .insert([{ user_id: user.id, skin: skinToKeep }]);
+
+      if (error) {
+        alert("Błąd przy dodawaniu do ekwipunku: " + error.message);
+        return;
+      }
+
+      alert(`Dodano skin ${imageNameMap[skinToKeep]} do ekwipunku.`);
+
+      const resultImg = document.getElementById(`resultImage${idx}`);
+      const resultName = document.getElementById(`resultImageName${idx}`);
+
+      if (resultImg) {
+        resultImg.src = '';
+        resultImg.style.display = 'none';
+      }
+      if (resultName) {
+        resultName.textContent = '';
+      }
+      actionBtns.style.display = 'none';
+    };
+  });
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
 async function updateUI() {
   const { data: { session } } = await supabase.auth.getSession();
   const user = session?.user;
@@ -282,6 +406,20 @@ async function updateUI() {
 
     await Promise.all(promises);
 
+
+
+// Dodanie wpisów do live_drops
+for (let i = 0; i < drawnSkins.length; i++) {
+  const skin = drawnSkins[i];
+  const { error } = await supabase.from('live_drops').insert([
+    { user_id: user.id, skin: skin, created_at: new Date().toISOString() }
+  ]);
+  if (error) {
+    console.error("Błąd zapisu live_drop:", error);
+  }
+}
+
+
     // Pokazywanie wyników
     for (let i = 1; i <= skinsCount; i++) {
       const randomSkin = drawnSkins[i - 1];
@@ -306,6 +444,10 @@ async function updateUI() {
         actionBtns.dataset.skin = randomSkin;
       }
     }
+
+    
+// Podpinamy eventy po wyświetleniu wyników
+attachActionHandlers(user, balanceEl);
 
     isAnimating = false;
     drawButton.disabled = false;

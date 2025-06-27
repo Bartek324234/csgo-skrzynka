@@ -64,8 +64,15 @@ router.post('/', async (req, res) => {
     // Losowanie przedmiotu
     const result = weightedRandom(outcomes);
 
-    // **Nie wstawiamy do user_inventory od razu!**
+  // ✅ ZAPIS DO live_drops (to dodajesz!)
+    await supabase.from('live_drops').insert({
+      user_id: user_id,
+      image_url: result.image,
+      item_name: result.item,
+      value: result.value,
+    });
 
+    // Zwrot wyniku losowania do frontu
     res.json({
       message: `Wylosowano: ${result.item}`,
       image: result.image,
