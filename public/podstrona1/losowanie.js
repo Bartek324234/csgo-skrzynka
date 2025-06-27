@@ -60,6 +60,17 @@ function initQuantityButtons() {
 
 
 
+function getSkinValue(skinImage) {
+  const skinValues = {
+    "/images/deserteagleblue.jpg": 2.0,
+    "/images/glock18moda.jpg": 20.0,
+    "/images/mac10bronz.jpg": 2.2,
+    "/images/p18dzielnia.jpg": 2.4,
+    "/images/p2000oceaniczny.jpg": 2.1,
+    // dodaj pozostałe skiny i ich wartości jeśli są
+  };
+  return skinValues[skinImage] || 0;
+}
 
 
 
