@@ -631,7 +631,7 @@ function drawWheel(chancePercent) {
   // Zielony łuk
   ctx.beginPath();
   ctx.moveTo(radius, radius);
-  ctx.fillStyle = '#16161a';
+  ctx.fillStyle = '#00FF00';
   ctx.arc(radius, radius, radius, startAngle, startAngle + successAngle);
   ctx.lineTo(radius, radius);
   ctx.fill();
@@ -639,7 +639,7 @@ function drawWheel(chancePercent) {
   // Czerwony łuk
   ctx.beginPath();
   ctx.moveTo(radius, radius);
-  ctx.fillStyle = '#16161a';
+  ctx.fillStyle = '#FF0000';
   ctx.arc(radius, radius, radius, startAngle + successAngle, startAngle + 2 * Math.PI);
   ctx.lineTo(radius, radius);
   ctx.fill();

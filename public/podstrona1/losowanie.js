@@ -323,6 +323,7 @@ function attachActionHandlers(user, balanceEl) {
     };
   });
 
+
   document.querySelectorAll('.keep-button').forEach(button => {
     button.onclick = async (e) => {
       if (isAnimating) return;
@@ -364,6 +365,17 @@ function attachActionHandlers(user, balanceEl) {
     };
   });
 }
+
+
+
+
+
+
+
+
+
+
+
 
 async function updateUI() {
   const { data: { session } } = await supabase.auth.getSession();
